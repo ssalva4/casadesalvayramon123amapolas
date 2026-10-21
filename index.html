@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Casa">
+<title>Panel de Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: cuadrícula de tarjetas a pantalla completa para iPad apaisado; se apila en vertical. */
+:root{
+  --bg:#efe9df; --card:#fbf8f3; --ink:#1f2433; --muted:#77737a; --line:#e3dcd0;
+  --navy:#283364; --navy2:#323f78; --on-navy:#f3f1ec; --on-navy-muted:#b7bbd3;
+  --cool:#2f7fb8; --cool-bg:#e3eef6; --warm:#d9772c; --warm-bg:#f8e8da;
+  --night:#6d64b0; --night-bg:#ebe8f5; --dry:#3c9a8a; --dry-bg:#e0f1ed;
+  --off:#b8433a; --off-bg:#f6e2df; --green:#4e9c5f; --green-bg:#e4f0e2; --rain:#5b8fd0;
+  --font-big:"Outfit",system-ui,-apple-system,sans-serif;
+  --font:"Manrope",system-ui,-apple-system,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#12141c; --card:#1c1f2a; --ink:#ece9e3; --muted:#9a98a2; --line:#2b2f3c;
+  --navy:#222b55; --navy2:#2c3768; --on-navy:#f1efe9; --on-navy-muted:#aab0cf;
+  --cool:#6fb2e4; --cool-bg:#1d2d3b; --warm:#f0a062; --warm-bg:#3a2a1e;
+  --night:#a59ce0; --night-bg:#2a2742; --dry:#6cc6b4; --dry-bg:#1b3330;
+  --off:#ec8a80; --off-bg:#3c2321; --green:#7cc58b; --green-bg:#1f3324; --rain:#80aee6;
+  color-scheme:dark;
+}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;
+  padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--cool);outline-offset:2px}
+.grid{height:100%;display:grid;gap:14px;
+  grid-template-columns:repeat(12,minmax(0,1fr));
+  grid-template-rows:auto auto minmax(0,1fr)}
+.card{background:var(--card);border-radius:22px;padding:20px 22px;min-width:0}
+.label{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.num{font-variant-numeric:tabular-nums}
+
+/* --- Reloj + tiempo --- */
+.hero{grid-column:1/9;background:linear-gradient(135deg,var(--navy),var(--navy2));color:var(--on-navy);
+  display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;padding:22px 26px}
+.clock{font-family:var(--font-big);font-weight:300;font-size:clamp(64px,9vw,112px);line-height:.9;letter-spacing:-.02em}
+.date{font-size:20px;margin-top:10px}
+.date b{font-weight:600}.date span{color:var(--on-navy-muted)}
+.now{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.now .t{font-family:var(--font-big);font-size:48px;font-weight:400;line-height:1}
+.now .d{font-size:15px;color:var(--on-navy-muted);line-height:1.45}
+.now .d b{color:var(--on-navy);font-weight:600}
+.days{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.day{background:rgba(255,255,255,.08);border-radius:12px;padding:8px 2px;text-align:center;font-size:13px}
+.day .n{font-weight:600;color:var(--on-navy-muted)}
+.day .mx{font-weight:700;font-size:16px}
+.day .mn{color:var(--on-navy-muted)}
+.day .p{font-size:11px;color:var(--on-navy-muted)}
+.day svg{width:28px;height:28px;display:block;margin:4px auto}
+
+/* --- Aire --- */
+.ac{grid-column:9/13;display:flex;flex-direction:column}
+.acgrid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border-radius:16px;padding:12px 14px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:6px;min-height:68px;
+  text-decoration:none;color:var(--ink);transition:transform .12s ease,filter .12s}
+.btn:active{transform:scale(.96);filter:brightness(.95)}
+.btn .bt{font-weight:700;font-size:16px;line-height:1.15}
+.btn .bs{font-size:12px;color:var(--muted)}
+.btn svg{width:22px;height:22px}
+.k-cool{background:var(--cool-bg)}.k-cool svg{color:var(--cool)}
+.k-warm{background:var(--warm-bg)}.k-warm svg{color:var(--warm)}
+.k-night{background:var(--night-bg)}.k-night svg{color:var(--night)}
+.k-dry{background:var(--dry-bg)}.k-dry svg{color:var(--dry)}
+.k-off{background:var(--off-bg)}.k-off svg{color:var(--off)}
+.k-green{background:var(--green-bg)}.k-green svg{color:var(--green)}
+.btn.wide{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;min-height:54px}
+
+/* --- Por horas --- */
+.hours{grid-column:1/9}
+.hgrid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;text-align:center}
+.h{font-size:13px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.h .hh{color:var(--muted);font-weight:600}
+.h .ht{font-weight:700;font-size:15px}
+.h svg{width:26px;height:26px}
+.h .bar{width:70%;height:34px;background:var(--line);border-radius:6px;position:relative;overflow:hidden}
+.h .bar i{position:absolute;left:0;right:0;bottom:0;background:var(--rain);border-radius:6px}
+.h .hp{font-size:11px;color:var(--muted)}
+.facts{grid-column:9/13;display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;align-content:start}
+.fact .fv{font-size:22px;font-weight:700;font-family:var(--font-big)}
+.fact .fk{font-size:12px;color:var(--muted);font-weight:600}
+
+/* --- Accesos + compra --- */
+.shortcuts{grid-column:1/9;display:flex;flex-direction:column;min-height:0}
+.scgrid{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-content:start}
+.scgrid .btn{background:var(--bg)}
+.scgrid .btn svg{color:var(--night)}
+.list{grid-column:9/13;display:flex;flex-direction:column;min-height:0}
+.items{flex:1;overflow:auto;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+.chip{background:var(--green-bg);border-radius:999px;padding:8px 14px;font-weight:600;font-size:15px}
+.chip:active{text-decoration:line-through;opacity:.6}
+.empty{color:var(--muted);font-size:15px}
+.add{display:flex;gap:8px;margin-top:12px}
+.add input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);-webkit-user-select:text;user-select:text}
+.add button{background:var(--green);color:var(--card);border-radius:12px;padding:0 16px;font-weight:700}
+.small{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--muted);text-transform:none;padding:4px 8px;border-radius:8px;background:var(--bg)}
+.stale{font-size:12px;color:var(--on-navy-muted)}
+
+/* --- Editor --- */
+.sheet{position:fixed;inset:0;background:rgba(10,12,20,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}
+.panel{background:var(--card);border-radius:22px;width:min(640px,100%);max-height:90%;overflow:auto;padding:22px}
+.panel h2{margin:0 0 6px;font-size:20px}
+.panel p{margin:0 0 14px;color:var(--muted);font-size:14px;line-height:1.5}
+.row{display:grid;grid-template-columns:1fr 1.3fr auto;gap:8px;margin-bottom:8px}
+.row input{font:inherit;font-size:15px;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0;-webkit-user-select:text;user-select:text}
+.row button{color:var(--off);font-weight:700;padding:0 10px}
+.sec{font-weight:700;margin:16px 0 8px}
+.pactions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.pactions button{padding:10px 16px;border-radius:12px;font-weight:700;background:var(--bg)}
+.pactions .primary{background:var(--navy);color:var(--on-navy)}
+
+@media (max-width:900px){
+  .grid{height:auto;grid-template-rows:none}
+  .hero,.ac,.hours,.facts,.shortcuts,.list{grid-column:1/-1}
+  .hero{grid-template-columns:1fr}
+  .hgrid{grid-template-columns:repeat(6,minmax(0,1fr));row-gap:12px}
+  .scgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .days{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){.btn{transition:none}}
+</style>
+</head>
+<body>
+<main class="grid">
+
+  <section class="card hero">
+    <div>
+      <div class="clock num" id="clock">--:--</div>
+      <div class="date" id="date"></div>
+    </div>
+    <div>
+      <div class="now" id="now"><div class="d">Cargando el tiempo de Pontevedra…</div></div>
+      <div class="days" id="days"></div>
+    </div>
+  </section>
+
+  <section class="card ac">
+    <h2 class="label">Aire acondicionado <button class="small" id="editBtn">Editar botones</button></h2>
+    <div class="acgrid" id="acgrid"></div>
+  </section>
+
+  <section class="card hours">
+    <h2 class="label">Próximas horas <span class="small" id="updated"></span></h2>
+    <div class="hgrid" id="hours"></div>
+  </section>
+
+  <section class="card facts" id="facts"></section>
+
+  <section class="card shortcuts">
+    <h2 class="label">Accesos directos</h2>
+    <div class="scgrid" id="scgrid"></div>
+  </section>
+
+  <section class="card list">
+    <h2 class="label">Lista de la compra <span class="small">toca para quitar</span></h2>
+    <div class="items" id="items"></div>
+    <form class="add" id="addForm">
+      <input id="newItem" placeholder="Añadir…" autocomplete="off" aria-label="Añadir a la lista de la compra">
+      <button type="submit">Añadir</button>
+    </form>
+  </section>
+
+</main>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="panel" role="dialog" aria-labelledby="sheetTitle">
+    <h2 id="sheetTitle">Editar botones</h2>
+    <p>Cada botón abre un atajo de la app Atajos. Escribe a la izquierda el texto del botón y a la derecha el nombre exacto del atajo. También puedes poner una dirección que empiece por https:// o por un esquema de app.</p>
+    <div class="sec">Aire acondicionado</div>
+    <div id="acRows"></div>
+    <button class="small" id="addAc">+ Añadir botón del aire</button>
+    <div class="sec">Accesos directos</div>
+    <div id="scRows"></div>
+    <button class="small" id="addSc">+ Añadir acceso</button>
+    <div class="pactions">
+      <button id="resetBtn">Volver a los de ejemplo</button>
+      <button id="cancelBtn">Cancelar</button>
+      <button class="primary" id="saveBtn">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== Configuración ===== */
+const LAT = 42.4310, LON = -8.6444, PLACE = "Pontevedra";
+
+// k = color del botón: cool, warm, night, dry, off, green
+const DEFAULT_AC = [
+  {t:"Frío 24°",  s:"Refrescar",        a:"Aire frío 24",   k:"cool",  i:"snow"},
+  {t:"Calor 22°", s:"Calentar",         a:"Aire calor 22",  k:"warm",  i:"flame"},
+  {t:"Noche",     s:"Silencioso",       a:"Aire noche",     k:"night", i:"moon"},
+  {t:"Secar",     s:"Deshumidificar",   a:"Aire secar",     k:"dry",   i:"drop"},
+  {t:"Apagar aire", s:"",               a:"Apagar aire",    k:"off",   i:"power", wide:true}
+];
+const DEFAULT_SC = [
+  {t:"Buenas noches", s:"Atajo",  a:"Buenas noches", i:"moon"},
+  {t:"Salgo de casa", s:"Atajo",  a:"Salgo de casa", i:"door"},
+  {t:"Música",        s:"Atajo",  a:"Poner música",  i:"music"},
+  {t:"Temporizador",  s:"Atajo",  a:"Temporizador",  i:"timer"},
+  {t:"Calendario",    s:"App",    a:"calshow://",    i:"cal"},
+  {t:"Recordatorios", s:"App",    a:"x-apple-reminderkit://", i:"check"},
+  {t:"Casa",          s:"App",    a:"com.apple.home://", i:"home"},
+  {t:"Tiempo",        s:"MeteoGalicia", a:"https://www.meteogalicia.gal/", i:"cloud"}
+];
+
+/* ===== Utilidades ===== */
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function hrefFor(a){
+  if (/^[a-z][a-z0-9+.-]*:/i.test(a)) return a;            // URL o esquema de app
+  return "shortcuts://run-shortcut?name=" + encodeURIComponent(a); // nombre de atajo
+}
+
+/* ===== Iconos ===== */
+const I = {
+  snow:'<path d="M12 2v20M4.9 6l14.2 12M19.1 6 4.9 18M9 4l3 2 3-2M9 20l3-2 3 2"/>',
+  flame:'<path d="M12 22c4 0 7-3 7-7 0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-2 2-5 5-5 8 0 4 3 7 7 7z"/>',
+  moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+  power:'<path d="M12 3v9M6.3 7a8 8 0 1 0 11.4 0"/>',
+  door:'<path d="M5 21V4a1 1 0 0 1 1-1h9v18M15 3l4 2v16M3 21h18M12 12h.01"/>',
+  music:'<path d="M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>',
+  timer:'<path d="M12 22a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM12 10v4l2 2M9 2h6"/>',
+  cal:'<path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 10h16M8 2v4M16 2v4"/>',
+  check:'<path d="M4 12l5 5L20 6"/>',
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  cloud:'<path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18z"/>',
+  star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>'
+};
+const svg = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[name]||I.star}</svg>`;
+
+// Iconos del tiempo (a color, se leen en fondo claro y oscuro)
+function wx(code, day=1){
+  const sun = '<circle cx="12" cy="11" r="4.5" fill="#f5b83d"/><g stroke="#f5b83d" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2M12 17.5v2M3.5 11h2M18.5 11h2M6 5l1.4 1.4M16.6 15.6 18 17M6 17l1.4-1.4M16.6 6.4 18 5"/></g>';
+  const moon = '<path d="M17 14.5A6.5 6.5 0 1 1 10.5 5a5 5 0 0 0 6.5 9.5z" fill="#c9cbe6"/>';
+  const cl = (x=0,y=0,c="#dfe3ee") => `<path transform="translate(${x} ${y})" d="M7 20h10.5a3.8 3.8 0 0 0 .4-7.6A5.5 5.5 0 0 0 7.3 12 4 4 0 0 0 7 20z" fill="${c}" stroke="#9aa3ba" stroke-width="1"/>`;
+  const small = day ? '<g transform="translate(-4 -4) scale(.75)">'+sun+'</g>' : '<g transform="translate(-3 -3) scale(.8)">'+moon+'</g>';
+  const rain = '<g stroke="#5b8fd0" stroke-width="2" stroke-linecap="round"><path d="M9 21.5l-1 2M13 21.5l-1 2M17 21.5l-1 2"/></g>';
+  let b;
+  if (code===0) b = day ? sun : moon;
+  else if (code<=2) b = small + cl(1,-1);
+  else if (code===3) b = cl(-2,-4,"#c9cfdd") + cl(1,-1);
+  else if (code===45||code===48) b = cl(0,-4) + '<g stroke="#9aa3ba" stroke-width="2" stroke-linecap="round"><path d="M4 19.5h16M6 22.5h12"/></g>';
+  else if (code>=71&&code<=77||code===85||code===86) b = cl(0,-3) + '<g fill="#8fb3e0"><circle cx="9" cy="21" r="1.3"/><circle cx="13" cy="22.5" r="1.3"/><circle cx="17" cy="21" r="1.3"/></g>';
+  else if (code>=95) b = cl(0,-4,"#b9bfd0") + '<path d="M12 16l-2.5 4h3l-2 4" stroke="#f5b83d" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+  else if (code>=80) b = small + cl(1,-3) + rain;
+  else b = cl(0,-3) + rain;  // llovizna y lluvia
+  return `<svg viewBox="0 0 24 25" aria-hidden="true">${b}</svg>`;
+}
+function wxText(c){
+  if (c===0) return "Despejado"; if (c===1) return "Casi despejado"; if (c===2) return "Intervalos de nubes";
+  if (c===3) return "Nublado"; if (c===45||c===48) return "Niebla";
+  if (c>=51&&c<=57) return "Llovizna"; if (c>=61&&c<=67) return "Lluvia";
+  if (c>=71&&c<=77) return "Nieve"; if (c>=80&&c<=82) return "Chubascos";
+  if (c===85||c===86) return "Chubascos de nieve"; if (c>=95) return "Tormenta"; return "—";
+}
+
+/* ===== Reloj ===== */
+const fmtTime = new Intl.DateTimeFormat("es-ES",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"});
+const fmtWd = new Intl.DateTimeFormat("es-ES",{weekday:"long",timeZone:"Europe/Madrid"});
+const fmtDm = new Intl.DateTimeFormat("es-ES",{day:"numeric",month:"long",timeZone:"Europe/Madrid"});
+function tick(){
+  const d = new Date();
+  $("clock").textContent = fmtTime.format(d);
+  const wd = fmtWd.format(d);
+  $("date").innerHTML = `<b>${wd[0].toUpperCase()+wd.slice(1)}</b> <span>${fmtDm.format(d)}</span>`;
+}
+tick(); setInterval(tick, 5000);
+
+/* ===== Tiempo (Open-Meteo, sin clave) ===== */
+const WX_URL = "https://api.open-meteo.com/v1/forecast?latitude="+LAT+"&longitude="+LON+
+  "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day"+
+  "&hourly=temperature_2m,precipitation_probability,weather_code,is_day"+
+  "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max"+
+  "&timezone=Europe%2FMadrid&forecast_days=7";
+const shortDay = new Intl.DateTimeFormat("es-ES",{weekday:"short"});
+
+function renderWeather(w, fromCache){
+  const c = w.current, dly = w.daily, hr = w.hourly;
+  $("now").innerHTML = `${wx(c.weather_code, c.is_day).replace('<svg','<svg width="64" height="64"')}
+    <div class="t num">${Math.round(c.temperature_2m)}°</div>
+    <div class="d"><b>${wxText(c.weather_code)}</b> · ${PLACE}<br>
+      Máx ${Math.round(dly.temperature_2m_max[0])}° · Mín ${Math.round(dly.temperature_2m_min[0])}° · Lluvia ${dly.precipitation_probability_max[0] ?? 0}%</div>`;
+
+  let days = "";
+  for (let i=1;i<dly.time.length;i++){
+    const dd = new Date(dly.time[i]+"T12:00:00");
+    let n = shortDay.format(dd).replace(".","");
+    days += `<div class="day"><div class="n">${n[0].toUpperCase()+n.slice(1)}</div>${wx(dly.weather_code[i],1)}
+      <div class="mx num">${Math.round(dly.temperature_2m_max[i])}°</div><div class="mn num">${Math.round(dly.temperature_2m_min[i])}°</div>
+      <div class="p num">💧${dly.precipitation_probability_max[i] ?? 0}%</div></div>`;
+  }
+  $("days").innerHTML = days;
+
+  // 12 horas desde la actual
+  const nowKey = c.time.slice(0,13);
+  let start = hr.time.findIndex(t => t.slice(0,13) >= nowKey); if (start<0) start = 0;
+  let hs = "";
+  for (let i=start;i<Math.min(start+12, hr.time.length);i++){
+    const p = hr.precipitation_probability[i] ?? 0;
+    hs += `<div class="h"><span class="hh num">${i===start?"Ahora":hr.time[i].slice(11,13)+"h"}</span>${wx(hr.weather_code[i], hr.is_day[i])}
+      <span class="ht num">${Math.round(hr.temperature_2m[i])}°</span>
+      <span class="bar" title="Probabilidad de lluvia"><i style="height:${p}%"></i></span><span class="hp num">${p}%</span></div>`;
+  }
+  $("hours").innerHTML = hs;
+
+  const hm = s => s.slice(11,16);
+  $("facts").innerHTML = `
+    <div class="fact"><div class="fv num" id="inT">—</div><div class="fk">Temperatura en casa</div></div>
+    <div class="fact"><div class="fv num" id="inH">—</div><div class="fk">Humedad en casa</div></div>
+    <div class="fact"><div class="fv num">${Math.round(c.apparent_temperature)}°</div><div class="fk">Sensación térmica</div></div>
+    <div class="fact"><div class="fv num">${c.relative_humidity_2m}%</div><div class="fk">Humedad fuera</div></div>
+    <div class="fact"><div class="fv num">${Math.round(c.wind_speed_10m)} km/h</div><div class="fk">Viento</div></div>
+    <div class="fact"><div class="fv num">${hm(dly.sunrise[0])}–${hm(dly.sunset[0])}</div><div class="fk">Luz del día</div></div>`;
+
+  renderIndoor();
+  const t = new Date(w._at || Date.now());
+  $("updated").textContent = (fromCache ? "Sin conexión · datos de las " : "Actualizado ") + fmtTime.format(t);
+}
+/* ===== Sensor de casa =====
+   Un atajo lee el sensor en la app Casa y abre este panel con ?t=21.5&h=55 */
+(function readIndoorFromURL(){
+  const q = new URLSearchParams(location.search);
+  const t = parseFloat((q.get("t")||"").replace(",", ".")), h = parseFloat((q.get("h")||"").replace(",", "."));
+  if (!isNaN(t) || !isNaN(h)) {
+    store.set("indoor", {t: isNaN(t)?null:t, h: isNaN(h)?null:h, at: Date.now()});
+    try{ history.replaceState(null, "", location.pathname); }catch(e){}
+  }
+})();
+function renderIndoor(){
+  const v = store.get("indoor", null), T = $("inT"), H = $("inH");
+  if (!T || !v) return;
+  const mins = Math.round((Date.now() - v.at)/60000);
+  const old = mins > 180;
+  T.textContent = v.t!=null ? v.t.toFixed(1).replace(".", ",")+"°" : "—";
+  H.textContent = v.h!=null ? Math.round(v.h)+"%" : "—";
+  const age = mins < 1 ? "ahora" : mins < 60 ? `hace ${mins} min` : `hace ${Math.round(mins/60)} h`;
+  T.nextElementSibling.textContent = "En casa · " + age;
+  H.nextElementSibling.textContent = "Humedad en casa";
+  T.style.opacity = H.style.opacity = old ? .5 : 1;
+}
+setInterval(renderIndoor, 60000);
+
+async function loadWeather(){
+  try{
+    const r = await fetch(WX_URL, {cache:"no-store"});
+    if (!r.ok) throw new Error(r.status);
+    const w = await r.json(); w._at = Date.now();
+    store.set("wx", w); renderWeather(w, false);
+  }catch(e){
+    const old = store.get("wx", null);
+    if (old) renderWeather(old, true);
+    else $("now").innerHTML = '<div class="d">No se pudo cargar el tiempo. Comprueba la conexión wifi del iPad; se reintenta solo.</div>';
+  }
+}
+loadWeather(); setInterval(loadWeather, 15*60*1000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { tick(); loadWeather(); } });
+
+/* ===== Botones ===== */
+let AC = store.get("ac", DEFAULT_AC), SC = store.get("sc", DEFAULT_SC);
+function btnHTML(b, cls){
+  return `<a class="btn ${cls||""} ${b.k?"k-"+b.k:""} ${b.wide?"wide":""}" href="${esc(hrefFor(b.a))}">${svg(b.i)}<span><div class="bt">${esc(b.t)}</div>${b.s?`<div class="bs">${esc(b.s)}</div>`:""}</span></a>`;
+}
+function renderButtons(){
+  $("acgrid").innerHTML = AC.map(b => btnHTML(b)).join("");
+  $("scgrid").innerHTML = SC.map(b => btnHTML(b)).join("");
+}
+renderButtons();
+
+/* ===== Editor de botones ===== */
+function rowHTML(b, idx, kind){
+  return `<div class="row" data-kind="${kind}" data-i="${idx}">
+    <input value="${esc(b.t)}" aria-label="Texto del botón" placeholder="Texto del botón">
+    <input value="${esc(b.a)}" aria-label="Nombre del atajo o dirección" placeholder="Nombre del atajo">
+    <button type="button" aria-label="Quitar">Quitar</button></div>`;
+}
+let draftAC, draftSC;
+function readRows(){
+  const pick = (kind, base) => [...document.querySelectorAll(`.row[data-kind="${kind}"]`)].map((r,i) => {
+    const [t,a] = r.querySelectorAll("input");
+    return Object.assign({}, base[i] || {k: kind==="ac"?"cool":undefined, i: kind==="ac"?"snow":"star"}, {t:t.value.trim(), a:a.value.trim()});
+  }).filter(b => b.t && b.a);
+  return {ac: pick("ac", draftAC), sc: pick("sc", draftSC)};
+}
+function drawRows(){
+  $("acRows").innerHTML = draftAC.map((b,i)=>rowHTML(b,i,"ac")).join("");
+  $("scRows").innerHTML = draftSC.map((b,i)=>rowHTML(b,i,"sc")).join("");
+}
+$("editBtn").onclick = () => { draftAC = AC.map(x=>({...x})); draftSC = SC.map(x=>({...x})); drawRows(); $("sheet").hidden = false; };
+$("sheet").addEventListener("click", e => {
+  const row = e.target.closest(".row");
+  if (row && e.target.tagName === "BUTTON"){
+    const cur = readRowsKeepEmpty();
+    const list = row.dataset.kind === "ac" ? cur.ac : cur.sc;
+    list.splice(+row.dataset.i, 1);
+    draftAC = cur.ac; draftSC = cur.sc; drawRows();
+  }
+  if (e.target === $("sheet")) $("sheet").hidden = true;
+});
+function readRowsKeepEmpty(){
+  const pick = (kind, base) => [...document.querySelectorAll(`.row[data-kind="${kind}"]`)].map((r,i) => {
+    const [t,a] = r.querySelectorAll("input"); return Object.assign({}, base[i]||{}, {t:t.value, a:a.value});
+  });
+  return {ac: pick("ac", draftAC), sc: pick("sc", draftSC)};
+}
+$("addAc").onclick = () => { const c = readRowsKeepEmpty(); draftAC = c.ac; draftSC = c.sc; draftAC.push({t:"",a:"",k:"cool",i:"snow"}); drawRows(); };
+$("addSc").onclick = () => { const c = readRowsKeepEmpty(); draftAC = c.ac; draftSC = c.sc; draftSC.push({t:"",a:"",i:"star"}); drawRows(); };
+$("cancelBtn").onclick = () => { $("sheet").hidden = true; };
+$("resetBtn").onclick = () => { draftAC = DEFAULT_AC.map(x=>({...x})); draftSC = DEFAULT_SC.map(x=>({...x})); drawRows(); };
+$("saveBtn").onclick = () => {
+  const r = readRows();
+  AC = r.ac; SC = r.sc; store.set("ac", AC); store.set("sc", SC);
+  renderButtons(); $("sheet").hidden = true;
+};
+
+/* ===== Lista de la compra ===== */
+let items = store.get("compra", ["Leche","Pan","Fruta"]);
+function renderItems(){
+  $("items").innerHTML = items.length
+    ? items.map((t,i)=>`<button class="chip" data-i="${i}">${esc(t)}</button>`).join("")
+    : '<div class="empty">Lista vacía. Escribe abajo para añadir.</div>';
+}
+$("items").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  items.splice(+b.dataset.i,1); store.set("compra", items); renderItems();
+});
+$("addForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = $("newItem").value.trim(); if (!v) return;
+  items.push(v); store.set("compra", items); $("newItem").value = ""; $("newItem").blur(); renderItems();
+});
+renderItems();
+
+/* ===== Pantalla siempre encendida (si el navegador lo permite) ===== */
+let lock = null;
+async function keepAwake(){ try{ if ("wakeLock" in navigator && !document.hidden) lock = await navigator.wakeLock.request("screen"); }catch(e){} }
+keepAwake();
+document.addEventListener("visibilitychange", () => { if (!document.hidden) keepAwake(); });
+document.addEventListener("click", () => { if (!lock) keepAwake(); }, {once:true});
+</script>
+</body>
+</html>
