@@ -226,7 +226,10 @@ const store = {
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function hrefFor(a){
   if (/^[a-z][a-z0-9+.-]*:/i.test(a)) return a;            // URL o esquema de app
-  return "shortcuts://run-shortcut?name=" + encodeURIComponent(a); // nombre de atajo
+  // nombre de atajo: se ejecuta y vuelve al panel al terminar
+  const back = encodeURIComponent(location.origin + location.pathname);
+  return "shortcuts://x-callback-url/run-shortcut?name=" + encodeURIComponent(a) +
+         "&x-success=" + back + "&x-cancel=" + back + "&x-error=" + back;
 }
 
 /* ===== Iconos ===== */
