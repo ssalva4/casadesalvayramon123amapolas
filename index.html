@@ -219,7 +219,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 
 /* --- Accesos + compra --- */
 .shortcuts{grid-column:1/9;display:flex;flex-direction:column;min-height:0}
-.videos{grid-column:1/9;display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0}
+.videos{grid-column:1/7;display:grid;grid-template-columns:1fr;gap:14px;min-height:0}
 .vlab{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:4px;flex:none}
 .chlist{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none}
 .chlist::-webkit-scrollbar{display:none}
@@ -230,7 +230,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .scgrid .btn .bt{font-size:16px;white-space:nowrap}
 .scgrid .btn svg{width:24px;height:24px;flex:none}
 .scgrid .btn svg{color:var(--night)}
-.list{grid-column:9/13;display:flex;flex-direction:column;min-height:0}
+.list{grid-column:7/13;display:flex;flex-direction:column;min-height:0}
 .items{flex:1;overflow:auto;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
 .chip{background:var(--green-bg);border-radius:999px;padding:8px 14px;font-weight:600;font-size:17px}
 .chip:active{text-decoration:line-through;opacity:.6}
@@ -318,10 +318,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   </section>
 
   <div class="videos">
-    <section class="card atv" aria-label="Apple TV">
-      <h2 class="label">Apple TV <span class="small" id="atvState"></span></h2>
-      <div id="atv" class="atvbody"><div class="msg">Buscando el Apple TV…</div></div>
-    </section>
     <section class="card tele" aria-label="YouTube">
       <div class="chans"><span class="vlab">YouTube</span><button class="small" id="ytChange">Cambiar vídeo</button></div>
       <div class="screen" id="ytscreen"></div>
