@@ -69,13 +69,16 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .acs{display:flex;flex-direction:column;gap:10px;flex:1}
 .unit{background:var(--bg);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
 .uhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.uname{font-weight:700;font-size:17px}
+.uname{font-weight:700;font-size:16px}
+.ucur{font-family:var(--font-big);font-weight:300;font-size:44px;line-height:1;letter-spacing:-.02em;margin-top:2px}
+.tgtl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:4px}
+.tgtw{display:flex;flex-direction:column;align-items:center}
 .ustate{font-size:13px;color:var(--muted);margin-top:2px}
 .tgt{display:flex;align-items:center;gap:4px}
 .tgt button{width:40px;height:40px;border-radius:12px;background:var(--card);font-size:22px;font-weight:600;line-height:1}
 .tgt button:active{transform:scale(.94)}
 .tgt .tv{font-family:var(--font-big);font-size:26px;min-width:64px;text-align:center}
-.unit.is-off .tgt,.unit.is-off [data-night]{opacity:.35;pointer-events:none}
+.unit.is-off .tgtw,.unit.is-off [data-night]{opacity:.35;pointer-events:none}
 .modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px}
 .mode{border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:13px;font-weight:600;color:var(--muted);background:var(--card);transition:transform .12s}
 .mode svg{width:20px;height:20px}
@@ -110,17 +113,17 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 
 /* --- Música y TV --- */
 .toprow{flex:1;display:grid;grid-template-columns:1.55fr 1fr;gap:14px;min-height:0}
-.media{padding:14px 16px;display:flex;flex-direction:column}
+.media{flex:1;padding:14px 16px;display:flex;flex-direction:column}
 .casa{display:flex;flex-direction:column;padding:16px 20px}
 .casa .label{margin-bottom:6px}
 .temps{flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:center}
 .tbig{font-family:var(--font-big);font-weight:300;font-size:clamp(34px,3.7vw,48px);line-height:1;letter-spacing:-.02em;white-space:nowrap}
 .tname{font-weight:700;font-size:15px;margin-top:6px}
 .tsub{font-size:12px;color:var(--muted);margin-top:2px}
-.mdgrid{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;gap:8px}
-.mbtn{border-radius:14px;background:var(--bg);padding:8px 10px;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;min-height:52px;text-decoration:none;color:var(--ink);font-weight:700;font-size:14px;text-align:left;transition:transform .12s}
+.mdgrid{flex:1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:1fr;gap:10px}
+.mbtn{border-radius:14px;background:var(--bg);padding:8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:64px;text-decoration:none;color:var(--ink);font-weight:700;font-size:14px;text-align:center;transition:transform .12s}
 .mbtn:active{transform:scale(.95)}
-.mbtn svg{width:22px;height:22px;flex:none}
+.mbtn svg{width:26px;height:26px;flex:none}
 .mbtn.m-tv svg{color:var(--cool)}.mbtn.m-music svg{color:#fa2d48}.mbtn.m-spotify svg{color:#1db954}.mbtn.m-play svg{color:var(--night)}
 .mbtn.m-radio svg{color:#d6332a}
 .mbtn .ms{display:block;font-size:11px;font-weight:600;color:var(--muted)}
@@ -130,6 +133,16 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .mbtn .mimg{width:34px;height:34px;border-radius:8px;flex:none;object-fit:cover}
 .mbtn.empty{background:none;border:2px dashed var(--line);color:var(--muted);font-weight:600}
 .mbtn.empty svg{color:var(--muted)}
+
+/* --- Consumo --- */
+.energy{grid-column:1/13;display:flex;align-items:center;gap:28px;padding:14px 22px}
+.energy .label{margin:0;flex:none}
+.engrid{flex:1;display:flex;align-items:baseline;gap:32px;flex-wrap:wrap}
+.enbig{font-family:var(--font-big);font-weight:300;font-size:40px;line-height:1}
+.enbig small{font-size:18px;color:var(--muted);margin-left:4px}
+.enk{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.env{font-family:var(--font-big);font-size:22px;font-weight:500}
+.env small{font-size:13px;color:var(--muted);margin-left:2px}
 
 /* --- Por horas --- */
 .hours{grid-column:1/13;padding:14px 22px}
@@ -178,8 +191,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 
 @media (max-width:900px){
   .grid{height:auto;grid-template-rows:none}
-  .top,.ac,.hours,.shortcuts,.list{grid-column:1/-1}
-  .toprow{grid-template-columns:1fr}
+  .top,.ac,.hours,.energy,.shortcuts,.list{grid-column:1/-1}
+  .energy{flex-direction:column;align-items:flex-start;gap:10px}
+  .mdgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
   .modes{grid-template-columns:repeat(auto-fit,minmax(64px,1fr))}
   .hero{grid-template-columns:1fr}
   .hgrid{grid-template-columns:repeat(6,minmax(0,1fr));row-gap:12px}
@@ -205,15 +219,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
     </div>
   </section>
 
-    <div class="toprow">
-  <section class="card media" aria-label="Música y TV">
+    <section class="card media" aria-label="Música y TV">
       <div class="mdgrid" id="mdgrid"></div>
     </section>
-      <section class="card casa" aria-label="Temperatura en casa">
-        <h2 class="label">En casa</h2>
-        <div class="temps" id="temps"><div class="msg">Conectando…</div></div>
-      </section>
-    </div>
   </div>
 
   <section class="card ac">
@@ -222,11 +230,12 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   </section>
 
 
-  <section class="card hours">
-    <h2 class="label">Próximas horas <span class="small" id="updated"></span></h2>
-    <div class="hgrid" id="hours"></div>
-  </section>
 
+
+  <section class="card energy" aria-label="Consumo de los aires">
+    <h2 class="label">Consumo de los aires</h2>
+    <div class="engrid" id="energy"><div class="msg">Buscando el consumo…</div></div>
+  </section>
 
   <section class="card shortcuts">
     <h2 class="label">Accesos directos <button class="small" id="editBtn">Editar</button></h2>
@@ -406,7 +415,7 @@ function renderWeather(w, fromCache){
       <span class="ht num">${Math.round(hr.temperature_2m[i])}°</span>
       <span class="bar" title="Probabilidad de lluvia"><i style="height:${p}%"></i></span><span class="hp num">${p}%</span></div>`;
   }
-  $("hours").innerHTML = hs;
+  if ($("hours")) $("hours").innerHTML = hs;
 
   const hm = s => s.slice(11,16);
   $("facts").innerHTML = `
@@ -417,7 +426,7 @@ function renderWeather(w, fromCache){
 
   renderIndoor();
   const t = new Date(w._at || Date.now());
-  $("updated").textContent = (fromCache ? "Sin conexión · datos de las " : "Actualizado ") + fmtTime.format(t);
+  if ($("updated")) $("updated").textContent = (fromCache ? "Sin conexión · datos de las " : "Actualizado ") + fmtTime.format(t);
 }
 /* ===== Temperatura en casa: la miden los propios aires ===== */
 function renderIndoor(){
@@ -651,16 +660,20 @@ function unitHTML(e){
   const cfg = NIGHT[e.entity_id] && helpers[NIGHT[e.entity_id].helper] ? NIGHT[e.entity_id] : null;
   const night = cfg ? (!off && helpers[cfg.helper] === "on") : (!off && sleep && a.preset_mode === sleep);
   const sub = night
-    ? ["Noche", cfg ? "se apaga a la " + cfg.off : "", a.current_temperature!=null ? fmt1(a.current_temperature)+"° en la sala" : ""].filter(Boolean).join(" · ")
-    : [MODE_TXT[st] || st, a.current_temperature!=null ? fmt1(a.current_temperature)+"° en la sala" : ""].filter(Boolean).join(" · ");
+    ? ["Noche", cfg ? "se apaga a la " + cfg.off : ""].filter(Boolean).join(" · ")
+    : (MODE_TXT[st] || st);
+  const cur = a.current_temperature;
   return `<div class="unit ${off?"is-off":""}" data-e="${esc(e.entity_id)}">
     <div class="uhead">
-      <div><div class="uname">${esc(acName(e))}</div><div class="ustate">${esc(sub)}</div></div>
+      <div><div class="uname">${esc(acName(e))}</div>
+        <div class="ucur num" title="Temperatura de la habitación">${cur!=null ? fmt1(cur)+"°" : "—"}</div>
+        <div class="ustate">${esc(sub)}</div></div>
+      <div class="tgtw"><div class="tgtl">Objetivo</div>
       <div class="tgt" aria-label="Temperatura objetivo">
         <button data-act="minus" aria-label="Bajar temperatura">−</button>
         <span class="tv num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span>
         <button data-act="plus" aria-label="Subir temperatura">+</button>
-      </div>
+      </div></div>
     </div>
     <div class="modes">
       ${modes.map(x => `<button class="mode k-${x.k} ${st===x.m?"on":""}" data-mode="${x.m}">${svg(x.i)}${x.t}</button>`).join("")}
@@ -745,6 +758,90 @@ $("addForm").addEventListener("submit", async e => {
 });
 renderItems();
 
+/* ----- Consumo de los aires: suma de los sensores de potencia y energía de los aires ----- */
+function renderEnergy(states){
+  const box = $("energy"); if (!box) return;
+  const names = climates.map(acName);
+  const isAC = s => {
+    const fn = (s.attributes.friendly_name || "");
+    return /aire|climate|midea/i.test(s.entity_id) || names.some(n => fn.toLowerCase().includes(n.toLowerCase()));
+  };
+  const num = s => { const v = parseFloat(s.state); return isNaN(v) ? null : v; };
+  const unit = s => (s.attributes.unit_of_measurement || "");
+  const sensors = states.filter(s => s.entity_id.startsWith("sensor.") && isAC(s) && num(s) != null);
+  // Midea: «potencia en tiempo real» y «consumo total de energía»; si no, los genéricos (sin el compresor)
+  let power = sensors.filter(s => /potencia_en_tiempo_real|realtime_power/i.test(s.entity_id));
+  if (!power.length) power = sensors.filter(s => (s.attributes.device_class === "power" || /^k?W$/.test(unit(s))) && !/compresor|compressor/i.test(s.entity_id));
+  let energy = sensors.filter(s => /consumo_total_de_energia|total_energy/i.test(s.entity_id));
+  if (!energy.length) energy = sensors.filter(s => s.attributes.device_class === "energy" || /^k?Wh$/.test(unit(s)));
+  // Precio: PVPC de Home Assistant (cambia cada hora) si está; si no, el precio fijo que pongas
+  const pvpc = states.find(s => /pvpc/i.test(s.entity_id) && /€\/kWh|EUR\/kWh/i.test(s.attributes.unit_of_measurement||"") && !isNaN(parseFloat(s.state)));
+  pvpcId = pvpc ? pvpc.entity_id : null;
+  loadToday(energy);
+  if (!power.length && !energy.length){
+    box.innerHTML = '<div class="msg">Tus aires no envían el consumo a Home Assistant.</div>';
+    return;
+  }
+  const W = s => num(s) * (unit(s) === "kW" ? 1000 : 1);
+  const kWh = s => num(s) / (unit(s) === "Wh" ? 1000 : 1);
+  const totalW = power.reduce((a,s) => a + W(s), 0);
+  const totalkWh = energy.reduce((a,s) => a + kWh(s), 0);
+  const price = pvpc ? parseFloat(pvpc.state) * TAX : store.get("kwh_price", 0.15);   // €/kWh con impuestos
+  const eur = v => v.toLocaleString("es-ES", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
+  const perHour = w => eur(w/1000*price);
+  const per = climates.map(c => {
+    const n = acName(c).toLowerCase();
+    const p = power.filter(s => (s.attributes.friendly_name||"").toLowerCase().includes(n));
+    return p.length ? `<div><div class="env num">${perHour(p.reduce((a,s)=>a+W(s),0))}<small>/h</small></div><div class="enk">${esc(acName(c))}</div></div>` : "";
+  }).join("");
+  box.innerHTML = (power.length ? `<div><div class="enbig num">${eur(totalW/1000*price).replace(" €","")}<small>€/h</small></div><div class="enk">Ahora, los dos juntos · ${Math.round(totalW)} W</div></div>` : "") +
+    per +
+    (energy.length && todayKWh != null ? `<div><div class="env num">${eur(pvpc && todayEUR != null ? todayEUR : todayKWh*price)}</div><div class="enk">Hoy · ${fmt1(todayKWh)} kWh</div></div>` : "") +
+    (pvpc
+      ? `<div><div class="env num">${price.toLocaleString("es-ES",{minimumFractionDigits:3,maximumFractionDigits:3})}<small>€/kWh</small></div><div class="enk">PVPC ahora, con impuestos</div></div>`
+      : `<div><button class="small" id="priceBtn" title="Cambiar el precio">${price.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:4})} €/kWh ✎</button><div class="enk">Tu precio de la luz</div></div>`);
+}
+// Impuestos sobre el precio PVPC de Home Assistant: impuesto eléctrico (5,11 %) e IVA (21 %)
+const TAX = 1.0511 * 1.21;
+let pvpcId = null;
+// Consumo de hoy = suma de lo gastado desde las 00:00 (historial de Home Assistant).
+// Con PVPC, cada tramo se multiplica por el precio que tenía la luz en ese momento.
+let todayKWh = null, todayEUR = null, todayAt = 0;
+async function loadToday(energy){
+  if (!energy.length || Date.now() - todayAt < 5*60*1000) return;
+  todayAt = Date.now();
+  try{
+    const d = new Date(); d.setHours(0,0,0,0);
+    const ids = energy.map(s => s.entity_id).concat(pvpcId ? [pvpcId] : []);
+    const h = await api(`/api/history/period/${encodeURIComponent(d.toISOString())}?filter_entity_id=${ids.join(",")}&minimal_response&no_attributes`);
+    const series = (h || []).map(list => list.map(x => ({v: parseFloat(x.state), at: Date.parse(x.last_changed || x.last_updated || d)})).filter(x => !isNaN(x.v)));
+    const idOf = list => (list[0] && list[0].entity_id) || "";
+    let prices = [];
+    (h || []).forEach((list, i) => { if (pvpcId && idOf(list) === pvpcId) prices = series[i]; });
+    const priceAt = ts => { let p = null; for (const x of prices){ if (x.at <= ts) p = x.v; else break; } return (p ?? (prices[0] && prices[0].v) ?? 0) * TAX; };
+    const k = (energy[0].attributes.unit_of_measurement || "kWh") === "Wh" ? 1/1000 : 1;
+    let kwh = 0, eurSum = 0;
+    (h || []).forEach((list, i) => {
+      if (pvpcId && idOf(list) === pvpcId) return;
+      const sr = series[i];
+      for (let j = 1; j < sr.length; j++){
+        const dk = Math.max(0, sr[j].v - sr[j-1].v) * k;
+        kwh += dk; eurSum += dk * priceAt(sr[j].at);
+      }
+    });
+    todayKWh = kwh; todayEUR = pvpcId ? eurSum : null;
+  }catch(e){ todayKWh = null; todayEUR = null; }
+}
+
+$("energy").addEventListener("click", e => {
+  if (!e.target.closest("#priceBtn")) return;
+  const cur = store.get("kwh_price", 0.15);
+  const v = prompt("Precio de la luz en €/kWh (con impuestos). Lo encuentras en tu factura:", String(cur).replace(".", ","));
+  if (v == null) return;
+  const n = parseFloat(v.replace(",", "."));
+  if (!isNaN(n) && n > 0 && n < 2){ store.set("kwh_price", n); refreshHA(); }
+});
+
 /* ----- Ciclo de actualización ----- */
 let loginShown = false;
 function setStatus(t){ $("haStatus").textContent = t; }
@@ -768,6 +865,7 @@ async function refreshHA(){
     todoId = t ? t.entity_id : null;
     if (!Object.keys(pendingT).length) renderACs();
     renderIndoor();
+    renderEnergy(states);
     if (todoId) await loadTodo();
     setStatus("Actualizado " + fmtTime.format(new Date()));
   }catch(err){ handleErr(err); }
