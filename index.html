@@ -113,24 +113,45 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 
 /* --- Música y TV --- */
 .toprow{flex:1;display:grid;grid-template-columns:1.55fr 1fr;gap:14px;min-height:0}
-.media{flex:1;padding:14px 16px;display:flex;flex-direction:column}
+.toprow{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0}
+.media{padding:12px 14px;display:flex;flex-direction:column}
+.atv{display:flex;flex-direction:column;padding:10px 14px;min-width:0}
+.atv .label{margin-bottom:4px}
+.atvbody{flex:1;display:flex;flex-direction:column;gap:6px;min-height:0}
+.nowp{display:flex;gap:12px;align-items:center;min-width:0}
+.art{width:56px;height:56px;border-radius:12px;flex:none;object-fit:cover;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.art svg{width:34px;height:34px}
+.nowt{min-width:0}
+.nowt .tt{font-weight:700;font-size:16px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nowt .st{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nowt .ap{display:inline-block;margin-top:3px;font-size:11.5px;font-weight:700;color:var(--night);background:var(--night-bg);border-radius:6px;padding:2px 7px}
+.prog{height:5px;background:var(--bg);border-radius:4px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--night);border-radius:4px}
+.ptime{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:-4px}
+.ctrls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:auto}
+.ctrls button{height:34px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.ctrls button svg{width:22px;height:22px}
+.ctrls button:active{transform:scale(.94)}
+.ctrls .pp{background:var(--night-bg);color:var(--night)}
+.ctrls .pw.on{color:var(--green)}.ctrls .pw{color:var(--off)}
+.atv.idle .nowp{opacity:.6}
 .casa{display:flex;flex-direction:column;padding:16px 20px}
 .casa .label{margin-bottom:6px}
 .temps{flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:center}
 .tbig{font-family:var(--font-big);font-weight:300;font-size:clamp(34px,3.7vw,48px);line-height:1;letter-spacing:-.02em;white-space:nowrap}
 .tname{font-weight:700;font-size:15px;margin-top:6px}
 .tsub{font-size:12px;color:var(--muted);margin-top:2px}
-.mdgrid{flex:1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:1fr;gap:10px}
-.mbtn{border-radius:14px;background:var(--bg);padding:8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:64px;text-decoration:none;color:var(--ink);font-weight:700;font-size:16px;text-align:center;transition:transform .12s}
+.mdgrid{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;gap:8px}
+.mbtn{border-radius:14px;background:var(--bg);padding:6px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;text-decoration:none;color:var(--ink);font-weight:700;font-size:15px;text-align:center;transition:transform .12s}
 .mbtn:active{transform:scale(.95)}
-.mbtn svg{width:34px;height:34px;flex:none}
+.mbtn svg{width:27px;height:27px;flex:none}
 .mbtn.m-tv svg{color:var(--cool)}.mbtn.m-music svg{color:#fa2d48}.mbtn.m-spotify svg{color:#1db954}.mbtn.m-play svg{color:var(--night)}
 .mbtn.m-radio svg{color:#d6332a}
 .mbtn .ms{display:block;font-size:12px;font-weight:600;color:var(--muted)}
 .mbtn.playing{background:var(--off-bg);box-shadow:inset 0 0 0 2px #d6332a}
 .mbtn.playing svg{animation:pulse 1.4s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.35}}
-.mbtn .mimg{width:44px;height:44px;border-radius:8px;flex:none;object-fit:cover}
+.mbtn .mimg{width:30px;height:30px;border-radius:8px;flex:none;object-fit:cover}
 .mbtn.empty{background:none;border:2px dashed var(--line);color:var(--muted);font-weight:600}
 .mbtn.empty svg{color:var(--muted)}
 
@@ -221,7 +242,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 @media (max-width:900px){
   .grid{height:auto;grid-template-rows:none}
   .top,.ac,.hours,.energy,.prices,.shortcuts,.list{grid-column:1/-1}
-  .mdgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .toprow{grid-template-columns:1fr}
   .modes{grid-template-columns:repeat(auto-fit,minmax(64px,1fr))}
   .hero{grid-template-columns:1fr}
   .hgrid{grid-template-columns:repeat(6,minmax(0,1fr));row-gap:12px}
@@ -247,9 +268,15 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
     </div>
   </section>
 
-    <section class="card media" aria-label="Música y TV">
-      <div class="mdgrid" id="mdgrid"></div>
-    </section>
+    <div class="toprow">
+      <section class="card media" aria-label="Música y TV">
+        <div class="mdgrid" id="mdgrid"></div>
+      </section>
+      <section class="card atv" aria-label="Apple TV">
+        <h2 class="label">Apple TV <span class="small" id="atvState"></span></h2>
+        <div id="atv" class="atvbody"><div class="msg">Buscando el Apple TV…</div></div>
+      </section>
+    </div>
   </div>
 
   <section class="card ac">
@@ -366,6 +393,11 @@ const I = {
   spotify:'<circle cx="12" cy="12" r="9.5"/><path d="M7.5 9.5c3-1 6.5-.7 9.2.8M8 12.6c2.5-.7 5.3-.4 7.4.8M8.6 15.4c2-.5 4-.3 5.6.6"/>',
   radio:'<circle cx="12" cy="9" r="1.6" fill="currentColor"/><path d="M12 10.6 8.5 21M12 10.6 15.5 21M9.6 17.5h4.8M8.2 5.8a4.5 4.5 0 0 0 0 6.4M15.8 5.8a4.5 4.5 0 0 1 0 6.4M5.4 3a8.5 8.5 0 0 0 0 12M18.6 3a8.5 8.5 0 0 1 0 12"/>',
   stop:'<path d="M7 7h10v10H7z"/>',
+  prev:'<path d="M18 6v12l-9-6zM7 6v12"/>',
+  next:'<path d="M6 6v12l9-6zM17 6v12"/>',
+  pause:'<path d="M8 5v14M16 5v14"/>',
+  volup:'<path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/>',
+  voldn:'<path d="M4 9v6h4l5 4V5L8 9zM16 12h5"/>',
   play:'<path d="M7 4.5v15l12-7.5z"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
   music:'<path d="M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>',
@@ -520,9 +552,9 @@ function renderMedia(){
     if (!(b.t && b.a)) return `<button class="mbtn empty" data-empty="1">${svg("plus")}<span>Vacío</span></button>`;
     if (/^radio:/i.test(b.a)){
       const url = b.a.slice(6), on = playing === url;
-      const sub = on ? "Sonando" : (radioErr === url ? "Sin señal, reintenta" : "En directo");
+      const sub = on ? "Sonando" : (radioErr === url ? "Sin señal" : "");
       const ico = (b.img === "noticias" && !on) ? `<img class="mimg" src="${IMG_NOTICIAS}" alt="">` : svg(on?"stop":"radio");
-      return `<button class="mbtn m-radio ${on?"playing":""}" data-radio="${esc(url)}">${ico}<span>${esc(b.t)}<span class="ms">${sub}</span></span></button>`;
+      return `<button class="mbtn m-radio ${on?"playing":""}" data-radio="${esc(url)}">${ico}<span>${esc(b.t)}${sub ? `<span class="ms">${sub}</span>` : ""}</span></button>`;
     }
     return `<a class="mbtn m-${mediaIcon(b)}" href="${esc(hrefFor(b.a))}">${svg(mediaIcon(b))}<span>${esc(b.t)}</span></a>`;
   }).join("");
@@ -984,6 +1016,54 @@ function renderPrices(states){
   $("pnow").textContent = P[now] != null ? "Ahora " + f(P[now]) + " €/kWh" : "";
 }
 
+/* ----- Apple TV: lo que se está reproduciendo y mandos (integración Apple TV de Home Assistant) ----- */
+let atvId = null, atvSt = null;
+const fmtT = s => { s = Math.max(0, Math.round(s)); const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60;
+  return (h ? h + ":" + String(m).padStart(2,"0") : m) + ":" + String(x).padStart(2,"0"); };
+function renderATV(states){
+  const box = $("atv"); if (!box) return;
+  const tv = states.find(s => s.entity_id.startsWith("media_player.") && /apple ?tv/i.test(s.entity_id + " " + (s.attributes.friendly_name||"") + " " + (s.attributes.model||"")))
+          || states.find(s => s.entity_id.startsWith("media_player.") && s.attributes.app_id !== undefined);
+  if (!tv){
+    box.innerHTML = '<div class="msg">Añade el Apple TV en Home Assistant (Configuración → Dispositivos y servicios) para verlo aquí.</div>';
+    $("atvState").textContent = ""; atvId = null; return;
+  }
+  atvId = tv.entity_id; atvSt = tv;
+  const a = tv.attributes, st = tv.state;
+  const ST = {playing:"Reproduciendo", paused:"En pausa", idle:"En reposo", standby:"Apagado", off:"Apagado", on:"Encendido", unavailable:"Sin conexión"};
+  $("atvState").textContent = ST[st] || st;
+  const active = st === "playing" || st === "paused";
+  document.querySelector(".atv").classList.toggle("idle", !active);
+  const title = active ? (a.media_title || a.app_name || "Reproduciendo") : (st === "standby" || st === "off" ? "Apple TV apagado" : "Nada en reproducción");
+  const sub = active ? [a.media_series_title, a.media_season != null && a.media_episode != null ? `T${a.media_season} · E${a.media_episode}` : "", a.media_artist, a.media_album_name].filter(Boolean).join(" · ") : "";
+  const art = active && a.entity_picture ? `<img class="art" src="${esc(a.entity_picture)}" alt="">` : `<div class="art">${svg("tv")}</div>`;
+  let pos = a.media_position;
+  if (st === "playing" && pos != null && a.media_position_updated_at) pos += (Date.now() - Date.parse(a.media_position_updated_at)) / 1000;
+  const dur = a.media_duration;
+  const prog = active && dur ? `<div class="prog"><i style="width:${Math.min(100, (pos||0)/dur*100)}%"></i></div>` : "";
+  const times = active && dur ? ` · ${fmtT(pos||0)} / ${fmtT(dur)}` : "";
+  const off = st === "standby" || st === "off";
+  box.innerHTML = `<div class="nowp">${art}<div class="nowt"><div class="tt">${esc(title)}</div>
+      ${sub ? `<div class="st">${esc(sub)}</div>` : ""}
+      ${active && a.app_name ? `<span class="ap">${esc(a.app_name)}</span>` : ""}<span class="st" style="display:inline;margin-left:6px">${times.replace(/^ · /,"")}</span></div></div>
+    ${prog}
+    <div class="ctrls">
+      <button data-tv="media_previous_track" aria-label="Anterior">${svg("prev")}</button>
+      <button class="pp" data-tv="media_play_pause" aria-label="Reproducir o pausar">${svg(st === "playing" ? "pause" : "play")}</button>
+      <button data-tv="media_next_track" aria-label="Siguiente">${svg("next")}</button>
+      <button data-tv="volume_down" aria-label="Bajar volumen">${svg("voldn")}</button>
+      <button data-tv="volume_up" aria-label="Subir volumen">${svg("volup")}</button>
+      <button class="pw ${off?"":"on"}" data-tv="${off ? "turn_on" : "turn_off"}" aria-label="Encender o apagar">${svg("power")}</button>
+    </div>`;
+}
+$("atv").addEventListener("click", async e => {
+  const b = e.target.closest("[data-tv]"); if (!b || !atvId) return;
+  b.style.opacity = .5;
+  try{ await api("/api/services/media_player/" + b.dataset.tv, {entity_id: atvId}); }catch(err){ handleErr(err); }
+  setTimeout(refreshHA, 800);
+});
+setInterval(() => { if (atvSt && atvSt.state === "playing") renderATV([atvSt]); }, 1000);   // avanza la barra
+
 /* ----- Ciclo de actualización ----- */
 let loginShown = false;
 function setStatus(t){ const el = $("haStatus"); if (el) el.textContent = /^Actualizado/.test(t) ? "" : t; }
@@ -1009,6 +1089,7 @@ async function refreshHA(){
     renderIndoor();
     renderEnergy(states);
     renderPrices(states);
+    renderATV(states);
     if (todoId) await loadTodo();
     setStatus("Actualizado " + fmtTime.format(new Date()));
   }catch(err){ handleErr(err); }
