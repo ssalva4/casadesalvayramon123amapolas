@@ -64,8 +64,35 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .day svg{width:28px;height:28px;display:block;margin:4px auto}
 
 /* --- Aire --- */
-.ac{grid-column:9/13;display:flex;flex-direction:column}
-.acgrid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ac{grid-column:9/13;display:flex;flex-direction:column;gap:10px}
+.acs{display:flex;flex-direction:column;gap:10px;flex:1}
+.unit{background:var(--bg);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.uhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.uname{font-weight:700;font-size:17px}
+.ustate{font-size:13px;color:var(--muted);margin-top:2px}
+.tgt{display:flex;align-items:center;gap:4px}
+.tgt button{width:40px;height:40px;border-radius:12px;background:var(--card);font-size:22px;font-weight:600;line-height:1}
+.tgt button:active{transform:scale(.94)}
+.tgt .tv{font-family:var(--font-big);font-size:26px;min-width:64px;text-align:center}
+.unit.is-off .tgt{opacity:.35;pointer-events:none}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px}
+.mode{border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:13px;font-weight:600;color:var(--muted);background:var(--card);transition:transform .12s}
+.mode svg{width:20px;height:20px}
+.mode:active{transform:scale(.95)}
+.mode:not(.on){background:var(--card)}
+.mode:not(.on) svg{color:var(--muted)}
+.mode.on{color:var(--ink);box-shadow:inset 0 0 0 2px currentColor}
+.mode.on.k-cool{color:var(--cool)}.mode.on.k-warm{color:var(--warm)}.mode.on.k-night{color:var(--night)}.mode.on.k-dry{color:var(--dry)}.mode.on.k-off{color:var(--off)}
+.mode.on.k-cool{background:var(--cool-bg)}.mode.on.k-cool svg{color:var(--cool)}
+.mode.on.k-warm{background:var(--warm-bg)}.mode.on.k-warm svg{color:var(--warm)}
+.mode.on.k-night{background:var(--night-bg)}.mode.on.k-night svg{color:var(--night)}
+.mode.on.k-dry{background:var(--dry-bg)}.mode.on.k-dry svg{color:var(--dry)}
+.mode.on.k-off{background:var(--off-bg)}.mode.on.k-off svg{color:var(--off)}
+.mode.busy{opacity:.55}
+.msg{font-size:14px;color:var(--muted);line-height:1.5}
+.msg a,.msg button.link{color:var(--cool);font-weight:700;text-decoration:underline}
+.panel textarea{width:100%;font:inherit;font-size:14px;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-height:70px;-webkit-user-select:text;user-select:text}
+.panel details{margin-top:12px;font-size:14px;color:var(--muted)}
 .btn{border-radius:16px;padding:12px 14px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:6px;min-height:68px;
   text-decoration:none;color:var(--ink);transition:transform .12s ease,filter .12s}
 .btn:active{transform:scale(.96);filter:brightness(.95)}
@@ -126,6 +153,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 @media (max-width:900px){
   .grid{height:auto;grid-template-rows:none}
   .hero,.ac,.hours,.facts,.shortcuts,.list{grid-column:1/-1}
+  .modes{grid-template-columns:repeat(auto-fit,minmax(64px,1fr))}
   .hero{grid-template-columns:1fr}
   .hgrid{grid-template-columns:repeat(6,minmax(0,1fr));row-gap:12px}
   .scgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -143,14 +171,14 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
       <div class="date" id="date"></div>
     </div>
     <div>
-      <div class="now" id="now"><div class="d">Cargando el tiempo de Pontevedra…</div></div>
+      <div class="now" id="now"><div class="d">Cargando el tiempo de Vigo…</div></div>
       <div class="days" id="days"></div>
     </div>
   </section>
 
   <section class="card ac">
-    <h2 class="label">Aire acondicionado <button class="small" id="editBtn">Editar botones</button></h2>
-    <div class="acgrid" id="acgrid"></div>
+    <h2 class="label">Aire acondicionado <span class="small" id="haStatus">Conectando…</span></h2>
+    <div class="acs" id="acs"><div class="msg">Conectando con Home Assistant…</div></div>
   </section>
 
   <section class="card hours">
@@ -158,10 +186,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
     <div class="hgrid" id="hours"></div>
   </section>
 
-  <section class="card facts" id="facts"></section>
+  <section class="card facts" id="facts">
+    <div class="fact"><div class="fv num" id="inA">—</div><div class="fk" id="inAk">En casa</div></div>
+    <div class="fact"><div class="fv num" id="inB">—</div><div class="fk" id="inBk">En casa</div></div>
+  </section>
 
   <section class="card shortcuts">
-    <h2 class="label">Accesos directos</h2>
+    <h2 class="label">Accesos directos <button class="small" id="editBtn">Editar</button></h2>
     <div class="scgrid" id="scgrid"></div>
   </section>
 
@@ -178,12 +209,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 
 <div class="sheet" id="sheet" hidden>
   <div class="panel" role="dialog" aria-labelledby="sheetTitle">
-    <h2 id="sheetTitle">Editar botones</h2>
-    <p>Cada botón abre un atajo de la app Atajos. Escribe a la izquierda el texto del botón y a la derecha el nombre exacto del atajo. También puedes poner una dirección que empiece por https:// o por un esquema de app.</p>
-    <div class="sec">Aire acondicionado</div>
-    <div id="acRows"></div>
-    <button class="small" id="addAc">+ Añadir botón del aire</button>
-    <div class="sec">Accesos directos</div>
+    <h2 id="sheetTitle">Editar accesos directos</h2>
+    <p>Cada botón abre un atajo de la app Atajos. Escribe a la izquierda el texto del botón y a la derecha el nombre exacto del atajo. También puedes poner una dirección que empiece por https:// o por un esquema de app. Los aires ya no necesitan atajos: van directos por Home Assistant.</p>
     <div id="scRows"></div>
     <button class="small" id="addSc">+ Añadir acceso</button>
     <div class="pactions">
@@ -194,18 +221,20 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   </div>
 </div>
 
+<div class="sheet" id="loginSheet" hidden>
+  <div class="panel" role="dialog" aria-labelledby="loginTitle">
+    <h2 id="loginTitle">Conectar con Home Assistant</h2>
+    <div id="loginBody"></div>
+  </div>
+</div>
+
 <script>
 /* ===== Configuración ===== */
-const LAT = 42.4310, LON = -8.6444, PLACE = "Pontevedra";
+const LAT = 42.2406, LON = -8.7207, PLACE = "Vigo";
+// Dirección de Home Assistant en casa (para avisar si el panel se abre desde otro sitio)
+const HA_LAN = "http://192.168.1.131";
+const PANEL_PATH = "/local/panel.html";
 
-// k = color del botón: cool, warm, night, dry, off, green
-const DEFAULT_AC = [
-  {t:"Frío 24°",  s:"Refrescar",        a:"Aire frío 24",   k:"cool",  i:"snow"},
-  {t:"Calor 22°", s:"Calentar",         a:"Aire calor 22",  k:"warm",  i:"flame"},
-  {t:"Noche",     s:"Silencioso",       a:"Aire noche",     k:"night", i:"moon"},
-  {t:"Secar",     s:"Deshumidificar",   a:"Aire secar",     k:"dry",   i:"drop"},
-  {t:"Apagar aire", s:"",               a:"Apagar aire",    k:"off",   i:"power", wide:true}
-];
 const DEFAULT_SC = [
   {t:"Buenas noches", s:"Atajo",  a:"Buenas noches", i:"moon"},
   {t:"Salgo de casa", s:"Atajo",  a:"Salgo de casa", i:"door"},
@@ -327,8 +356,8 @@ function renderWeather(w, fromCache){
 
   const hm = s => s.slice(11,16);
   $("facts").innerHTML = `
-    <div class="fact"><div class="fv num" id="inT">—</div><div class="fk">Temperatura en casa</div></div>
-    <div class="fact"><div class="fv num" id="inH">—</div><div class="fk">Humedad en casa</div></div>
+    <div class="fact"><div class="fv num" id="inA">—</div><div class="fk" id="inAk">En casa</div></div>
+    <div class="fact"><div class="fv num" id="inB">—</div><div class="fk" id="inBk">En casa</div></div>
     <div class="fact"><div class="fv num">${Math.round(c.apparent_temperature)}°</div><div class="fk">Sensación térmica</div></div>
     <div class="fact"><div class="fv num">${c.relative_humidity_2m}%</div><div class="fk">Humedad fuera</div></div>
     <div class="fact"><div class="fv num">${Math.round(c.wind_speed_10m)} km/h</div><div class="fk">Viento</div></div>
@@ -338,29 +367,17 @@ function renderWeather(w, fromCache){
   const t = new Date(w._at || Date.now());
   $("updated").textContent = (fromCache ? "Sin conexión · datos de las " : "Actualizado ") + fmtTime.format(t);
 }
-/* ===== Sensor de casa =====
-   Un atajo lee el sensor en la app Casa y abre este panel con ?t=21.5&h=55 */
-(function readIndoorFromURL(){
-  const q = new URLSearchParams(location.search);
-  const t = parseFloat((q.get("t")||"").replace(",", ".")), h = parseFloat((q.get("h")||"").replace(",", "."));
-  if (!isNaN(t) || !isNaN(h)) {
-    store.set("indoor", {t: isNaN(t)?null:t, h: isNaN(h)?null:h, at: Date.now()});
-    try{ history.replaceState(null, "", location.pathname); }catch(e){}
-  }
-})();
+/* ===== Temperatura en casa: la miden los propios aires ===== */
 function renderIndoor(){
-  const v = store.get("indoor", null), T = $("inT"), H = $("inH");
-  if (!T || !v) return;
-  const mins = Math.round((Date.now() - v.at)/60000);
-  const old = mins > 180;
-  T.textContent = v.t!=null ? v.t.toFixed(1).replace(".", ",")+"°" : "—";
-  H.textContent = v.h!=null ? Math.round(v.h)+"%" : "—";
-  const age = mins < 1 ? "ahora" : mins < 60 ? `hace ${mins} min` : `hace ${Math.round(mins/60)} h`;
-  T.nextElementSibling.textContent = "En casa · " + age;
-  H.nextElementSibling.textContent = "Humedad en casa";
-  T.style.opacity = H.style.opacity = old ? .5 : 1;
+  const slots = [["inA","inAk"],["inB","inBk"]];
+  slots.forEach(([v,k], i) => {
+    const V = $(v), K = $(k); if (!V) return;
+    const e = climates[i];
+    const t = e && e.attributes.current_temperature;
+    V.textContent = (t != null) ? fmt1(t)+"°" : "—";
+    K.textContent = e ? acName(e) + " ahora" : "En casa";
+  });
 }
-setInterval(renderIndoor, 60000);
 
 async function loadWeather(){
   try{
@@ -377,80 +394,266 @@ async function loadWeather(){
 loadWeather(); setInterval(loadWeather, 15*60*1000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) { tick(); loadWeather(); } });
 
-/* ===== Botones ===== */
-let AC = store.get("ac", DEFAULT_AC), SC = store.get("sc", DEFAULT_SC);
+/* ===== Accesos directos ===== */
+let SC = store.get("sc", DEFAULT_SC);
 function btnHTML(b, cls){
   return `<a class="btn ${cls||""} ${b.k?"k-"+b.k:""} ${b.wide?"wide":""}" href="${esc(hrefFor(b.a))}">${svg(b.i)}<span><div class="bt">${esc(b.t)}</div>${b.s?`<div class="bs">${esc(b.s)}</div>`:""}</span></a>`;
 }
 function renderButtons(){
-  $("acgrid").innerHTML = AC.map(b => btnHTML(b)).join("");
   $("scgrid").innerHTML = SC.map(b => btnHTML(b)).join("");
 }
 renderButtons();
 
-/* ===== Editor de botones ===== */
-function rowHTML(b, idx, kind){
-  return `<div class="row" data-kind="${kind}" data-i="${idx}">
+/* ===== Editor de accesos ===== */
+function rowHTML(b, idx){
+  return `<div class="row" data-i="${idx}">
     <input value="${esc(b.t)}" aria-label="Texto del botón" placeholder="Texto del botón">
     <input value="${esc(b.a)}" aria-label="Nombre del atajo o dirección" placeholder="Nombre del atajo">
     <button type="button" aria-label="Quitar">Quitar</button></div>`;
 }
-let draftAC, draftSC;
-function readRows(){
-  const pick = (kind, base) => [...document.querySelectorAll(`.row[data-kind="${kind}"]`)].map((r,i) => {
+let draftSC;
+function readRowsKeepEmpty(){
+  return [...document.querySelectorAll("#scRows .row")].map((r,i) => {
     const [t,a] = r.querySelectorAll("input");
-    return Object.assign({}, base[i] || {k: kind==="ac"?"cool":undefined, i: kind==="ac"?"snow":"star"}, {t:t.value.trim(), a:a.value.trim()});
-  }).filter(b => b.t && b.a);
-  return {ac: pick("ac", draftAC), sc: pick("sc", draftSC)};
+    return Object.assign({i:"star"}, draftSC[i]||{}, {t:t.value, a:a.value});
+  });
 }
-function drawRows(){
-  $("acRows").innerHTML = draftAC.map((b,i)=>rowHTML(b,i,"ac")).join("");
-  $("scRows").innerHTML = draftSC.map((b,i)=>rowHTML(b,i,"sc")).join("");
-}
-$("editBtn").onclick = () => { draftAC = AC.map(x=>({...x})); draftSC = SC.map(x=>({...x})); drawRows(); $("sheet").hidden = false; };
+function drawRows(){ $("scRows").innerHTML = draftSC.map((b,i)=>rowHTML(b,i)).join(""); }
+$("editBtn").onclick = () => { draftSC = SC.map(x=>({...x})); drawRows(); $("sheet").hidden = false; };
 $("sheet").addEventListener("click", e => {
   const row = e.target.closest(".row");
   if (row && e.target.tagName === "BUTTON"){
-    const cur = readRowsKeepEmpty();
-    const list = row.dataset.kind === "ac" ? cur.ac : cur.sc;
-    list.splice(+row.dataset.i, 1);
-    draftAC = cur.ac; draftSC = cur.sc; drawRows();
+    draftSC = readRowsKeepEmpty(); draftSC.splice(+row.dataset.i, 1); drawRows();
   }
   if (e.target === $("sheet")) $("sheet").hidden = true;
 });
-function readRowsKeepEmpty(){
-  const pick = (kind, base) => [...document.querySelectorAll(`.row[data-kind="${kind}"]`)].map((r,i) => {
-    const [t,a] = r.querySelectorAll("input"); return Object.assign({}, base[i]||{}, {t:t.value, a:a.value});
-  });
-  return {ac: pick("ac", draftAC), sc: pick("sc", draftSC)};
-}
-$("addAc").onclick = () => { const c = readRowsKeepEmpty(); draftAC = c.ac; draftSC = c.sc; draftAC.push({t:"",a:"",k:"cool",i:"snow"}); drawRows(); };
-$("addSc").onclick = () => { const c = readRowsKeepEmpty(); draftAC = c.ac; draftSC = c.sc; draftSC.push({t:"",a:"",i:"star"}); drawRows(); };
+$("addSc").onclick = () => { draftSC = readRowsKeepEmpty(); draftSC.push({t:"",a:"",i:"star"}); drawRows(); };
 $("cancelBtn").onclick = () => { $("sheet").hidden = true; };
-$("resetBtn").onclick = () => { draftAC = DEFAULT_AC.map(x=>({...x})); draftSC = DEFAULT_SC.map(x=>({...x})); drawRows(); };
+$("resetBtn").onclick = () => { draftSC = DEFAULT_SC.map(x=>({...x})); drawRows(); };
 $("saveBtn").onclick = () => {
-  const r = readRows();
-  AC = r.ac; SC = r.sc; store.set("ac", AC); store.set("sc", SC);
-  renderButtons(); $("sheet").hidden = true;
+  SC = readRowsKeepEmpty().map(b => ({...b, t:b.t.trim(), a:b.a.trim()})).filter(b => b.t && b.a);
+  store.set("sc", SC); renderButtons(); $("sheet").hidden = true;
 };
 
-/* ===== Lista de la compra ===== */
-let items = store.get("compra", ["Leche","Pan","Fruta"]);
+/* ===== Home Assistant =====
+   El panel se sirve desde el propio Home Assistant (carpeta www → /local/panel.html),
+   así que habla con él en la misma dirección. El inicio de sesión es el de Home Assistant;
+   el panel guarda en este iPad solo el permiso de acceso, nunca la contraseña. */
+const HA = location.origin;
+const CLIENT_ID = HA + "/";
+const REDIRECT = HA + location.pathname;
+const onHA = location.protocol === "http:" || /:8123$/.test(location.host);
+let auth = store.get("ha_auth", null);   // {access, expires, refresh} o {llat}
+let climates = [];
+const fmt1 = n => (Math.round(n*10)/10).toFixed(1).replace(".", ",");
+const acName = e => (e.attributes.friendly_name || e.entity_id).replace(/^aire( acondicionado)?\s*/i, "").replace(/^./, c => c.toUpperCase()) || "Aire";
+
+async function tokenRequest(params){
+  const r = await fetch(HA + "/auth/token", {method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body: new URLSearchParams({...params, client_id: CLIENT_ID})});
+  if (!r.ok) throw new Error("auth " + r.status);
+  return r.json();
+}
+async function getToken(){
+  if (!auth) throw new Error("login");
+  if (auth.llat) return auth.llat;
+  if (auth.access && auth.expires > Date.now() + 60000) return auth.access;
+  if (!auth.refresh) throw new Error("login");
+  const t = await tokenRequest({grant_type:"refresh_token", refresh_token: auth.refresh});
+  auth.access = t.access_token; auth.expires = Date.now() + t.expires_in*1000;
+  store.set("ha_auth", auth); return auth.access;
+}
+async function api(path, body){
+  for (let attempt = 0; attempt < 2; attempt++){
+    const tok = await getToken();
+    const r = await fetch(HA + path, {method: body ? "POST" : "GET",
+      headers:{"Authorization":"Bearer " + tok, "Content-Type":"application/json"},
+      body: body ? JSON.stringify(body) : undefined, cache:"no-store"});
+    if (r.status === 401){
+      if (auth && auth.llat){ throw new Error("login"); }
+      if (auth) auth.expires = 0; continue;
+    }
+    if (!r.ok) throw new Error("HA " + r.status);
+    const txt = await r.text(); return txt ? JSON.parse(txt) : null;
+  }
+  throw new Error("login");
+}
+function login(){
+  location.href = HA + "/auth/authorize?response_type=code&client_id=" + encodeURIComponent(CLIENT_ID) +
+    "&redirect_uri=" + encodeURIComponent(REDIRECT) + "&state=panel";
+}
+async function finishLoginFromURL(){
+  const q = new URLSearchParams(location.search);
+  const code = q.get("code"); if (!code) return;
+  try{ history.replaceState(null, "", location.pathname); }catch(e){}
+  try{
+    const t = await tokenRequest({grant_type:"authorization_code", code});
+    auth = {access:t.access_token, expires:Date.now()+t.expires_in*1000, refresh:t.refresh_token};
+    store.set("ha_auth", auth);
+  }catch(e){ auth = null; }
+}
+function showLogin(reason){
+  const body = $("loginBody");
+  if (!onHA){
+    body.innerHTML = `<p>Este panel tiene que abrirse desde Home Assistant, en la red de casa:</p>
+      <p><a href="${HA_LAN + PANEL_PATH}" style="color:var(--cool);font-weight:700">${HA_LAN + PANEL_PATH}</a></p>
+      <p>Ábrelo en Safari con el iPad conectado al wifi de casa y añádelo a la pantalla de inicio desde allí.</p>
+      <div class="pactions"><button id="loginClose">Seguir sin aires</button></div>`;
+  } else {
+    body.innerHTML = `<p>${reason || "Para controlar los aires, el panel necesita entrar en Home Assistant una vez. Usa tu usuario de Home Assistant; el panel no guarda tu contraseña."}</p>
+      <div class="pactions"><button id="loginClose">Ahora no</button><button class="primary" id="loginGo">Iniciar sesión en Home Assistant</button></div>
+      <details><summary>Otra forma: pegar un token</summary>
+        <p style="margin-top:8px">En Home Assistant: tu perfil → Seguridad → Tokens de acceso de larga duración → Crear. Pégalo aquí:</p>
+        <textarea id="llat" placeholder="eyJ…"></textarea>
+        <div class="pactions"><button class="primary" id="llatSave">Guardar token</button></div>
+      </details>`;
+    $("loginGo").onclick = login;
+    $("llatSave").onclick = () => {
+      const v = $("llat").value.trim(); if (!v) return;
+      auth = {llat: v}; store.set("ha_auth", auth); $("loginSheet").hidden = true; refreshHA();
+    };
+  }
+  $("loginClose").onclick = () => { $("loginSheet").hidden = true; };
+  $("loginSheet").hidden = false;
+}
+
+/* ----- Aires ----- */
+const MODES = [
+  {m:"cool", t:"Frío",  k:"cool", i:"snow"},
+  {m:"heat", t:"Calor", k:"warm", i:"flame"},
+  {m:"dry",  t:"Secar", k:"dry",  i:"drop"},
+  {m:"fan_only", t:"Ventilar", k:"night", i:"cloud"},
+  {m:"auto", t:"Auto",  k:"cool", i:"star"},
+  {m:"off",  t:"Apagar", k:"off", i:"power"}
+];
+const MODE_TXT = {cool:"Frío", heat:"Calor", dry:"Secar", fan_only:"Ventilador", auto:"Automático", heat_cool:"Automático", off:"Apagado", unavailable:"Sin conexión", unknown:"—"};
+const SHOWN = ["cool","heat","dry","off"];   // modos que salen como botón
+const pendingT = {};      // temperatura elegida y aún no enviada
+const timers = {};
+
+function unitHTML(e){
+  const a = e.attributes, st = e.state;
+  const off = st === "off" || st === "unavailable";
+  const tgt = pendingT[e.entity_id] ?? a.temperature;
+  const modes = MODES.filter(x => SHOWN.includes(x.m) && (a.hvac_modes||SHOWN).includes(x.m));
+  const sleep = (a.preset_modes||[]).find(p => /sleep|noche/i.test(p));
+  const sub = [MODE_TXT[st] || st, a.current_temperature!=null ? fmt1(a.current_temperature)+"° en la sala" : ""].filter(Boolean).join(" · ");
+  return `<div class="unit ${off?"is-off":""}" data-e="${esc(e.entity_id)}">
+    <div class="uhead">
+      <div><div class="uname">${esc(acName(e))}</div><div class="ustate">${esc(sub)}</div></div>
+      <div class="tgt" aria-label="Temperatura objetivo">
+        <button data-act="minus" aria-label="Bajar temperatura">−</button>
+        <span class="tv num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span>
+        <button data-act="plus" aria-label="Subir temperatura">+</button>
+      </div>
+    </div>
+    <div class="modes">
+      ${modes.map(x => `<button class="mode k-${x.k} ${st===x.m?"on":""}" data-mode="${x.m}">${svg(x.i)}${x.t}</button>`).join("")}
+      ${sleep ? `<button class="mode k-night ${a.preset_mode===sleep?"on":""}" data-preset="${esc(sleep)}">${svg("moon")}Noche</button>` : ""}
+    </div>
+  </div>`;
+}
+function renderACs(){
+  if (!climates.length){ $("acs").innerHTML = '<div class="msg">No encuentro aires en Home Assistant.</div>'; return; }
+  $("acs").innerHTML = climates.map(unitHTML).join("");
+}
+$("acs").addEventListener("click", async ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  if (b.classList.contains("link")){ showLogin(); return; }
+  const u = b.closest(".unit"); if (!u) return;
+  const id = u.dataset.e, e = climates.find(c => c.entity_id === id); if (!e) return;
+  const a = e.attributes;
+  if (b.dataset.act){
+    const step = a.target_temp_step || 0.5;
+    let t = (pendingT[id] ?? a.temperature ?? 22) + (b.dataset.act === "plus" ? step : -step);
+    t = Math.min(a.max_temp ?? 30, Math.max(a.min_temp ?? 16, t));
+    pendingT[id] = t; u.querySelector(".tv").textContent = fmt1(t)+"°";
+    clearTimeout(timers[id]);
+    timers[id] = setTimeout(async () => {
+      try{ await api("/api/services/climate/set_temperature", {entity_id:id, temperature:t}); }
+      catch(err){ handleErr(err); }
+      delete pendingT[id]; setTimeout(refreshHA, 1200);
+    }, 800);
+    return;
+  }
+  b.classList.add("busy");
+  try{
+    if (b.dataset.mode){
+      await api("/api/services/climate/set_hvac_mode", {entity_id:id, hvac_mode:b.dataset.mode});
+      e.state = b.dataset.mode;
+    } else if (b.dataset.preset){
+      const on = a.preset_mode === b.dataset.preset;
+      const other = (a.preset_modes||[]).find(p => /^(none|normal|comfort)$/i.test(p)) || "none";
+      await api("/api/services/climate/set_preset_mode", {entity_id:id, preset_mode: on ? other : b.dataset.preset});
+    }
+    renderACs(); setTimeout(refreshHA, 1200);
+  }catch(err){ b.classList.remove("busy"); handleErr(err); }
+});
+
+/* ----- Lista de la compra: la de Home Assistant si existe (compartida con los móviles) ----- */
+let todoId = null, items = store.get("compra", ["Leche","Pan","Fruta"]);
 function renderItems(){
   $("items").innerHTML = items.length
     ? items.map((t,i)=>`<button class="chip" data-i="${i}">${esc(t)}</button>`).join("")
     : '<div class="empty">Lista vacía. Escribe abajo para añadir.</div>';
 }
-$("items").addEventListener("click", e => {
+async function loadTodo(){
+  if (!todoId) return;
+  const r = await api("/api/services/todo/get_items?return_response", {entity_id: todoId, status: "needs_action"});
+  const resp = (r && (r.service_response || r)) || {};
+  const list = (resp[todoId] && resp[todoId].items) || [];
+  items = list.map(x => x.summary); renderItems();
+}
+$("items").addEventListener("click", async e => {
   const b = e.target.closest(".chip"); if (!b) return;
-  items.splice(+b.dataset.i,1); store.set("compra", items); renderItems();
+  const t = items[+b.dataset.i];
+  items.splice(+b.dataset.i,1); renderItems();
+  if (todoId){ try{ await api("/api/services/todo/remove_item", {entity_id: todoId, item: t}); }catch(err){ handleErr(err); } }
+  else store.set("compra", items);
 });
-$("addForm").addEventListener("submit", e => {
+$("addForm").addEventListener("submit", async e => {
   e.preventDefault();
   const v = $("newItem").value.trim(); if (!v) return;
-  items.push(v); store.set("compra", items); $("newItem").value = ""; $("newItem").blur(); renderItems();
+  items.push(v); $("newItem").value = ""; $("newItem").blur(); renderItems();
+  if (todoId){ try{ await api("/api/services/todo/add_item", {entity_id: todoId, item: v}); }catch(err){ handleErr(err); } }
+  else store.set("compra", items);
 });
 renderItems();
+
+/* ----- Ciclo de actualización ----- */
+let loginShown = false;
+function setStatus(t){ $("haStatus").textContent = t; }
+function handleErr(err){
+  if (String(err && err.message) === "login"){
+    setStatus("Sin conectar");
+    $("acs").innerHTML = '<div class="msg">El panel aún no está conectado a Home Assistant. <button class="link">Conectar</button></div>';
+    if (!loginShown){ loginShown = true; showLogin(); }
+  } else {
+    setStatus("Sin conexión con Home Assistant");
+  }
+}
+async function refreshHA(){
+  try{
+    const states = await api("/api/states");
+    climates = states.filter(s => s.entity_id.startsWith("climate."))
+      .sort((x,y) => acName(x).localeCompare(acName(y), "es"));
+    const todos = states.filter(s => s.entity_id.startsWith("todo."));
+    const t = todos.find(s => /compra|shopping/i.test(s.entity_id + " " + (s.attributes.friendly_name||""))) || null;
+    todoId = t ? t.entity_id : null;
+    if (!Object.keys(pendingT).length) renderACs();
+    renderIndoor();
+    if (todoId) await loadTodo();
+    setStatus("Actualizado " + fmtTime.format(new Date()));
+  }catch(err){ handleErr(err); }
+}
+(async () => {
+  if (!onHA){ handleErr(new Error("login")); return; }
+  await finishLoginFromURL();
+  refreshHA();
+  setInterval(refreshHA, 15000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshHA(); });
+})();
 
 /* ===== Pantalla siempre encendida (si el navegador lo permite) ===== */
 let lock = null;
