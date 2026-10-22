@@ -74,7 +74,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .tgt button{width:40px;height:40px;border-radius:12px;background:var(--card);font-size:22px;font-weight:600;line-height:1}
 .tgt button:active{transform:scale(.94)}
 .tgt .tv{font-family:var(--font-big);font-size:26px;min-width:64px;text-align:center}
-.unit.is-off .tgt{opacity:.35;pointer-events:none}
+.unit.is-off .tgt,.unit.is-off [data-night]{opacity:.35;pointer-events:none}
 .modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px}
 .mode{border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:13px;font-weight:600;color:var(--muted);background:var(--card);transition:transform .12s}
 .mode svg{width:20px;height:20px}
@@ -530,9 +530,10 @@ const MODES = [
 const MODE_TXT = {cool:"Frío", heat:"Calor", dry:"Secar", fan_only:"Ventilador", auto:"Automático", heat_cool:"Automático", off:"Apagado", unavailable:"Sin conexión", unknown:"—"};
 const SHOWN = ["cool","heat","dry","off"];   // modos que salen como botón
 const pendingT = {};      // temperatura elegida y aún no enviada
-const holdPreset = {};    // modo Noche recién pulsado, mientras el aire lo confirma
-// Aires cuyo modo Noche tiene apagado programado (lo hace una automatización de Home Assistant)
-const NIGHT_OFF = {"climate.aire_salon": "01:00"};
+// Modo Noche guardado en un interruptor de Home Assistant (el aire no avisa de su modo Noche).
+// La automatización de Home Assistant apaga el aire a esa hora si el interruptor está encendido.
+const NIGHT = {"climate.aire_salon": {helper: "input_boolean.noche_salon", off: "01:00"}};
+let helpers = {};         // estado de los interruptores input_boolean.*
 const timers = {};
 
 function unitHTML(e){
@@ -541,11 +542,10 @@ function unitHTML(e){
   const tgt = pendingT[e.entity_id] ?? a.temperature;
   const modes = MODES.filter(x => SHOWN.includes(x.m) && (a.hvac_modes||SHOWN).includes(x.m));
   const sleep = (a.preset_modes||[]).find(p => /sleep|noche/i.test(p));
-  const hp = holdPreset[e.entity_id];
-  if (hp && hp.until > Date.now()) a.preset_mode = hp.v; else delete holdPreset[e.entity_id];
-  const night = !off && sleep && a.preset_mode === sleep;
+  const cfg = NIGHT[e.entity_id] && helpers[NIGHT[e.entity_id].helper] ? NIGHT[e.entity_id] : null;
+  const night = cfg ? (!off && helpers[cfg.helper] === "on") : (!off && sleep && a.preset_mode === sleep);
   const sub = night
-    ? ["Noche", NIGHT_OFF[e.entity_id] ? "se apaga a la " + NIGHT_OFF[e.entity_id] : "", a.current_temperature!=null ? fmt1(a.current_temperature)+"° en la sala" : ""].filter(Boolean).join(" · ")
+    ? ["Noche", cfg ? "se apaga a la " + cfg.off : "", a.current_temperature!=null ? fmt1(a.current_temperature)+"° en la sala" : ""].filter(Boolean).join(" · ")
     : [MODE_TXT[st] || st, a.current_temperature!=null ? fmt1(a.current_temperature)+"° en la sala" : ""].filter(Boolean).join(" · ");
   return `<div class="unit ${off?"is-off":""}" data-e="${esc(e.entity_id)}">
     <div class="uhead">
@@ -558,7 +558,7 @@ function unitHTML(e){
     </div>
     <div class="modes">
       ${modes.map(x => `<button class="mode k-${x.k} ${st===x.m?"on":""}" data-mode="${x.m}">${svg(x.i)}${x.t}</button>`).join("")}
-      ${sleep ? `<button class="mode k-night ${night?"on":""}" data-preset="${esc(sleep)}">${svg("moon")}Noche</button>` : ""}
+      ${(sleep || cfg) ? `<button class="mode k-night ${night?"on":""}" data-night="1">${svg("moon")}Noche</button>` : ""}
     </div>
   </div>`;
 }
@@ -590,12 +590,20 @@ $("acs").addEventListener("click", async ev => {
     if (b.dataset.mode){
       await api("/api/services/climate/set_hvac_mode", {entity_id:id, hvac_mode:b.dataset.mode});
       e.state = b.dataset.mode;
-    } else if (b.dataset.preset){
-      const on = a.preset_mode === b.dataset.preset;
+    } else if (b.dataset.night){
+      const sleep = (a.preset_modes||[]).find(p => /sleep|noche/i.test(p));
       const other = (a.preset_modes||[]).find(p => /^(none|normal|comfort)$/i.test(p)) || "none";
-      const next = on ? other : b.dataset.preset;
-      await api("/api/services/climate/set_preset_mode", {entity_id:id, preset_mode: next});
-      a.preset_mode = next; holdPreset[id] = {v: next, until: Date.now() + 20000};
+      const cfg = NIGHT[id] && helpers[NIGHT[id].helper] ? NIGHT[id] : null;
+      const on = b.classList.contains("on");
+      if (cfg){
+        await api("/api/services/input_boolean/" + (on ? "turn_off" : "turn_on"), {entity_id: cfg.helper});
+        helpers[cfg.helper] = on ? "off" : "on";
+      }
+      if (sleep && e.state !== "off"){
+        try{ await api("/api/services/climate/set_preset_mode", {entity_id:id, preset_mode: on ? other : sleep}); }
+        catch(err){ if (!cfg) throw err; }
+        a.preset_mode = on ? other : sleep;
+      }
     }
     renderACs(); setTimeout(refreshHA, 1200);
   }catch(err){ b.classList.remove("busy"); handleErr(err); }
@@ -646,6 +654,7 @@ function handleErr(err){
 async function refreshHA(){
   try{
     const states = await api("/api/states");
+    helpers = Object.fromEntries(states.filter(s => s.entity_id.startsWith("input_boolean.")).map(s => [s.entity_id, s.state]));
     climates = states.filter(s => s.entity_id.startsWith("climate."))
       .sort((x,y) => acName(x).localeCompare(acName(y), "es"));
     const todos = states.filter(s => s.entity_id.startsWith("todo."));
