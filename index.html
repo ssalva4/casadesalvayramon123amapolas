@@ -135,8 +135,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .mbtn.empty svg{color:var(--muted)}
 
 /* --- Consumo --- */
-.energy{grid-column:1/13;display:flex;align-items:center;gap:28px;padding:14px 22px}
-.energy .label{margin:0;flex:none}
+.energy{grid-column:1/13;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:14px 22px}
+.energy .label{margin:0}
 .engrid{flex:1;display:flex;align-items:baseline;gap:32px;flex-wrap:wrap}
 .enbig{font-family:var(--font-big);font-weight:300;font-size:40px;line-height:1}
 .enbig small{font-size:18px;color:var(--muted);margin-left:4px}
@@ -192,7 +192,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 @media (max-width:900px){
   .grid{height:auto;grid-template-rows:none}
   .top,.ac,.hours,.energy,.shortcuts,.list{grid-column:1/-1}
-  .energy{flex-direction:column;align-items:flex-start;gap:10px}
   .mdgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
   .modes{grid-template-columns:repeat(auto-fit,minmax(64px,1fr))}
   .hero{grid-template-columns:1fr}
