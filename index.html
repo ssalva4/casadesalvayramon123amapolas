@@ -135,6 +135,16 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .ctrls .pp{background:var(--night-bg);color:var(--night)}
 .ctrls .pw.on{color:var(--green)}.ctrls .pw{color:var(--off)}
 .atv.idle .nowp{opacity:.6}
+.tele{display:flex;flex-direction:column;gap:6px;padding:10px 12px;min-width:0}
+.chans{display:flex;gap:6px;align-items:center;min-width:0}
+.chlist button{flex:none;font-size:12.5px;font-weight:700;padding:5px 9px;border-radius:999px;background:var(--bg);color:var(--muted)}
+.chlist button.on{background:var(--navy);color:var(--on-navy)}
+.tclose{position:absolute;top:6px;right:6px;z-index:2;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:15px;font-weight:700}
+.screen{flex:1;min-height:96px;border-radius:12px;overflow:hidden;background:#0b0d14;position:relative;display:flex;align-items:center;justify-content:center}
+.screen video,.screen iframe{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:contain;background:#000}
+.screen .poster{display:flex;flex-direction:column;align-items:center;gap:6px;color:#e9ebf3;font-weight:700;font-size:15px}
+.screen .poster svg{width:38px;height:38px;color:#fff;background:rgba(255,255,255,.14);border-radius:50%;padding:9px}
+.screen .poster small{font-weight:500;color:#9aa2bd;font-size:12px}
 .casa{display:flex;flex-direction:column;padding:16px 20px}
 .casa .label{margin-bottom:6px}
 .temps{flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:center}
@@ -209,6 +219,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 
 /* --- Accesos + compra --- */
 .shortcuts{grid-column:1/9;display:flex;flex-direction:column;min-height:0}
+.videos{grid-column:1/9;display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0}
+.vlab{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:4px;flex:none}
+.chlist{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none}
+.chlist::-webkit-scrollbar{display:none}
+.chans .small{margin-left:auto}
 .scgrid{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-content:start}
 .scgrid .btn{background:var(--bg);flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;min-height:46px;padding:8px 10px}
 .scgrid .btn .bs{display:none}
@@ -241,7 +256,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 
 @media (max-width:900px){
   .grid{height:auto;grid-template-rows:none}
-  .top,.ac,.hours,.energy,.prices,.shortcuts,.list{grid-column:1/-1}
+  .top,.ac,.hours,.energy,.prices,.shortcuts,.videos,.list{grid-column:1/-1}
+  .videos{grid-template-columns:1fr}
+  .screen{min-height:200px}
   .toprow{grid-template-columns:1fr}
   .modes{grid-template-columns:repeat(auto-fit,minmax(64px,1fr))}
   .hero{grid-template-columns:1fr}
@@ -300,10 +317,18 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
     <div id="prices"><div class="msg">Cargando precios…</div></div>
   </section>
 
-  <section class="card shortcuts">
-    <h2 class="label">Accesos directos <button class="small" id="editBtn">Editar</button></h2>
-    <div class="scgrid" id="scgrid"></div>
-  </section>
+  <div class="videos">
+    <section class="card tele" aria-label="RTVE en directo">
+      <div class="chans"><span class="vlab">RTVE</span><div class="chlist" id="chans"></div></div>
+      <div class="screen" id="screen"></div>
+    </section>
+    <section class="card tele" aria-label="YouTube">
+      <div class="chans"><span class="vlab">YouTube</span><button class="small" id="ytChange">Cambiar vídeo</button></div>
+      <div class="screen" id="ytscreen"></div>
+    </section>
+  </div>
+  <button id="editBtn" hidden></button>
+  <div id="scgrid" hidden></div>
 
   <section class="card list">
     <h2 class="label">Lista de la compra <span class="small">toca para quitar</span></h2>
@@ -319,12 +344,10 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 <div class="sheet" id="sheet" hidden>
   <div class="panel" role="dialog" aria-labelledby="sheetTitle">
     <h2 id="sheetTitle">Editar botones</h2>
-    <p>Cada botón abre un atajo de la app Atajos. Escribe a la izquierda el texto del botón y a la derecha el nombre exacto del atajo. También puedes poner una dirección que empiece por https:// o por un esquema de app. Los aires ya no necesitan atajos: van directos por Home Assistant.</p>
-    <div class="sec">Música y TV (los huecos vacíos se quedan como «Vacío»)</div>
+    <p>A la izquierda, el texto del botón. A la derecha, qué abre: el nombre de un atajo de la app Atajos, una dirección que empiece por https://, una app (por ejemplo spotify:) o una emisora con «radio:» delante de la dirección del directo. Deja vacíos los huecos que no uses.</p>
     <div id="mdRows"></div>
-    <div class="sec">Accesos directos</div>
-    <div id="scRows"></div>
-    <button class="small" id="addSc">+ Añadir acceso</button>
+    <div id="scRows" hidden></div>
+    <button class="small" id="addSc" hidden>+ Añadir acceso</button>
     <div class="pactions">
       <button id="resetBtn">Volver a los de ejemplo</button>
       <button id="cancelBtn">Cancelar</button>
@@ -567,7 +590,7 @@ $("mdgrid").addEventListener("click", async e => {
   const r = e.target.closest("[data-radio]"); if (!r) return;
   const url = r.dataset.radio;
   if (playing === url){ stopRadio(); return; }
-  radioErr = null; playing = url; player.src = url; renderMedia();
+  stopTele(); radioErr = null; playing = url; player.src = url; renderMedia();
   try{ await player.play(); }catch(err){ radioErr = url; stopRadio(); }
 });
 
@@ -1056,13 +1079,74 @@ function renderATV(states){
       <button class="pw ${off?"":"on"}" data-tv="${off ? "turn_on" : "turn_off"}" aria-label="Encender o apagar">${svg("power")}</button>
     </div>`;
 }
-$("atv").addEventListener("click", async e => {
+if ($("atv")) $("atv").addEventListener("click", async e => {
   const b = e.target.closest("[data-tv]"); if (!b || !atvId) return;
   b.style.opacity = .5;
   try{ await api("/api/services/media_player/" + b.dataset.tv, {entity_id: atvId}); }catch(err){ handleErr(err); }
   setTimeout(refreshHA, 800);
 });
 setInterval(() => { if (atvSt && atvSt.state === "playing") renderATV([atvSt]); }, 1000);   // avanza la barra
+
+/* ----- RTVE en directo y YouTube, dentro del panel ----- */
+const RTVE = "https://rtvelivestream.rtve.es/rtvesec/";
+const CHANNELS = [
+  {k:"24h",  t:"24h",         u: RTVE + "24h/24h_main_dvr.m3u8"},
+  {k:"la1",  t:"La 1",        u: RTVE + "la1/la1_main_dvr.m3u8"},
+  {k:"la2",  t:"La 2",        u: RTVE + "la2/la2_main_dvr.m3u8"},
+  {k:"tdp",  t:"Teledeporte", u: RTVE + "tdp/tdp_main.m3u8"},
+  {k:"clan", t:"Clan",        u: RTVE + "clan/clan_main_dvr.m3u8"}
+];
+const STOPBTN = `<button class="tclose" data-stop="1" aria-label="Parar">✕</button>`;
+let teleCh = store.get("tele_ch", "24h"); if (!CHANNELS.some(c => c.k === teleCh)) teleCh = "24h";
+let teleOn = false, ytOn = false;
+function ytId(s){
+  const m = String(s||"").match(/(?:youtu\.be\/|v=|\/live\/|\/shorts\/|\/embed\/)([A-Za-z0-9_-]{11})/) || String(s||"").match(/^([A-Za-z0-9_-]{11})$/);
+  return m ? m[1] : null;
+}
+const poster = (t, s) => `<button class="poster" data-play="1">${svg("play")}<span>${t}</span><small>${s}</small></button>`;
+function renderTele(msg){
+  const c = CHANNELS.find(x => x.k === teleCh);
+  $("chans").innerHTML = CHANNELS.map(x => `<button class="${x.k===c.k?"on":""}" data-ch="${x.k}">${x.t}</button>`).join("");
+  const sc = $("screen");
+  if (!teleOn){ sc.innerHTML = poster("Ver " + c.t, msg || "En directo"); return; }
+  sc.innerHTML = `<video src="${c.u}" playsinline controls autoplay></video>` + STOPBTN;
+  const v = sc.querySelector("video");
+  v.play().catch(() => {});
+  v.addEventListener("error", () => { teleOn = false; renderTele("Sin señal ahora mismo. Toca para reintentar"); });
+}
+function renderYT(){
+  const id = ytId(store.get("tele_yt", "")), sc = $("ytscreen");
+  if (!ytOn || !id){ sc.innerHTML = id ? poster("Ver vídeo", "YouTube") : poster("Elegir vídeo", "Toca para pegar un enlace de YouTube"); return; }
+  sc.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="YouTube"></iframe>` + STOPBTN;
+}
+function stopTele(){ if (teleOn){ teleOn = false; renderTele(); } if (ytOn){ ytOn = false; renderYT(); } }
+function askYouTube(){
+  const v = prompt("Pega el enlace de un vídeo o directo de YouTube:", store.get("tele_yt", ""));
+  if (v == null) return false;
+  if (!ytId(v)){ alert("No reconozco ese enlace de YouTube."); return false; }
+  store.set("tele_yt", v.trim()); return true;
+}
+$("chans").addEventListener("click", e => {
+  const b = e.target.closest("[data-ch]"); if (!b) return;
+  teleCh = b.dataset.ch; store.set("tele_ch", teleCh); renderTele();
+});
+$("screen").addEventListener("click", e => {
+  if (e.target.closest("[data-stop]")){ teleOn = false; renderTele(); return; }
+  if (!e.target.closest("[data-play]")) return;
+  if (playing) stopRadio();
+  if (ytOn){ ytOn = false; renderYT(); }
+  teleOn = true; renderTele();
+});
+$("ytscreen").addEventListener("click", e => {
+  if (e.target.closest("[data-stop]")){ ytOn = false; renderYT(); return; }
+  if (!e.target.closest("[data-play]")) return;
+  if (!ytId(store.get("tele_yt", "")) && !askYouTube()) return;
+  if (playing) stopRadio();
+  if (teleOn){ teleOn = false; renderTele(); }
+  ytOn = true; renderYT();
+});
+$("ytChange").addEventListener("click", () => { if (askYouTube()){ renderYT(); } });
+renderTele(); renderYT();
 
 /* ----- Ciclo de actualización ----- */
 let loginShown = false;
