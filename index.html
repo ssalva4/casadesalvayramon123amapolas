@@ -67,10 +67,10 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 /* --- Aire --- */
 .ac{grid-column:9/13;display:flex;flex-direction:column;gap:10px}
 .acs{display:flex;flex-direction:column;gap:10px;flex:1}
-.unit{background:var(--bg);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.unit{background:var(--bg);border-radius:16px;padding:10px 14px;display:flex;flex-direction:column;gap:8px}
 .uhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .uname{font-weight:700;font-size:16px}
-.ucur{font-family:var(--font-big);font-weight:300;font-size:44px;line-height:1;letter-spacing:-.02em;margin-top:2px}
+.ucur{font-family:var(--font-big);font-weight:300;font-size:38px;line-height:1;letter-spacing:-.02em;margin-top:2px}
 .tgtl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:4px}
 .tgtw{display:flex;flex-direction:column;align-items:center}
 .ustate{font-size:13px;color:var(--muted);margin-top:2px}
@@ -80,7 +80,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .tgt .tv{font-family:var(--font-big);font-size:26px;min-width:64px;text-align:center}
 .unit.is-off .tgtw,.unit.is-off [data-night]{opacity:.35;pointer-events:none}
 .modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px}
-.mode{border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:13px;font-weight:600;color:var(--muted);background:var(--card);transition:transform .12s}
+.mode{border-radius:12px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:13px;font-weight:600;color:var(--muted);background:var(--card);transition:transform .12s}
 .mode svg{width:20px;height:20px}
 .mode:active{transform:scale(.95)}
 .mode:not(.on){background:var(--card)}
@@ -135,14 +135,32 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .mbtn.empty svg{color:var(--muted)}
 
 /* --- Consumo --- */
-.energy{grid-column:1/8;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:14px 22px}
+.energy{grid-column:1/8;display:flex;flex-direction:column;gap:8px;padding:14px 20px}
 .energy .label{margin:0}
-.engrid{flex:1;display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
-.enbig{font-family:var(--font-big);font-weight:300;font-size:40px;line-height:1}
-.enbig small{font-size:18px;color:var(--muted);margin-left:4px}
-.enk{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
-.env{font-family:var(--font-big);font-size:22px;font-weight:500}
-.env small{font-size:13px;color:var(--muted);margin-left:2px}
+.small:empty{display:none}
+.enwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px;align-items:end}
+.ennow{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.enbig{font-family:var(--font-big);font-weight:300;font-size:36px;line-height:1}
+.enbig small{font-size:15px;color:var(--muted);margin-left:3px}
+.enk{font-size:11.5px;color:var(--muted);font-weight:600}
+.entab{margin-top:6px;display:grid;grid-template-columns:auto auto 1fr;gap:3px 12px;align-items:baseline;font-size:14px}
+.entab .n{color:var(--muted);font-weight:600}
+.entab .e{font-family:var(--font-big);font-weight:600;font-size:17px;text-align:right;font-variant-numeric:tabular-nums}
+.entab .k{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.entab .tot{border-top:1px solid var(--line);padding-top:3px}
+.entab .tot.n{color:var(--ink);font-weight:700}
+.months{min-width:0}
+.mscroll{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 25px)/6);gap:5px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.mscroll::-webkit-scrollbar{display:none}
+.mcol{display:flex;flex-direction:column;align-items:center;gap:3px}
+.mcol.snap{scroll-snap-align:start}
+.mcol .mv{font-size:10.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mcol .mb{width:70%;height:58px;display:flex;align-items:flex-end;background:var(--bg);border-radius:6px;overflow:hidden}
+.mcol .mb i{display:block;width:100%;background:var(--cool);border-radius:6px;min-height:2px}
+.mcol.cur .mb i{background:var(--warm)}
+.mcol.cur .mv{color:var(--ink)}
+.mcol .ml{font-size:11px;font-weight:600;color:var(--muted)}
+.mhint{font-size:10.5px;color:var(--muted);text-align:right;margin-top:2px}
 
 /* --- Precio de la luz por horas --- */
 .prices{grid-column:8/13;display:flex;flex-direction:column;gap:8px;padding:14px 22px}
@@ -242,8 +260,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 
 
   <section class="card energy" aria-label="Consumo de los aires">
-    <h2 class="label">Consumo de los aires</h2>
-    <div class="engrid" id="energy"><div class="msg">Buscando el consumo…</div></div>
+    <h2 class="label">Consumo de los aires <span class="small" id="enPrice"></span></h2>
+    <div class="enwrap">
+      <div id="energy"><div class="msg">Buscando el consumo…</div></div>
+      <div class="months"><div class="mscroll" id="months"></div><div class="mhint" id="mhint"></div></div>
+    </div>
   </section>
 
   <section class="card prices" aria-label="Precio de la luz por horas">
@@ -797,23 +818,98 @@ function renderEnergy(states){
     return;
   }
   const W = s => num(s) * (unit(s) === "kW" ? 1000 : 1);
-  const kWh = s => num(s) / (unit(s) === "Wh" ? 1000 : 1);
   const totalW = power.reduce((a,s) => a + W(s), 0);
-  const totalkWh = energy.reduce((a,s) => a + kWh(s), 0);
   const price = pvpc ? parseFloat(pvpc.state) * TAX : store.get("kwh_price", 0.15);   // €/kWh con impuestos
-  const eur = v => v.toLocaleString("es-ES", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
-  const perHour = w => eur(w/1000*price);
-  const per = climates.map(c => {
+  curPrice = price;
+  loadYear(energy);
+  const kwh = v => (v >= 100 ? Math.round(v) : fmt1(v)) + " kWh";
+  const todayTxt = todayKWh != null ? ` · hoy ${eur(pvpc && todayEUR != null ? todayEUR : todayKWh*price)}` : "";
+  // Acumulado del año: por aire y total
+  const rows = climates.map(c => {
     const n = acName(c).toLowerCase();
-    const p = power.filter(s => (s.attributes.friendly_name||"").toLowerCase().includes(n));
-    return p.length ? `<div><div class="env num">${perHour(p.reduce((a,s)=>a+W(s),0))}<small>/h</small></div><div class="enk">${esc(acName(c))}</div></div>` : "";
+    const ids = energy.filter(s => (s.attributes.friendly_name||"").toLowerCase().includes(n)).map(s => s.entity_id);
+    const y = yearOf(ids);
+    return `<span class="n">${esc(acName(c))}</span><span class="e">${y ? eur(y.eur) : "—"}</span><span class="k">${y ? kwh(y.kwh) : ""}</span>`;
   }).join("");
-  box.innerHTML = (power.length ? `<div><div class="enbig num">${eur(totalW/1000*price).replace(" €","")}<small>€/h</small></div><div class="enk">Ahora, los dos juntos · ${Math.round(totalW)} W</div></div>` : "") +
-    per +
-    (energy.length && todayKWh != null ? `<div><div class="env num">${eur(pvpc && todayEUR != null ? todayEUR : todayKWh*price)}</div><div class="enk">Hoy · ${fmt1(todayKWh)} kWh</div></div>` : "") +
-    (pvpc
-      ? ""
-      : `<div><button class="small" id="priceBtn" title="Cambiar el precio">${price.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:4})} €/kWh ✎</button><div class="enk">Tu precio de la luz</div></div>`);
+  const all = yearOf(energy.map(s => s.entity_id));
+  box.innerHTML = `
+    <div class="ennow">${power.length ? `<div class="enbig num">${eur(totalW/1000*price).replace(" €","")}<small>€/h</small></div>
+      <div class="enk">ahora · ${Math.round(totalW)} W${todayTxt}</div>` : ""}</div>
+    <div class="entab">${rows}
+      <span class="n tot">Total ${new Date().getFullYear()}</span><span class="e tot">${all ? eur(all.eur) : "—"}</span><span class="k tot">${all ? kwh(all.kwh) : ""}</span>
+    </div>`;
+  $("enPrice").innerHTML = pvpc ? "" : `<button id="priceBtn" style="font:inherit;color:inherit">${price.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:4})} €/kWh ✎</button>`;
+  renderMonths(energy.map(s => s.entity_id));
+}
+const eur = v => v.toLocaleString("es-ES", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
+let curPrice = 0.15;
+
+/* ----- Consumo por meses del año (estadísticas de Home Assistant, por WebSocket) ----- */
+let wsSeq = 1;
+async function wsCall(msg){
+  const tok = await getToken();
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(HA.replace(/^http/, "ws") + "/api/websocket");
+    const id = wsSeq++;
+    const done = (fn, v) => { try{ ws.close(); }catch(e){} fn(v); };
+    const timer = setTimeout(() => done(reject, new Error("timeout")), 20000);
+    ws.onmessage = ev => {
+      const m = JSON.parse(ev.data);
+      if (m.type === "auth_required") ws.send(JSON.stringify({type:"auth", access_token: tok}));
+      else if (m.type === "auth_ok") ws.send(JSON.stringify({...msg, id}));
+      else if (m.type === "auth_invalid"){ clearTimeout(timer); done(reject, new Error("login")); }
+      else if (m.id === id){ clearTimeout(timer); m.success ? done(resolve, m.result) : done(reject, new Error("ws")); }
+    };
+    ws.onerror = () => { clearTimeout(timer); done(reject, new Error("ws")); };
+  });
+}
+// year[entity_id] = [{kwh, eur} × 12]
+let year = {}, yearAt = 0;
+function yearOf(ids){
+  if (!ids.length || !ids.some(id => year[id])) return null;
+  let k = 0, e = 0;
+  ids.forEach(id => (year[id] || []).forEach(m => { k += m.kwh; e += m.eur; }));
+  return {kwh:k, eur:e};
+}
+async function loadYear(energy){
+  if (!energy.length || Date.now() - yearAt < 30*60*1000) return;
+  yearAt = Date.now();
+  try{
+    const y0 = new Date(new Date().getFullYear(), 0, 1);
+    const ids = energy.map(s => s.entity_id);
+    const r = await wsCall({type:"recorder/statistics_during_period", start_time: y0.toISOString(),
+      period:"hour", statistic_ids: ids.concat(pvpcId ? [pvpcId] : []), types:["change","mean"], units:{energy:"kWh"}});
+    const ts = x => typeof x.start === "number" ? x.start : Date.parse(x.start);
+    const prices = new Map();
+    ((pvpcId && r[pvpcId]) || []).forEach(x => { if (x.mean != null) prices.set(ts(x), x.mean * TAX); });
+    const fixed = store.get("kwh_price", 0.15);
+    const out = {};
+    ids.forEach(id => {
+      const m = [...Array(12)].map(() => ({kwh:0, eur:0}));
+      (r[id] || []).forEach(x => {
+        const c = Math.max(0, x.change || 0); if (!c) return;
+        const t0 = ts(x), mo = new Date(t0).getMonth();
+        const p = prices.get(t0) ?? (pvpcId ? curPrice : fixed);
+        m[mo].kwh += c; m[mo].eur += c * p;
+      });
+      out[id] = m;
+    });
+    year = out;
+    refreshHA();
+  }catch(e){ yearAt = Date.now() - 25*60*1000; }   // reintenta en 5 minutos
+}
+const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+let monthsScrolled = false;
+function renderMonths(ids){
+  const box = $("months"); if (!box) return;
+  const tot = MESES.map((_, i) => ids.reduce((a, id) => a + ((year[id] && year[id][i].eur) || 0), 0));
+  const mx = Math.max(...tot, 0.01), cur = new Date().getMonth();
+  box.innerHTML = tot.map((v, i) => `<div class="mcol ${i===cur?"cur":""} ${i%6===0?"snap":""}">
+      <span class="mv">${v > 0 ? (v >= 10 ? Math.round(v) : v.toFixed(1).replace(".", ",")) + " €" : "—"}</span>
+      <span class="mb"><i style="height:${Math.round(v/mx*100)}%"></i></span>
+      <span class="ml">${MESES[i]}</span></div>`).join("");
+  $("mhint").textContent = cur >= 6 ? "◀ desliza para ver ene–jun" : "desliza para ver jul–dic ▶";
+  if (!monthsScrolled && cur >= 6){ box.scrollLeft = box.scrollWidth; monthsScrolled = true; }
 }
 // Impuestos sobre el precio PVPC de Home Assistant: impuesto eléctrico (5,11 %) e IVA (21 %)
 const TAX = 1.0511 * 1.21;
@@ -847,7 +943,11 @@ async function loadToday(energy){
   }catch(e){ todayKWh = null; todayEUR = null; }
 }
 
-$("energy").addEventListener("click", e => {
+$("months").addEventListener("scroll", () => {
+  const b = $("months"), right = b.scrollLeft > b.scrollWidth/4;
+  $("mhint").textContent = right ? "◀ desliza para ver ene–jun" : "desliza para ver jul–dic ▶";
+});
+document.querySelector(".energy").addEventListener("click", e => {
   if (!e.target.closest("#priceBtn")) return;
   const cur = store.get("kwh_price", 0.15);
   const v = prompt("Precio de la luz en €/kWh (con impuestos). Lo encuentras en tu factura:", String(cur).replace(".", ","));
