@@ -219,7 +219,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 
 /* --- Accesos + compra --- */
 .shortcuts{grid-column:1/9;display:flex;flex-direction:column;min-height:0}
-.videos{grid-column:1/7;display:grid;grid-template-columns:1fr;gap:14px;min-height:0}
+.videos{grid-column:1/7;display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0}
+.spare{display:flex;align-items:center;justify-content:center;border:2px dashed var(--line);background:none;color:var(--muted);font-weight:600;font-size:14px}
 .vlab{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:4px;flex:none}
 .chlist{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none}
 .chlist::-webkit-scrollbar{display:none}
@@ -322,6 +323,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
       <div class="chans"><span class="vlab">YouTube</span><button class="small" id="ytChange">Cambiar vídeo</button></div>
       <div class="screen" id="ytscreen"></div>
     </section>
+    <section class="card spare" aria-label="Hueco libre">Hueco libre</section>
   </div>
   <button id="editBtn" hidden></button>
   <div id="scgrid" hidden></div>
