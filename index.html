@@ -135,14 +135,24 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .mbtn.empty svg{color:var(--muted)}
 
 /* --- Consumo --- */
-.energy{grid-column:1/13;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:14px 22px}
+.energy{grid-column:1/8;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:14px 22px}
 .energy .label{margin:0}
-.engrid{flex:1;display:flex;align-items:baseline;gap:32px;flex-wrap:wrap}
+.engrid{flex:1;display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
 .enbig{font-family:var(--font-big);font-weight:300;font-size:40px;line-height:1}
 .enbig small{font-size:18px;color:var(--muted);margin-left:4px}
 .enk{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
 .env{font-family:var(--font-big);font-size:22px;font-weight:500}
 .env small{font-size:13px;color:var(--muted);margin-left:2px}
+
+/* --- Precio de la luz por horas --- */
+.prices{grid-column:8/13;display:flex;flex-direction:column;gap:8px;padding:14px 22px}
+.prices .label{margin:0}
+.strip{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:2px;height:30px}
+.strip i{border-radius:4px;position:relative}
+.strip i.now{outline:2.5px solid var(--ink);outline-offset:1px;z-index:1}
+.sthrs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));font-size:11px;color:var(--muted);font-weight:600}
+.pinfo{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.pinfo b{color:var(--ink);font-weight:700}
 
 /* --- Por horas --- */
 .hours{grid-column:1/13;padding:14px 22px}
@@ -191,7 +201,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 
 @media (max-width:900px){
   .grid{height:auto;grid-template-rows:none}
-  .top,.ac,.hours,.energy,.shortcuts,.list{grid-column:1/-1}
+  .top,.ac,.hours,.energy,.prices,.shortcuts,.list{grid-column:1/-1}
   .mdgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
   .modes{grid-template-columns:repeat(auto-fit,minmax(64px,1fr))}
   .hero{grid-template-columns:1fr}
@@ -234,6 +244,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   <section class="card energy" aria-label="Consumo de los aires">
     <h2 class="label">Consumo de los aires</h2>
     <div class="engrid" id="energy"><div class="msg">Buscando el consumo…</div></div>
+  </section>
+
+  <section class="card prices" aria-label="Precio de la luz por horas">
+    <h2 class="label">Precio de la luz hoy <span class="small" id="pnow"></span></h2>
+    <div id="prices"><div class="msg">Cargando precios…</div></div>
   </section>
 
   <section class="card shortcuts">
@@ -797,7 +812,7 @@ function renderEnergy(states){
     per +
     (energy.length && todayKWh != null ? `<div><div class="env num">${eur(pvpc && todayEUR != null ? todayEUR : todayKWh*price)}</div><div class="enk">Hoy · ${fmt1(todayKWh)} kWh</div></div>` : "") +
     (pvpc
-      ? `<div><div class="env num">${price.toLocaleString("es-ES",{minimumFractionDigits:3,maximumFractionDigits:3})}<small>€/kWh</small></div><div class="enk">PVPC ahora, con impuestos</div></div>`
+      ? ""
       : `<div><button class="small" id="priceBtn" title="Cambiar el precio">${price.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:4})} €/kWh ✎</button><div class="enk">Tu precio de la luz</div></div>`);
 }
 // Impuestos sobre el precio PVPC de Home Assistant: impuesto eléctrico (5,11 %) e IVA (21 %)
@@ -841,6 +856,32 @@ $("energy").addEventListener("click", e => {
   if (!isNaN(n) && n > 0 && n < 2){ store.set("kwh_price", n); refreshHA(); }
 });
 
+/* ----- Franja de precios PVPC (atributos price_00h … price_23h de la integración PVPC) ----- */
+function renderPrices(states){
+  const box = $("prices"); if (!box) return;
+  const s = states.find(x => /pvpc/i.test(x.entity_id) && x.attributes && x.attributes.price_00h != null);
+  if (!s){
+    box.innerHTML = '<div class="msg">Añade en Home Assistant la integración «Precio de la luz en España (PVPC)» para ver aquí las horas baratas y caras.</div>';
+    $("pnow").textContent = ""; return;
+  }
+  const P = [...Array(24)].map((_,h) => { const v = parseFloat(s.attributes["price_" + String(h).padStart(2,"0") + "h"]); return isNaN(v) ? null : v * TAX; });
+  const vals = P.filter(v => v != null);
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  const now = new Date().getHours();
+  const color = v => { if (v == null) return "var(--line)"; const r = mx > mn ? (v - mn) / (mx - mn) : 0; return `hsl(${Math.round(130 - 130*r)} 62% 50%)`; };
+  const f = v => v.toLocaleString("es-ES", {minimumFractionDigits:3, maximumFractionDigits:3});
+  const hMin = P.indexOf(mn), hMax = P.indexOf(mx);
+  // próxima hora barata (tercio más barato) a partir de ahora
+  const cheapLimit = mn + (mx - mn) / 3;
+  let next = -1; for (let h = now; h < 24; h++){ if (P[h] != null && P[h] <= cheapLimit){ next = h; break; } }
+  box.innerHTML = `<div class="strip">${P.map((v,h) => `<i class="${h===now?"now":""}" style="background:${color(v)}" title="${String(h).padStart(2,"0")}h · ${v!=null?f(v)+" €/kWh":"—"}"></i>`).join("")}</div>
+    <div class="sthrs">${[0,3,6,9,12,15,18,21].map(h => `<span>${String(h).padStart(2,"0")}h</span>`).join("")}</div>
+    <div class="pinfo"><span>Más barata <b>${String(hMin).padStart(2,"0")}h · ${f(mn)} €</b></span>
+      <span>Más cara <b>${String(hMax).padStart(2,"0")}h · ${f(mx)} €</b></span>
+      ${next === now ? "<span><b>Ahora es hora barata</b></span>" : next > now ? `<span>Barata desde las <b>${String(next).padStart(2,"0")}h</b></span>` : ""}</div>`;
+  $("pnow").textContent = P[now] != null ? "Ahora " + f(P[now]) + " €/kWh" : "";
+}
+
 /* ----- Ciclo de actualización ----- */
 let loginShown = false;
 function setStatus(t){ $("haStatus").textContent = t; }
@@ -865,6 +906,7 @@ async function refreshHA(){
     if (!Object.keys(pendingT).length) renderACs();
     renderIndoor();
     renderEnergy(states);
+    renderPrices(states);
     if (todoId) await loadTodo();
     setStatus("Actualizado " + fmtTime.format(new Date()));
   }catch(err){ handleErr(err); }
