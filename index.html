@@ -80,8 +80,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .tgt .tv{font-family:var(--font-big);font-size:26px;min-width:64px;text-align:center}
 .unit.is-off .tgtw,.unit.is-off [data-night]{opacity:.35;pointer-events:none}
 .modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px}
-.mode{border-radius:10px;padding:4px 3px;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:12px;font-weight:600;color:var(--muted);background:var(--card);transition:transform .12s}
-.mode svg{width:17px;height:17px}
+.mode{border-radius:10px;padding:4px 2px 5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:14px;line-height:1.15;font-weight:600;color:var(--muted);background:var(--card);transition:transform .12s}
+.mode svg{width:21px;height:21px}
 .mode:active{transform:scale(.95)}
 .mode:not(.on){background:var(--card)}
 .mode:not(.on) svg{color:var(--muted)}
@@ -121,16 +121,16 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .tname{font-weight:700;font-size:15px;margin-top:6px}
 .tsub{font-size:12px;color:var(--muted);margin-top:2px}
 .mdgrid{flex:1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:1fr;gap:10px}
-.mbtn{border-radius:14px;background:var(--bg);padding:8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:64px;text-decoration:none;color:var(--ink);font-weight:700;font-size:14px;text-align:center;transition:transform .12s}
+.mbtn{border-radius:14px;background:var(--bg);padding:8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:64px;text-decoration:none;color:var(--ink);font-weight:700;font-size:16px;text-align:center;transition:transform .12s}
 .mbtn:active{transform:scale(.95)}
-.mbtn svg{width:26px;height:26px;flex:none}
+.mbtn svg{width:34px;height:34px;flex:none}
 .mbtn.m-tv svg{color:var(--cool)}.mbtn.m-music svg{color:#fa2d48}.mbtn.m-spotify svg{color:#1db954}.mbtn.m-play svg{color:var(--night)}
 .mbtn.m-radio svg{color:#d6332a}
-.mbtn .ms{display:block;font-size:11px;font-weight:600;color:var(--muted)}
+.mbtn .ms{display:block;font-size:12px;font-weight:600;color:var(--muted)}
 .mbtn.playing{background:var(--off-bg);box-shadow:inset 0 0 0 2px #d6332a}
 .mbtn.playing svg{animation:pulse 1.4s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.35}}
-.mbtn .mimg{width:34px;height:34px;border-radius:8px;flex:none;object-fit:cover}
+.mbtn .mimg{width:44px;height:44px;border-radius:8px;flex:none;object-fit:cover}
 .mbtn.empty{background:none;border:2px dashed var(--line);color:var(--muted);font-weight:600}
 .mbtn.empty svg{color:var(--muted)}
 
