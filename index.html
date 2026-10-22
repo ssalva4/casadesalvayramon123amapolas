@@ -189,13 +189,14 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 /* --- Accesos + compra --- */
 .shortcuts{grid-column:1/9;display:flex;flex-direction:column;min-height:0}
 .scgrid{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-content:start}
-.scgrid .btn{background:var(--bg);flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;min-height:46px;padding:8px 12px}
+.scgrid .btn{background:var(--bg);flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;min-height:46px;padding:8px 10px}
 .scgrid .btn .bs{display:none}
-.scgrid .btn .bt{font-size:15px}
+.scgrid .btn .bt{font-size:16px;white-space:nowrap}
+.scgrid .btn svg{width:24px;height:24px;flex:none}
 .scgrid .btn svg{color:var(--night)}
 .list{grid-column:9/13;display:flex;flex-direction:column;min-height:0}
 .items{flex:1;overflow:auto;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
-.chip{background:var(--green-bg);border-radius:999px;padding:8px 14px;font-weight:600;font-size:15px}
+.chip{background:var(--green-bg);border-radius:999px;padding:8px 14px;font-weight:600;font-size:17px}
 .chip:active{text-decoration:line-through;opacity:.6}
 .empty{color:var(--muted);font-size:15px}
 .add{display:flex;gap:8px;margin-top:12px}
