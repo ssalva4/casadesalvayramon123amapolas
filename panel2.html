@@ -290,8 +290,8 @@ button.pill{cursor:pointer}
       <div class="stemp out" title="Fuera, en Vigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z"/><path d="M18 3l1.5 1.5M21 8h-2M18 13l1.5-1.5"/></svg><div><b class="num" id="tOut">—</b><span>Fuera</span></div></div>
     </div>
     <nav class="nav">
-      <button class="ent" data-t="ent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3zM8 21h8M10 9.5l4 2.5-4 2.5z"/></svg>Entretenimiento</button>
       <button class="cli" data-t="cli"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0zM18 6h3M18 10h3"/></svg>Clima</button>
+      <button class="ent" data-t="ent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3zM8 21h8M10 9.5l4 2.5-4 2.5z"/></svg>Entretenimiento</button>
       <button class="pla" data-t="pla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 10h16M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>Planning</button>
     </nav>
     <div class="users">
@@ -309,7 +309,7 @@ button.pill{cursor:pointer}
     <!-- ENTRETENIMIENTO -->
     <section class="tab t-ent" id="t-ent">
       <div class="card tv">
-        <div class="lbl">Televisión <button class="pill" id="ytChange" hidden>Clave de YouTube</button></div>
+        <div class="lbl">Televisión <button class="pill" id="ytChange" hidden>Clave (opcional)</button></div>
         <div class="chs" id="chs"></div>
         <div class="screen" id="screen"></div>
       </div>
@@ -568,33 +568,52 @@ function stopAll(except){
 }
 // YouTube: buscador con la API de YouTube (clave gratuita de Google, se pega una vez en cada aparato)
 let ytResults = store.get("p2_ytres", []), ytQuery = store.get("p2_ytq", ""), ytPlay = null, ytMsg = "";
+// Búsqueda: con clave de Google si la hay; si no, servicios públicos (Piped / Invidious), probando varios
+const PIPED = ["https://pipedapi.kavin.rocks", "https://pipedapi.adminforge.de", "https://api.piped.private.coffee", "https://pipedapi.leptons.xyz"];
+const INVID = ["https://inv.nadeko.net", "https://invidious.nerdvpn.de", "https://yewtu.be", "https://invidious.privacyredirect.com"];
+async function getJSON(url, ms = 7000){
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), ms);
+  try{ const r = await fetch(url, {signal: ctl.signal}); if (!r.ok) throw new Error(r.status); return await r.json(); }
+  finally{ clearTimeout(tm); }
+}
+async function searchGoogle(q, key){
+  const j = await getJSON("https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=15&regionCode=ES&relevanceLanguage=es&q=" + encodeURIComponent(q) + "&key=" + encodeURIComponent(key));
+  if (j.error) throw new Error("google");
+  return (j.items || []).map(x => ({id: x.id.videoId, t: x.snippet.title, c: x.snippet.channelTitle, img: (x.snippet.thumbnails.medium || x.snippet.thumbnails.default).url, live: x.snippet.liveBroadcastContent === "live"}));
+}
+async function searchPiped(base, q){
+  const j = await getJSON(base + "/search?q=" + encodeURIComponent(q) + "&filter=videos");
+  return (j.items || []).filter(x => x.url && /watch\?v=/.test(x.url) && !x.isShort).map(x => ({id: x.url.split("v=")[1].slice(0,11), t: x.title, c: x.uploaderName || "", img: x.thumbnail, live: x.duration === -1}));
+}
+async function searchInvidious(base, q){
+  const j = await getJSON(base + "/api/v1/search?type=video&region=ES&q=" + encodeURIComponent(q));
+  return (Array.isArray(j) ? j : []).filter(x => x.videoId).map(x => ({id: x.videoId, t: x.title, c: x.author || "", img: "https://i.ytimg.com/vi/" + x.videoId + "/mqdefault.jpg", live: !!x.liveNow}));
+}
 async function ytSearch(q){
+  ytQuery = q; store.set("p2_ytq", q); ytMsg = "Buscando…"; ytResults = []; renderTV();
   const key = store.get("yt_key", "");
-  if (!key){ renderTV(); return; }
-  ytQuery = q; store.set("p2_ytq", q); ytMsg = "Buscando…"; renderTV();
-  try{
-    const r = await fetch("https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=12&regionCode=ES&relevanceLanguage=es&q=" + encodeURIComponent(q) + "&key=" + encodeURIComponent(key));
-    const j = await r.json();
-    if (j.error){ ytMsg = j.error.code === 403 ? "La clave no es válida o se ha gastado el cupo de hoy." : "YouTube ha dado un error: " + (j.error.message || ""); ytResults = []; }
-    else { ytResults = (j.items || []).map(x => ({id: x.id.videoId, t: x.snippet.title, c: x.snippet.channelTitle, img: (x.snippet.thumbnails.medium || x.snippet.thumbnails.default).url, live: x.snippet.liveBroadcastContent === "live"}));
-      ytMsg = ytResults.length ? "" : "Sin resultados."; store.set("p2_ytres", ytResults); }
-  }catch(err){ ytMsg = "No se pudo conectar con YouTube."; }
+  const tries = [];
+  if (key) tries.push(() => searchGoogle(q, key));
+  const ok = store.get("p2_ytsrc", null);   // el último servicio que funcionó va primero
+  const srcs = [...PIPED.map(b => ["p", b]), ...INVID.map(b => ["i", b])].sort((a,b) => (b[1] === ok) - (a[1] === ok));
+  srcs.forEach(([k, b]) => tries.push(async () => { const r = k === "p" ? await searchPiped(b, q) : await searchInvidious(b, q); if (r.length) store.set("p2_ytsrc", b); return r; }));
+  for (const f of tries){
+    try{ const r = await f(); if (r && r.length){ ytResults = r.slice(0, 15); ytMsg = ""; store.set("p2_ytres", ytResults); renderTV(); return; } }catch(err){}
+  }
+  ytMsg = "No he podido buscar ahora mismo. Inténtalo en un rato.";
   renderTV();
 }
 const unesc = s => { const d = document.createElement("textarea"); d.innerHTML = s; return d.value; };
 function ytPanel(){
-  const key = store.get("yt_key", "");
-  const bar = `<form class="ysearch" id="ysearch"><input id="yq" placeholder="Buscar en YouTube" value="${esc(ytQuery)}" autocomplete="off" aria-label="Buscar en YouTube"><button type="submit">Buscar</button></form>`;
-  if (!key) return `<div class="ypanel">${bar}<div class="ykey"><b>Falta la clave de YouTube</b><p>Para buscar vídeos aquí hace falta una clave gratuita de la API de YouTube (Google Cloud). Pégala aquí una vez:</p>
-    <form id="ykeyf"><input id="ykey" placeholder="AIza…" autocomplete="off" aria-label="Clave de la API de YouTube"><button type="submit">Guardar</button></form>
-    ${ytId(store.get("tele_yt","")) ? `<p>Mientras tanto puedes ver el vídeo guardado: <button class="link" data-ytsaved>verlo</button></p>` : ""}</div></div>`;
-  return `<div class="ypanel">${bar}${ytMsg ? `<div class="msg ymsg">${esc(ytMsg)}</div>` : ""}
-    <div class="ygrid">${ytResults.map(v => `<button class="yv" data-yv="${v.id}"><span class="th"><img src="${esc(v.img)}" alt="">${v.live ? '<span class="lv">EN DIRECTO</span>' : ""}</span><b>${esc(unesc(v.t))}</b><span>${esc(unesc(v.c))}</span></button>`).join("")}</div></div>`;
+  const bar = `<form class="ysearch" id="ysearch"><input id="yq" placeholder="Buscar en YouTube, por ejemplo «Acontece que no es poco»" value="${esc(ytQuery)}" autocomplete="off" aria-label="Buscar en YouTube"><button type="submit">Buscar</button></form>`;
+  const empty = !ytResults.length && !ytMsg ? `<div class="msg ymsg">Escribe arriba lo que quieras ver y pulsa Buscar.</div>` : "";
+  return `<div class="ypanel">${bar}${ytMsg ? `<div class="msg ymsg">${esc(ytMsg)}</div>` : ""}${empty}
+    <div class="ygrid">${ytResults.map(v => `<button class="yv" data-yv="${v.id}"><span class="th"><img src="${esc(v.img)}" alt="" loading="lazy">${v.live ? '<span class="lv">EN DIRECTO</span>' : ""}</span><b>${esc(unesc(v.t))}</b><span>${esc(unesc(v.c))}</span></button>`).join("")}</div></div>`;
 }
 function renderTV(msg){
   const c = CHANNELS.find(x => x.k === ch);
   $("chs").innerHTML = CHANNELS.map(x => `${x.sep ? '<span class="sep"></span>' : ""}<button class="${x.k===c.k?"on":""} ${LOGOS[x.k]?"logo":""}" data-ch="${x.k}" aria-label="${x.n}">${LOGOS[x.k] ? `<img src="${LOGOS[x.k]}" alt="${x.t}">` : x.t}</button>`).join("");
-  $("ytChange").hidden = !(c.k === "yt" && store.get("yt_key", ""));
+  $("ytChange").hidden = c.k !== "yt";
   const sc = $("screen");
   if (c.k === "yt"){
     if (tvOn && ytPlay){
@@ -625,7 +644,6 @@ $("screen").addEventListener("click", e => {
 });
 $("screen").addEventListener("submit", e => {
   e.preventDefault();
-  if (e.target.id === "ykeyf"){ const k = $("ykey").value.trim(); if (k){ store.set("yt_key", k); renderTV(); if (ytQuery) ytSearch(ytQuery); } return; }
   if (e.target.id === "ysearch"){ const q = $("yq").value.trim(); if (q){ $("yq").blur(); ytSearch(q); } }
 });
 function renderRadios(){
