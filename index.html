@@ -167,6 +167,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .mbtn.m-tv svg{color:var(--cool)}.mbtn.m-music svg{color:#fa2d48}.mbtn.m-spotify svg{color:#1db954}.mbtn.m-play svg{color:var(--night)}
 .mbtn.m-radio svg{color:#d6332a}
 .mbtn.m-off svg{color:var(--off)}
+.mbtn[data-ha="buenos_dias"] svg{color:#e9a23b}
 .mbtn .ms{display:block;font-size:12px;font-weight:600;color:var(--muted)}
 .mbtn.playing{background:var(--off-bg);box-shadow:inset 0 0 0 2px #d6332a}
 .mbtn.playing svg{animation:pulse 1.4s ease-in-out infinite}
@@ -384,7 +385,8 @@ const DEFAULT_MEDIA = [
   {t:"Noticias",    a:"radio:https://rtvelivestream.rtve.es/rtvesec/rne/rne_r1_main.m3u8", i:"radio", img:"noticias"},
   {t:"Apple Music", a:"music://",   i:"music"},
   {t:"Spotify",     a:"spotify:",   i:"spotify"},
-  {t:"", a:""}, {t:"", a:""}, {t:"", a:""}
+  {t:"Buenos días", a:"ha:buenos_dias", i:"sunrise"},
+  {t:"", a:""}, {t:"", a:""}
 ];
 const DEFAULT_SC = [
   {t:"Buenas noches", s:"Atajo",  a:"Buenas noches", i:"moon"},
@@ -436,6 +438,7 @@ const I = {
   check:'<path d="M4 12l5 5L20 6"/>',
   home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
   cloud:'<path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18z"/>',
+  sunrise:'<circle cx="12" cy="13" r="4"/><path d="M12 3v3M4.2 6.2l2 2M19.8 6.2l-2 2M2 17h20M5 21h14"/>',
   star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>'
 };
 const svg = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[name]||I.star}</svg>`;
@@ -572,6 +575,10 @@ let MEDIA = store.get("media", DEFAULT_MEDIA);
 { const ni = MEDIA.findIndex(b => b.img === "noticias"); if (ni > 0) MEDIA.unshift(MEDIA.splice(ni, 1)[0]); }   // Noticias, siempre el primero
 MEDIA = MEDIA.filter(b => b.a !== "videos://");                        // sin botón de la app TV
 MEDIA = MEDIA.filter(b => b.a !== "ha:aires_off");                    // sin botón de apagar los dos aires
+if (!MEDIA.some(b => b.a === "ha:buenos_dias")){                   // botón Buenos días, en el primer hueco libre
+  const bd = {t:"Buenos días", a:"ha:buenos_dias", i:"sunrise"}, ei = MEDIA.findIndex(b => !(b.t && b.a));
+  if (ei >= 0) MEDIA[ei] = bd; else MEDIA.splice(3, 0, bd);
+}
 while (MEDIA.length < 6) MEDIA.push({t:"", a:""}); MEDIA = MEDIA.slice(0, 6);
 function mediaIcon(b){
   if (b.i) return b.i;
@@ -611,6 +618,7 @@ $("mdgrid").addEventListener("click", async e => {
         const ids = climates.filter(c => c.state !== "off").map(c => c.entity_id);
         if (ids.length) await api("/api/services/climate/turn_off", {entity_id: ids});
       }
+      if (hb.dataset.ha === "buenos_dias") await api("/api/services/script/turn_on", {entity_id: "script.buenos_dias"});
       haDone = "ha:" + hb.dataset.ha; renderMedia(); setTimeout(() => { haDone = null; renderMedia(); }, 3000);
       setTimeout(refreshHA, 1200);
     }catch(err){ hb.style.opacity = 1; handleErr(err); }

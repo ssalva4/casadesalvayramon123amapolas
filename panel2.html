@@ -46,6 +46,10 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .nav button.ent.on{background:var(--ent-bg)}.nav button.ent.on svg{color:var(--ent)}
 .nav button.cli.on{background:var(--cli-bg)}.nav button.cli.on svg{color:var(--cli)}
 .nav button.pla.on{background:var(--pla-bg)}.nav button.pla.on svg{color:var(--pla)}
+.morning{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px;border-radius:14px;background:rgba(233,162,59,.16);color:#9a5a00;font-weight:700;font-size:15px;text-align:left;box-shadow:inset 0 0 0 1.5px rgba(233,162,59,.55)}
+.morning svg{width:24px;height:24px;color:#e9a23b;flex:none}
+.morning small{display:block;font-size:11.5px;font-weight:600;opacity:.75;margin-top:2px}
+.morning.busy{opacity:.55}
 .users{margin-top:auto;border-top:1px solid var(--line);padding-top:16px;padding-bottom:22px}
 .users .lab{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;padding:0 10px 10px}
 .avs{display:flex;gap:14px;padding:0 10px}
@@ -294,6 +298,7 @@ button.pill{cursor:pointer}
       <button class="ent" data-t="ent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3zM8 21h8M10 9.5l4 2.5-4 2.5z"/></svg>Entretenimiento</button>
       <button class="pla" data-t="pla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 10h16M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>Planning</button>
     </nav>
+    <button class="morning" id="morning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="4"/><path d="M12 3v3M4.2 6.2l2 2M19.8 6.2l-2 2M2 17h20M5 21h14"/></svg><span>Buenos días<small id="morningSub">La 1 · salón a 20°</small></span></button>
     <div class="users">
       <div class="lab">Quién eres</div>
       <div class="avs">
@@ -995,6 +1000,16 @@ async function refreshHA(){
   refreshHA(); setInterval(refreshHA, 15000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden){ tick(); refreshHA(); loadWeather(); } });
 })();
+
+/* ===== Buenos días: script de Home Assistant ===== */
+$("morning").onclick = async () => {
+  const b = $("morning"), sub = $("morningSub"); if (b.classList.contains("busy")) return;
+  b.classList.add("busy"); sub.textContent = "Encendiendo…";
+  try{ await api("/api/services/script/turn_on", {entity_id: "script.buenos_dias"}); sub.textContent = "Hecho";
+       setTimeout(() => { if (typeof refreshHA === "function") refreshHA(); }, 1500); }
+  catch(err){ sub.textContent = "La 1 · salón a 20°"; handleErr(err); }
+  setTimeout(() => { b.classList.remove("busy"); sub.textContent = "La 1 · salón a 20°"; }, 4000);
+};
 </script>
 </body>
 </html>
