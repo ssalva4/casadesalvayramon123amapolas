@@ -376,6 +376,10 @@ const RADIOS = [
   {k:"rc", t:"Radio Clásica",  s:"Música clásica", lg:"RC", bg:"#c9b8ff", fg:"#2d1a6b", u: RTVE + "rne/rne_r2_main.m3u8"}
 ];
 // Modo Noche: interruptores de Home Assistant (los mismos que usa el panel 1)
+// Corrección de la temperatura que mide cada aire (el sensor está arriba, en el aparato).
+// Diferencia con un termómetro a la altura de una persona: solo cambia lo que se ve.
+const TEMP_OFFSET = {"climate.aire_dormitorio": -2.0};
+const roomT = e => { const v = e && e.attributes.current_temperature; return typeof v === "number" ? v + (TEMP_OFFSET[e.entity_id] || 0) : null; };
 const NIGHT = {
   "climate.aire_salon":      {helper:"input_boolean.noche_salon",      txt:"se apaga a la 01:00"},
   "climate.aire_dormitorio": {helper:"input_boolean.noche_dormitorio", txt:"se apaga a la 01:00 · vuelve de 7 a 10 h"}
@@ -687,7 +691,7 @@ function acHTML(e){
   const sleep = (a.preset_modes||[]).find(p => /sleep/i.test(p));
   const night = cfg ? (!off && helpers[cfg.helper] === "on") : false;
   const tgt = pendingT[e.entity_id] ?? a.temperature;
-  return `<div class="row"><div><div class="room">${esc(acName(e))}</div><div class="cur num">${a.current_temperature!=null ? fmt1(a.current_temperature)+"°" : "—"}</div>
+  return `<div class="row"><div><div class="room">${esc(acName(e))}</div><div class="cur num">${roomT(e)!=null ? fmt1(roomT(e))+"°" : "—"}</div>
       <div class="st">${off ? (MODE_TXT[st]||st) : `<b class="m-${st}">${MODE_TXT[st]||st}</b>${night ? " · Noche, " + cfg.txt : ""}`}</div></div>
     <div class="tg ${off?"dim":""}"><small>OBJETIVO</small><div class="ctl"><button data-act="minus" aria-label="Bajar">−</button><span class="num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span><button data-act="plus" aria-label="Subir">+</button></div></div></div>
     <div class="modes">${MODES.filter(x => (a.hvac_modes||[]).includes(x.m)).map(x => `<button class="${st===x.m?"on "+x.c:""}" data-mode="${x.m}">${svg(x.i)}<span>${x.t}</span></button>`).join("")}
@@ -966,7 +970,7 @@ async function refreshHA(){
     states = await api("/api/states");
     helpers = Object.fromEntries(states.filter(s => s.entity_id.startsWith("input_boolean.")).map(s => [s.entity_id, s.state]));
     climates = states.filter(s => s.entity_id.startsWith("climate."));
-    const ins = climates.map(c => c.attributes.current_temperature).filter(v => typeof v === "number");
+    const ins = climates.map(roomT).filter(v => v != null);
     $("tIn").textContent = ins.length ? fmt1(ins.reduce((a,v) => a+v, 0) / ins.length) + "°" : "—";
     if (!Object.keys(pendingT).length) renderACs();
     renderPrice(); renderCost();

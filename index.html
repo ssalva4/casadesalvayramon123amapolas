@@ -534,7 +534,7 @@ function renderIndoor(){
   // Salón primero, luego el resto
   const list = [...climates].sort((x,y) => (/sal[oó]n/i.test(acName(y))) - (/sal[oó]n/i.test(acName(x))));
   box.innerHTML = list.slice(0,2).map(e => {
-    const a = e.attributes, t = a.current_temperature, h = a.current_humidity;
+    const a = e.attributes, t = roomT(e), h = a.current_humidity;
     const st = e.state === "off" ? "Aire apagado" : (MODE_TXT[e.state] ? "Aire en " + MODE_TXT[e.state].toLowerCase() : "");
     return `<div><div class="tbig num">${t!=null ? fmt1(t)+"°" : "—"}</div>
       <div class="tname">${esc(acName(e))}</div>
@@ -768,6 +768,10 @@ const SHOWN = ["cool","heat","dry","off"];   // modos que salen como botón
 const pendingT = {};      // temperatura elegida y aún no enviada
 // Modo Noche guardado en un interruptor de Home Assistant (el aire no avisa de su modo Noche).
 // La automatización de Home Assistant apaga el aire a esa hora si el interruptor está encendido.
+// Corrección de la temperatura que mide cada aire (el sensor está arriba, en el aparato).
+// Diferencia con un termómetro a la altura de una persona: solo cambia lo que se ve.
+const TEMP_OFFSET = {"climate.aire_dormitorio": -2.0};
+const roomT = e => { const v = e && e.attributes.current_temperature; return typeof v === "number" ? v + (TEMP_OFFSET[e.entity_id] || 0) : null; };
 const NIGHT = {
   "climate.aire_salon":      {helper: "input_boolean.noche_salon",      txt: "se apaga a la 01:00"},
   "climate.aire_dormitorio": {helper: "input_boolean.noche_dormitorio", txt: "se apaga a la 01:00 · vuelve de 7 a 10 h"}
@@ -786,7 +790,7 @@ function unitHTML(e){
   const sub = night
     ? ["Noche", cfg ? cfg.txt : ""].filter(Boolean).join(" · ")
     : (MODE_TXT[st] || st);
-  const cur = a.current_temperature;
+  const cur = roomT(e);
   return `<div class="unit ${off?"is-off":""}" data-e="${esc(e.entity_id)}">
     <div class="uhead">
       <div><div class="uname">${esc(acName(e))}</div>
