@@ -583,8 +583,8 @@ function atvAwake(){
 }
 async function morningToggle(){
   if (atvAwake()){
-    await api("/api/services/climate/turn_off", {entity_id: AIRE_BD});
-    await api("/api/services/remote/turn_off", {entity_id: ATV_REMOTE});
+    await api("/api/services/script/turn_on", {entity_id: "script.adios"});
+    
     bdOverride = {on: false, until: Date.now() + 60000};
   } else {
     await api("/api/services/script/turn_on", {entity_id: "script.buenos_dias"});
