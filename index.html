@@ -166,6 +166,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .mbtn svg{width:27px;height:27px;flex:none}
 .mbtn.m-tv svg{color:var(--cool)}.mbtn.m-music svg{color:#fa2d48}.mbtn.m-spotify svg{color:#1db954}.mbtn.m-play svg{color:var(--night)}
 .mbtn.m-radio svg{color:#d6332a}
+.mbtn.m-video svg{color:#25a35a}
 .mbtn .ms{display:block;font-size:12px;font-weight:600;color:var(--muted)}
 .mbtn.playing{background:var(--off-bg);box-shadow:inset 0 0 0 2px #d6332a}
 .mbtn.playing svg{animation:pulse 1.4s ease-in-out infinite}
@@ -384,7 +385,9 @@ const DEFAULT_MEDIA = [
   {t:"TV",          a:"videos://",  i:"tv"},
   {t:"Apple Music", a:"music://",   i:"music"},
   {t:"Spotify",     a:"spotify:",   i:"spotify"},
-  {t:"", a:""}, {t:"", a:""}
+  // abre el atajo «Videollamada WhatsApp» de la app Atajos (llama a quien elijas al crearlo)
+  {t:"Videollamada", a:"Videollamada WhatsApp", i:"video"},
+  {t:"", a:""}
 ];
 const DEFAULT_SC = [
   {t:"Buenas noches", s:"Atajo",  a:"Buenas noches", i:"moon"},
@@ -428,6 +431,7 @@ const I = {
   pause:'<path d="M8 5v14M16 5v14"/>',
   volup:'<path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/>',
   voldn:'<path d="M4 9v6h4l5 4V5L8 9zM16 12h5"/>',
+  video:'<path d="M3 7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM16 10l5-3v10l-5-3"/>',
   play:'<path d="M7 4.5v15l12-7.5z"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
   music:'<path d="M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>',
@@ -570,6 +574,7 @@ renderButtons();
 /* ===== Música y TV ===== */
 let MEDIA = store.get("media", DEFAULT_MEDIA);
 { const ni = MEDIA.findIndex(b => b.img === "noticias"); if (ni > 0) MEDIA.unshift(MEDIA.splice(ni, 1)[0]); }   // Noticias, siempre el primero
+if (!MEDIA.some(b => /whatsapp/i.test(b.a || ""))){ const ei = MEDIA.findIndex(b => !(b.t && b.a)); if (ei >= 0) MEDIA[ei] = {t:"Videollamada", a:"Videollamada WhatsApp", i:"video"}; }
 function mediaIcon(b){
   if (b.i) return b.i;
   if (/spotify/i.test(b.t + b.a)) return "spotify";
