@@ -768,7 +768,10 @@ const SHOWN = ["cool","heat","dry","off"];   // modos que salen como botón
 const pendingT = {};      // temperatura elegida y aún no enviada
 // Modo Noche guardado en un interruptor de Home Assistant (el aire no avisa de su modo Noche).
 // La automatización de Home Assistant apaga el aire a esa hora si el interruptor está encendido.
-const NIGHT = {"climate.aire_salon": {helper: "input_boolean.noche_salon", off: "01:00"}};
+const NIGHT = {
+  "climate.aire_salon":      {helper: "input_boolean.noche_salon",      txt: "se apaga a la 01:00"},
+  "climate.aire_dormitorio": {helper: "input_boolean.noche_dormitorio", txt: "se apaga a la 01:00 · vuelve de 7 a 10 h"}
+};
 let helpers = {};         // estado de los interruptores input_boolean.*
 const timers = {};
 
@@ -781,7 +784,7 @@ function unitHTML(e){
   const cfg = NIGHT[e.entity_id] && helpers[NIGHT[e.entity_id].helper] ? NIGHT[e.entity_id] : null;
   const night = cfg ? (!off && helpers[cfg.helper] === "on") : (!off && sleep && a.preset_mode === sleep);
   const sub = night
-    ? ["Noche", cfg ? "se apaga a la " + cfg.off : ""].filter(Boolean).join(" · ")
+    ? ["Noche", cfg ? cfg.txt : ""].filter(Boolean).join(" · ")
     : (MODE_TXT[st] || st);
   const cur = a.current_temperature;
   return `<div class="unit ${off?"is-off":""}" data-e="${esc(e.entity_id)}">
