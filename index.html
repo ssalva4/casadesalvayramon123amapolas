@@ -771,7 +771,17 @@ const pendingT = {};      // temperatura elegida y aún no enviada
 // Corrección de la temperatura que mide cada aire (el sensor está arriba, en el aparato).
 // Diferencia con un termómetro a la altura de una persona: solo cambia lo que se ve.
 const TEMP_OFFSET = {"climate.aire_dormitorio": -2.0, "climate.aire_salon": -0.7};
-const roomT = e => { const v = e && e.attributes.current_temperature; return typeof v === "number" ? v + (TEMP_OFFSET[e.entity_id] || 0) : null; };
+const roomSensors = (e, dc) => {   // sensores de la habitación (p. ej. Tapo T310), no los del propio aire
+  if (!e || !(window.__states || []).length) return null;
+  const n = acName(e).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const s = window.__states.find(x => x.entity_id.startsWith("sensor.") && !/^sensor\.aire_acondicionado_/.test(x.entity_id) &&
+    x.attributes.device_class === dc && !isNaN(parseFloat(x.state)) &&
+    (x.entity_id + " " + (x.attributes.friendly_name||"")).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(n));
+  return s ? parseFloat(s.state) : null;
+};
+const roomH = e => roomSensors(e, "humidity");
+const roomT = e => { const s = roomSensors(e, "temperature"); if (s != null) return s;   // si hay sensor, manda el sensor
+  const v = e && e.attributes.current_temperature; return typeof v === "number" ? v + (TEMP_OFFSET[e.entity_id] || 0) : null; };
 const NIGHT = {
   "climate.aire_salon":      {helper: "input_boolean.noche_salon",      txt: "se apaga a la 01:00"},
   "climate.aire_dormitorio": {helper: "input_boolean.noche_dormitorio", txt: "se apaga a la 01:00 · vuelve de 7 a 10 h"}
@@ -790,12 +800,13 @@ function unitHTML(e){
   const sub = night
     ? ["Noche", cfg ? cfg.txt : ""].filter(Boolean).join(" · ")
     : (MODE_TXT[st] || st);
+  const hum = roomH(e);
   const cur = roomT(e);
   return `<div class="unit ${off?"is-off":""}" data-e="${esc(e.entity_id)}">
     <div class="uhead">
       <div><div class="uname">${esc(acName(e))}</div>
         <div class="ucur num" title="Temperatura de la habitación">${cur!=null ? fmt1(cur)+"°" : "—"}</div>
-        <div class="ustate">${esc(sub)}</div></div>
+        <div class="ustate">${hum != null ? `💧 ${Math.round(hum)}% · ` : ""}${esc(sub)}</div></div>
       <div class="tgtw"><div class="tgtl">Objetivo</div>
       <div class="tgt" aria-label="Temperatura objetivo">
         <button data-act="minus" aria-label="Bajar temperatura">−</button>
@@ -1211,7 +1222,7 @@ function handleErr(err){
 }
 async function refreshHA(){
   try{
-    const states = await api("/api/states");
+    const states = await api("/api/states"); window.__states = states;
     helpers = Object.fromEntries(states.filter(s => s.entity_id.startsWith("input_boolean.")).map(s => [s.entity_id, s.state]));
     climates = states.filter(s => s.entity_id.startsWith("climate."))
       .sort((x,y) => acName(x).localeCompare(acName(y), "es"));

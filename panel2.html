@@ -379,7 +379,17 @@ const RADIOS = [
 // Corrección de la temperatura que mide cada aire (el sensor está arriba, en el aparato).
 // Diferencia con un termómetro a la altura de una persona: solo cambia lo que se ve.
 const TEMP_OFFSET = {"climate.aire_dormitorio": -2.0, "climate.aire_salon": -0.7};
-const roomT = e => { const v = e && e.attributes.current_temperature; return typeof v === "number" ? v + (TEMP_OFFSET[e.entity_id] || 0) : null; };
+const roomSensors = (e, dc) => {   // sensores de la habitación (p. ej. Tapo T310), no los del propio aire
+  if (!e || !(window.__states || []).length) return null;
+  const n = acName(e).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const s = window.__states.find(x => x.entity_id.startsWith("sensor.") && !/^sensor\.aire_acondicionado_/.test(x.entity_id) &&
+    x.attributes.device_class === dc && !isNaN(parseFloat(x.state)) &&
+    (x.entity_id + " " + (x.attributes.friendly_name||"")).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(n));
+  return s ? parseFloat(s.state) : null;
+};
+const roomH = e => roomSensors(e, "humidity");
+const roomT = e => { const s = roomSensors(e, "temperature"); if (s != null) return s;   // si hay sensor, manda el sensor
+  const v = e && e.attributes.current_temperature; return typeof v === "number" ? v + (TEMP_OFFSET[e.entity_id] || 0) : null; };
 const NIGHT = {
   "climate.aire_salon":      {helper:"input_boolean.noche_salon",      txt:"se apaga a la 01:00"},
   "climate.aire_dormitorio": {helper:"input_boolean.noche_dormitorio", txt:"se apaga a la 01:00 · vuelve de 7 a 10 h"}
@@ -692,7 +702,7 @@ function acHTML(e){
   const night = cfg ? (!off && helpers[cfg.helper] === "on") : false;
   const tgt = pendingT[e.entity_id] ?? a.temperature;
   return `<div class="row"><div><div class="room">${esc(acName(e))}</div><div class="cur num">${roomT(e)!=null ? fmt1(roomT(e))+"°" : "—"}</div>
-      <div class="st">${off ? (MODE_TXT[st]||st) : `<b class="m-${st}">${MODE_TXT[st]||st}</b>${night ? " · Noche, " + cfg.txt : ""}`}</div></div>
+      <div class="st">${roomH(e)!=null ? `💧 ${Math.round(roomH(e))}% · ` : ""}${off ? (MODE_TXT[st]||st) : `<b class="m-${st}">${MODE_TXT[st]||st}</b>${night ? " · Noche, " + cfg.txt : ""}`}</div></div>
     <div class="tg ${off?"dim":""}"><small>OBJETIVO</small><div class="ctl"><button data-act="minus" aria-label="Bajar">−</button><span class="num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span><button data-act="plus" aria-label="Subir">+</button></div></div></div>
     <div class="modes">${MODES.filter(x => (a.hvac_modes||[]).includes(x.m)).map(x => `<button class="${st===x.m?"on "+x.c:""}" data-mode="${x.m}">${svg(x.i)}<span>${x.t}</span></button>`).join("")}
       ${(cfg || sleep) ? `<button class="${night?"on night":""} ${off?"dim":""}" data-night>${svg("moon")}<span>Noche</span></button>` : ""}</div>`;
@@ -967,7 +977,7 @@ $("addForm").addEventListener("submit", async e => {
 /* ---------- ciclo de actualización ---------- */
 async function refreshHA(){
   try{
-    states = await api("/api/states");
+    states = await api("/api/states"); window.__states = states;
     helpers = Object.fromEntries(states.filter(s => s.entity_id.startsWith("input_boolean.")).map(s => [s.entity_id, s.state]));
     climates = states.filter(s => s.entity_id.startsWith("climate."));
     const ins = climates.map(roomT).filter(v => v != null);
