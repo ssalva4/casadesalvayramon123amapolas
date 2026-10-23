@@ -770,7 +770,7 @@ const pendingT = {};      // temperatura elegida y aún no enviada
 // La automatización de Home Assistant apaga el aire a esa hora si el interruptor está encendido.
 // Corrección de la temperatura que mide cada aire (el sensor está arriba, en el aparato).
 // Diferencia con un termómetro a la altura de una persona: solo cambia lo que se ve.
-const TEMP_OFFSET = {"climate.aire_dormitorio": -2.0};
+const TEMP_OFFSET = {"climate.aire_dormitorio": -2.0, "climate.aire_salon": -0.7};
 const roomT = e => { const v = e && e.attributes.current_temperature; return typeof v === "number" ? v + (TEMP_OFFSET[e.entity_id] || 0) : null; };
 const NIGHT = {
   "climate.aire_salon":      {helper: "input_boolean.noche_salon",      txt: "se apaga a la 01:00"},
