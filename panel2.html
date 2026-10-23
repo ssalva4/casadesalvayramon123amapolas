@@ -50,6 +50,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .morning svg{width:24px;height:24px;color:#e9a23b;flex:none}
 .morning small{display:block;font-size:11.5px;font-weight:600;opacity:.75;margin-top:2px}
 .morning.busy{opacity:.55}
+.morning.bye{background:rgba(107,111,214,.14);color:#3d3f9a;box-shadow:inset 0 0 0 1.5px rgba(107,111,214,.5)}
+.morning.bye svg{color:#6b6fd6}
 .users{margin-top:auto;border-top:1px solid var(--line);padding-top:16px;padding-bottom:22px}
 .users .lab{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;padding:0 10px 10px}
 .avs{display:flex;gap:14px;padding:0 10px}
@@ -982,7 +984,7 @@ $("addForm").addEventListener("submit", async e => {
 /* ---------- ciclo de actualización ---------- */
 async function refreshHA(){
   try{
-    states = await api("/api/states"); window.__states = states;
+    states = await api("/api/states"); window.__states = states; if (typeof renderMorning === "function") renderMorning();
     helpers = Object.fromEntries(states.filter(s => s.entity_id.startsWith("input_boolean.")).map(s => [s.entity_id, s.state]));
     climates = states.filter(s => s.entity_id.startsWith("climate."));
     const ins = climates.map(roomT).filter(v => v != null);
@@ -1001,15 +1003,43 @@ async function refreshHA(){
   document.addEventListener("visibilitychange", () => { if (!document.hidden){ tick(); refreshHA(); loadWeather(); } });
 })();
 
-/* ===== Buenos días: script de Home Assistant ===== */
+/* ===== Buenos días / Adiós: según si el Apple TV está encendido ===== */
+const ATV = "media_player.apple_tv", ATV_REMOTE = "remote.apple_tv", AIRE_BD = "climate.aire_salon";
+const SUN_SVG = '<circle cx="12" cy="13" r="4"/><path d="M12 3v3M4.2 6.2l2 2M19.8 6.2l-2 2M2 17h20M5 21h14"/>';
+const MOON_SVG = '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>';
+let bdOverride = null;
+function atvAwake(){
+  if (bdOverride && Date.now() < bdOverride.until) return bdOverride.on;
+  const e = (window.__states || []).find(x => x.entity_id === ATV);
+  return !!e && !["off", "standby", "unavailable", "unknown"].includes(e.state);
+}
+function renderMorning(msg){
+  const b = $("morning"); if (!b) return;
+  const on = atvAwake();
+  b.classList.toggle("bye", on);
+  b.querySelector("svg").innerHTML = on ? MOON_SVG : SUN_SVG;
+  b.querySelector("span").innerHTML = (on ? "Adiós" : "Buenos días") +
+    `<small id="morningSub">${msg || (on ? "Apaga aire y Apple TV" : "La 1 · salón a 20°")}</small>`;
+}
 $("morning").onclick = async () => {
-  const b = $("morning"), sub = $("morningSub"); if (b.classList.contains("busy")) return;
-  b.classList.add("busy"); sub.textContent = "Encendiendo…";
-  try{ await api("/api/services/script/turn_on", {entity_id: "script.buenos_dias"}); sub.textContent = "Hecho";
-       setTimeout(() => { if (typeof refreshHA === "function") refreshHA(); }, 1500); }
-  catch(err){ sub.textContent = "La 1 · salón a 20°"; handleErr(err); }
-  setTimeout(() => { b.classList.remove("busy"); sub.textContent = "La 1 · salón a 20°"; }, 4000);
+  const b = $("morning"); if (b.classList.contains("busy")) return;
+  const wasOn = atvAwake();
+  b.classList.add("busy"); renderMorning(wasOn ? "Apagando…" : "Encendiendo…");
+  try{
+    if (wasOn){
+      await api("/api/services/climate/turn_off", {entity_id: AIRE_BD});
+      await api("/api/services/remote/turn_off", {entity_id: ATV_REMOTE});
+      bdOverride = {on: false, until: Date.now() + 60000};
+    } else {
+      await api("/api/services/script/turn_on", {entity_id: "script.buenos_dias"});
+      bdOverride = {on: true, until: Date.now() + 90000};
+    }
+    renderMorning();
+    setTimeout(() => { if (typeof refreshHA === "function") refreshHA(); }, 3000);
+  }catch(err){ renderMorning(); handleErr(err); }
+  b.classList.remove("busy");
 };
+renderMorning();
 </script>
 </body>
 </html>
