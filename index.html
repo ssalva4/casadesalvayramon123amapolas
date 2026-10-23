@@ -916,6 +916,17 @@ function renderEnergy(states){
   loadYear(energy);
   const kwh = v => (v >= 100 ? Math.round(v) : fmt1(v)) + " kWh";
   const todayTxt = todayKWh != null ? ` · hoy ${eur(pvpc && todayEUR != null ? todayEUR : todayKWh*price)}` : "";
+  // Los sensores «Energía aire …» empezaron a contar este año: su valor es el total desde que se crearon.
+  // Lo que aún no está en los resúmenes por horas se suma al mes actual, al precio de ahora.
+  yearLive = {};
+  const mo = new Date().getMonth();
+  energy.forEach(s => {
+    const base = (year[s.entity_id] || [...Array(12)].map(() => ({kwh:0, eur:0}))).map(m => ({...m}));
+    const inStats = base.reduce((a, m) => a + m.kwh, 0);
+    const extra = /^sensor\.(?!aire_acondicionado_)/.test(s.entity_id) ? Math.max(0, num(s) / (unit(s) === "Wh" ? 1000 : 1) - inStats) : 0;
+    base[mo].kwh += extra; base[mo].eur += extra * price;
+    yearLive[s.entity_id] = base;
+  });
   // Acumulado del año: por aire y total
   const rows = climates.map(c => {
     const n = acName(c).toLowerCase();
@@ -957,10 +968,11 @@ async function wsCall(msg){
 }
 // year[entity_id] = [{kwh, eur} × 12]
 let year = {}, yearAt = 0;
+let yearLive = {};
 function yearOf(ids){
-  if (!ids.length || !ids.some(id => year[id])) return null;
+  if (!ids.length || !ids.some(id => yearLive[id])) return null;
   let k = 0, e = 0;
-  ids.forEach(id => (year[id] || []).forEach(m => { k += m.kwh; e += m.eur; }));
+  ids.forEach(id => (yearLive[id] || []).forEach(m => { k += m.kwh; e += m.eur; }));
   return {kwh:k, eur:e};
 }
 async function loadYear(energy){
@@ -994,10 +1006,10 @@ const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov"
 let monthsScrolled = false;
 function renderMonths(ids){
   const box = $("months"); if (!box) return;
-  const tot = MESES.map((_, i) => ids.reduce((a, id) => a + ((year[id] && year[id][i].eur) || 0), 0));
+  const tot = MESES.map((_, i) => ids.reduce((a, id) => a + ((yearLive[id] && yearLive[id][i].eur) || 0), 0));
   const mx = Math.max(...tot, 0.01), cur = new Date().getMonth();
   box.innerHTML = tot.map((v, i) => `<div class="mcol ${i===cur?"cur":""} ${i%6===0?"snap":""}">
-      <span class="mv">${v > 0 ? (v >= 10 ? Math.round(v) : v.toFixed(1).replace(".", ",")) + " €" : "—"}</span>
+      <span class="mv">${v > 0 ? (v >= 10 ? Math.round(v) : v.toFixed(v < 1 ? 2 : 1).replace(".", ",")) + " €" : "—"}</span>
       <span class="mb"><i style="height:${Math.round(v/mx*100)}%"></i></span>
       <span class="ml">${MESES[i]}</span></div>`).join("");
   $("mhint").textContent = cur >= 6 ? "◀ desliza para ver ene–jun" : "desliza para ver jul–dic ▶";
