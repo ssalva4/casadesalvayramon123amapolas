@@ -1123,9 +1123,7 @@ const RTVE = "https://rtvelivestream.rtve.es/rtvesec/";
 const CHANNELS = [
   {k:"24h",  t:"24h",         u: RTVE + "24h/24h_main_dvr.m3u8"},
   {k:"la1",  t:"La 1",        u: RTVE + "la1/la1_main_dvr.m3u8"},
-  {k:"la2",  t:"La 2",        u: RTVE + "la2/la2_main_dvr.m3u8"},
-  {k:"tdp",  t:"Teledeporte", u: RTVE + "tdp/tdp_main.m3u8"},
-  {k:"clan", t:"Clan",        u: RTVE + "clan/clan_main_dvr.m3u8"}
+  {k:"la2",  t:"La 2",        u: RTVE + "la2/la2_main_dvr.m3u8"}
 ];
 const STOPBTN = `<button class="tclose" data-stop="1" aria-label="Parar">✕</button>`;
 let teleCh = store.get("tele_ch", "24h"); if (!CHANNELS.some(c => c.k === teleCh)) teleCh = "24h";
