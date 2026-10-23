@@ -166,6 +166,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .mbtn svg{width:27px;height:27px;flex:none}
 .mbtn.m-tv svg{color:var(--cool)}.mbtn.m-music svg{color:#fa2d48}.mbtn.m-spotify svg{color:#1db954}.mbtn.m-play svg{color:var(--night)}
 .mbtn.m-radio svg{color:#d6332a}
+.mbtn.m-off svg{color:var(--off)}
 .mbtn .ms{display:block;font-size:12px;font-weight:600;color:var(--muted)}
 .mbtn.playing{background:var(--off-bg);box-shadow:inset 0 0 0 2px #d6332a}
 .mbtn.playing svg{animation:pulse 1.4s ease-in-out infinite}
@@ -381,9 +382,10 @@ const IMG_NOTICIAS = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAIA
 const DEFAULT_MEDIA = [
   // "radio:" + dirección del directo = suena dentro del panel
   {t:"Noticias",    a:"radio:https://rtvelivestream.rtve.es/rtvesec/rne/rne_r1_main.m3u8", i:"radio", img:"noticias"},
-  {t:"TV",          a:"videos://",  i:"tv"},
   {t:"Apple Music", a:"music://",   i:"music"},
   {t:"Spotify",     a:"spotify:",   i:"spotify"},
+  // "ha:" = acción de Home Assistant hecha desde el propio panel
+  {t:"Apagar aires", a:"ha:aires_off", i:"power"},
   {t:"", a:""}, {t:"", a:""}
 ];
 const DEFAULT_SC = [
@@ -570,6 +572,9 @@ renderButtons();
 /* ===== Música y TV ===== */
 let MEDIA = store.get("media", DEFAULT_MEDIA);
 { const ni = MEDIA.findIndex(b => b.img === "noticias"); if (ni > 0) MEDIA.unshift(MEDIA.splice(ni, 1)[0]); }   // Noticias, siempre el primero
+MEDIA = MEDIA.filter(b => b.a !== "videos://");                        // sin botón de la app TV
+if (!MEDIA.some(b => b.a === "ha:aires_off")) MEDIA.splice(3, 0, {t:"Apagar aires", a:"ha:aires_off", i:"power"});
+while (MEDIA.length < 6) MEDIA.push({t:"", a:""}); MEDIA = MEDIA.slice(0, 6);
 function mediaIcon(b){
   if (b.i) return b.i;
   if (/spotify/i.test(b.t + b.a)) return "spotify";
@@ -578,7 +583,7 @@ function mediaIcon(b){
   return "play";
 }
 const player = new Audio(); player.preload = "none";
-let playing = null, radioErr = null;   // dirección que suena ahora
+let playing = null, radioErr = null, haDone = null;   // dirección que suena ahora
 function renderMedia(){
   $("mdgrid").innerHTML = MEDIA.map(b => {
     if (!(b.t && b.a)) return `<button class="mbtn empty" data-empty="1">${svg("plus")}<span>Vacío</span></button>`;
@@ -588,6 +593,10 @@ function renderMedia(){
       const ico = (b.img === "noticias" && !on) ? `<img class="mimg" src="${IMG_NOTICIAS}" alt="">` : svg(on?"stop":"radio");
       return `<button class="mbtn m-radio ${on?"playing":""}" data-radio="${esc(url)}">${ico}<span>${esc(b.t)}${sub ? `<span class="ms">${sub}</span>` : ""}</span></button>`;
     }
+    if (/^ha:/i.test(b.a)){
+      const done = haDone === b.a;
+      return `<button class="mbtn m-off" data-ha="${esc(b.a.slice(3))}">${svg(b.i || "power")}<span>${esc(b.t)}${done ? `<span class="ms">Hecho</span>` : ""}</span></button>`;
+    }
     return `<a class="mbtn m-${mediaIcon(b)}" href="${esc(hrefFor(b.a))}">${svg(mediaIcon(b))}<span>${esc(b.t)}</span></a>`;
   }).join("");
 }
@@ -596,6 +605,19 @@ player.addEventListener("error", () => { if (playing){ radioErr = playing; stopR
 renderMedia();
 $("mdgrid").addEventListener("click", async e => {
   if (e.target.closest("[data-empty]")) { $("editBtn").click(); return; }
+  const hb = e.target.closest("[data-ha]");
+  if (hb){
+    hb.style.opacity = .5;
+    try{
+      if (hb.dataset.ha === "aires_off"){
+        const ids = climates.filter(c => c.state !== "off").map(c => c.entity_id);
+        if (ids.length) await api("/api/services/climate/turn_off", {entity_id: ids});
+      }
+      haDone = "ha:" + hb.dataset.ha; renderMedia(); setTimeout(() => { haDone = null; renderMedia(); }, 3000);
+      setTimeout(refreshHA, 1200);
+    }catch(err){ hb.style.opacity = 1; handleErr(err); }
+    return;
+  }
   const r = e.target.closest("[data-radio]"); if (!r) return;
   const url = r.dataset.radio;
   if (playing === url){ stopRadio(); return; }
