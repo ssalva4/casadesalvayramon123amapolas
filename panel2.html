@@ -196,6 +196,22 @@ a{color:inherit;text-decoration:none}
 .screen .bigplay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;color:#fff}
 .screen .bigplay svg{width:34px;height:34px}
 .screen .ttl{bottom:18px}
+.ypanel{position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;padding:14px;background:#0f1320;overflow:hidden}
+.ysearch{display:flex;gap:8px}
+.ysearch input,.ykey input{flex:1;min-width:0;background:#fff;border:0;border-radius:999px;padding:11px 16px;font:inherit;font-size:15px;color:#1f2433}
+.ysearch button,.ykey button{background:#ff3b3b;color:#fff;border-radius:999px;padding:0 18px;font-weight:700}
+.ykey{color:#e9ebf3;font-size:14px;line-height:1.5;padding:6px 4px}
+.ykey p{margin:6px 0;color:#c5cbe0}.ykey form{display:flex;gap:8px;margin:8px 0}
+.ykey .link{color:#ffb3a4;text-decoration:underline;font-weight:700}
+.ymsg{color:#c5cbe0}
+.ygrid{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-content:start}
+.yv{text-align:left;color:#fff;display:flex;flex-direction:column;gap:4px}
+.yv .th{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:16/9;background:#222}
+.yv .th img{width:100%;height:100%;object-fit:cover;display:block}
+.yv .lv{position:absolute;left:6px;bottom:6px;background:#e5383b;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px}
+.yv b{font-size:13px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.yv span{font-size:11.5px;color:#9aa3bd}
+.yback{position:absolute;top:10px;left:10px;z-index:3;background:rgba(0,0,0,.6);color:#fff;border-radius:999px;padding:7px 12px;font-weight:700;font-size:13px}
 .xclose{position:absolute;top:10px;right:10px;z-index:3;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-weight:700}
 .screen .live{z-index:2}
 .ytwrap{flex:1;position:relative;border-radius:14px;overflow:hidden;min-height:118px}
@@ -282,7 +298,7 @@ button.pill{cursor:pointer}
     <!-- ENTRETENIMIENTO -->
     <section class="tab t-ent" id="t-ent">
       <div class="card tv">
-        <div class="lbl">Televisión <button class="pill" id="ytChange" hidden>Cambiar vídeo</button></div>
+        <div class="lbl">Televisión <button class="pill" id="ytChange" hidden>Clave de YouTube</button></div>
         <div class="chs" id="chs"></div>
         <div class="screen" id="screen"></div>
       </div>
@@ -538,19 +554,46 @@ function stopAll(except){
   if (except !== "radio" && radioOn){ player.pause(); player.removeAttribute("src"); player.load(); radioOn = null; renderRadios(); }
   if (except !== "tv" && tvOn){ tvOn = false; renderTV(); }
 }
+// YouTube: buscador con la API de YouTube (clave gratuita de Google, se pega una vez en cada aparato)
+let ytResults = store.get("p2_ytres", []), ytQuery = store.get("p2_ytq", ""), ytPlay = null, ytMsg = "";
+async function ytSearch(q){
+  const key = store.get("yt_key", "");
+  if (!key){ renderTV(); return; }
+  ytQuery = q; store.set("p2_ytq", q); ytMsg = "Buscando…"; renderTV();
+  try{
+    const r = await fetch("https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=12&regionCode=ES&relevanceLanguage=es&q=" + encodeURIComponent(q) + "&key=" + encodeURIComponent(key));
+    const j = await r.json();
+    if (j.error){ ytMsg = j.error.code === 403 ? "La clave no es válida o se ha gastado el cupo de hoy." : "YouTube ha dado un error: " + (j.error.message || ""); ytResults = []; }
+    else { ytResults = (j.items || []).map(x => ({id: x.id.videoId, t: x.snippet.title, c: x.snippet.channelTitle, img: (x.snippet.thumbnails.medium || x.snippet.thumbnails.default).url, live: x.snippet.liveBroadcastContent === "live"}));
+      ytMsg = ytResults.length ? "" : "Sin resultados."; store.set("p2_ytres", ytResults); }
+  }catch(err){ ytMsg = "No se pudo conectar con YouTube."; }
+  renderTV();
+}
+const unesc = s => { const d = document.createElement("textarea"); d.innerHTML = s; return d.value; };
+function ytPanel(){
+  const key = store.get("yt_key", "");
+  const bar = `<form class="ysearch" id="ysearch"><input id="yq" placeholder="Buscar en YouTube" value="${esc(ytQuery)}" autocomplete="off" aria-label="Buscar en YouTube"><button type="submit">Buscar</button></form>`;
+  if (!key) return `<div class="ypanel">${bar}<div class="ykey"><b>Falta la clave de YouTube</b><p>Para buscar vídeos aquí hace falta una clave gratuita de la API de YouTube (Google Cloud). Pégala aquí una vez:</p>
+    <form id="ykeyf"><input id="ykey" placeholder="AIza…" autocomplete="off" aria-label="Clave de la API de YouTube"><button type="submit">Guardar</button></form>
+    ${ytId(store.get("tele_yt","")) ? `<p>Mientras tanto puedes ver el vídeo guardado: <button class="link" data-ytsaved>verlo</button></p>` : ""}</div></div>`;
+  return `<div class="ypanel">${bar}${ytMsg ? `<div class="msg ymsg">${esc(ytMsg)}</div>` : ""}
+    <div class="ygrid">${ytResults.map(v => `<button class="yv" data-yv="${v.id}"><span class="th"><img src="${esc(v.img)}" alt="">${v.live ? '<span class="lv">EN DIRECTO</span>' : ""}</span><b>${esc(unesc(v.t))}</b><span>${esc(unesc(v.c))}</span></button>`).join("")}</div></div>`;
+}
 function renderTV(msg){
   const c = CHANNELS.find(x => x.k === ch);
-  $("chs").innerHTML = CHANNELS.map(x => `${x.sep ? '<span class="sep"></span>' : ""}<button class="${x.k===c.k?"on":""} ${x.k==="yt"?"yt":""} ${LOGOS[x.k]?"logo":""}" data-ch="${x.k}" aria-label="${x.n}">${LOGOS[x.k] ? `<img src="${LOGOS[x.k]}" alt="${x.t}">` : x.t}</button>`).join("");
-  $("ytChange").hidden = c.k !== "yt";
-  const sc = $("screen"), isYT = c.k === "yt", yid = ytId(store.get("tele_yt", ""));
-  if (!tvOn){
-    const sub = msg || (isYT ? (yid ? "Toca para ver el vídeo guardado" : "Toca para pegar un enlace de YouTube") : "Toca para verlo aquí");
-    sc.innerHTML = `${isYT ? "" : '<span class="live">EN DIRECTO</span>'}<button class="bigplay" data-play aria-label="Ver ${c.n}">${svg("play")}</button>
-      <div class="ttl">${isYT ? (yid ? "Vídeo de YouTube" : "YouTube") : c.n}<small>${sub}</small></div>`;
+  $("chs").innerHTML = CHANNELS.map(x => `${x.sep ? '<span class="sep"></span>' : ""}<button class="${x.k===c.k?"on":""} ${LOGOS[x.k]?"logo":""}" data-ch="${x.k}" aria-label="${x.n}">${LOGOS[x.k] ? `<img src="${LOGOS[x.k]}" alt="${x.t}">` : x.t}</button>`).join("");
+  $("ytChange").hidden = !(c.k === "yt" && store.get("yt_key", ""));
+  const sc = $("screen");
+  if (c.k === "yt"){
+    if (tvOn && ytPlay){
+      sc.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${ytPlay}?autoplay=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="YouTube"></iframe>
+        <button class="yback" data-yback>‹ Resultados</button><button class="xclose" data-stop aria-label="Parar">✕</button>`;
+    } else { sc.innerHTML = ytPanel(); }
     return;
   }
-  if (isYT){
-    sc.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${yid}?autoplay=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="YouTube"></iframe><button class="xclose" data-stop aria-label="Parar">✕</button>`;
+  if (!tvOn){
+    sc.innerHTML = `<span class="live">EN DIRECTO</span><button class="bigplay" data-play aria-label="Ver ${c.n}">${svg("play")}</button>
+      <div class="ttl">${c.n}<small>${msg || "Toca para verlo aquí"}</small></div>`;
     return;
   }
   sc.innerHTML = `<video src="${c.u}" playsinline controls autoplay></video><span class="live">EN DIRECTO</span><button class="xclose" data-stop aria-label="Parar">✕</button>`;
@@ -558,13 +601,20 @@ function renderTV(msg){
   v.addEventListener("error", () => { tvOn = false; renderTV("Sin señal ahora mismo. Toca para reintentar"); });
 }
 $("chs").addEventListener("click", e => { const b = e.target.closest("[data-ch]"); if (!b) return;
-  if (b.dataset.ch === "yt" && !ytId(store.get("tele_yt", "")) && !askYouTube()) return;
+  if (tvOn){ tvOn = false; ytPlay = null; }
   ch = b.dataset.ch; store.set("p2_ch", ch); renderTV(); });
 $("screen").addEventListener("click", e => {
-  if (e.target.closest("[data-stop]")){ tvOn = false; renderTV(); return; }
+  if (e.target.closest("[data-stop]")){ tvOn = false; ytPlay = null; renderTV(); return; }
+  if (e.target.closest("[data-yback]")){ tvOn = false; ytPlay = null; renderTV(); return; }
+  const yv = e.target.closest("[data-yv]") || e.target.closest("[data-ytsaved]");
+  if (yv){ ytPlay = yv.dataset.yv || ytId(store.get("tele_yt", "")); stopAll("tv"); tvOn = true; renderTV(); return; }
   if (!e.target.closest("[data-play]")) return;
-  if (ch === "yt" && !ytId(store.get("tele_yt", "")) && !askYouTube()) return;
   stopAll("tv"); tvOn = true; renderTV();
+});
+$("screen").addEventListener("submit", e => {
+  e.preventDefault();
+  if (e.target.id === "ykeyf"){ const k = $("ykey").value.trim(); if (k){ store.set("yt_key", k); renderTV(); if (ytQuery) ytSearch(ytQuery); } return; }
+  if (e.target.id === "ysearch"){ const q = $("yq").value.trim(); if (q){ $("yq").blur(); ytSearch(q); } }
 });
 function renderRadios(){
   $("radios").innerHTML = RADIOS.map(r => {
@@ -592,7 +642,7 @@ function askYouTube(){
   if (!ytId(v)){ alert("No reconozco ese enlace de YouTube."); return false; }
   store.set("tele_yt", v.trim()); return true;
 }
-$("ytChange").onclick = () => { if (askYouTube()){ renderTV(); } };
+$("ytChange").onclick = () => { const v = prompt("Clave de la API de YouTube (déjala vacía para quitarla):", store.get("yt_key","")); if (v == null) return; store.set("yt_key", v.trim()); renderTV(); };
 renderTV(); renderRadios();
 
 /* ---------- Clima: aires ---------- */
