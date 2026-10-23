@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CASA</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CASA">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#0f1218; --side:#151a22; --card:#1a2029; --card2:#202835; --line:#2a3240;
+  --ink:#eef1f6; --muted:#8c96a8; --soft:#b9c1cf;
+  --ent:#ff7a59; --ent-bg:rgba(255,122,89,.14);
+  --cli:#36c3b4; --cli-bg:rgba(54,195,180,.14);
+  --pla:#9b8cff; --pla-bg:rgba(155,140,255,.15);
+  --warm:#ff9f43; --cool:#4ea8ff; --off:#ff6b6b; --good:#4cd38a;
+  --head:"Space Grotesk",system-ui,sans-serif; --font:"DM Sans",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.app{display:grid;grid-template-columns:200px 1fr;height:100%}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Menú lateral ---------- */
+.side{background:var(--side);display:flex;flex-direction:column;padding:22px 14px 18px;border-right:1px solid var(--line)}
+.brand{font-family:var(--head);font-weight:700;font-size:26px;letter-spacing:.14em;padding:0 10px 4px}
+.brand small{display:block;font-family:var(--font);font-weight:500;font-size:12px;letter-spacing:0;color:var(--muted);margin-top:4px}
+.clock{font-family:var(--head);font-size:38px;font-weight:500;padding:18px 10px 0;line-height:1}
+.date{font-size:13px;color:var(--muted);padding:4px 10px 18px}
+.nav{display:flex;flex-direction:column;gap:6px}
+.nav button{display:flex;align-items:center;gap:12px;padding:12px 12px;border-radius:14px;font-weight:600;font-size:15px;color:var(--soft);text-align:left}
+.nav button svg{width:22px;height:22px;flex:none}
+.nav button.on{color:var(--ink)}
+.nav button.ent.on{background:var(--ent-bg)}.nav button.ent.on svg{color:var(--ent)}
+.nav button.cli.on{background:var(--cli-bg)}.nav button.cli.on svg{color:var(--cli)}
+.nav button.pla.on{background:var(--pla-bg)}.nav button.pla.on svg{color:var(--pla)}
+.users{margin-top:auto;border-top:1px solid var(--line);padding-top:16px;padding-bottom:22px}
+.users .lab{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;padding:0 10px 10px}
+.avs{display:flex;gap:14px;padding:0 10px}
+.av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:24px;font-weight:700;position:relative;opacity:.55;transition:.15s}
+.av.s{background:linear-gradient(135deg,#ff9a6b,#e2557a)}
+.av.r{background:linear-gradient(135deg,#59c2ff,#6b6bff)}
+.av.on{opacity:1;box-shadow:0 0 0 3px var(--side),0 0 0 5px var(--pla)}
+.av .nm{position:absolute;bottom:-18px;font-family:var(--font);font-size:11px;font-weight:600;color:var(--muted)}
+.av.on .nm{color:var(--ink)}
+
+/* ---------- Contenido ---------- */
+.main{padding:20px 22px;overflow:hidden;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;align-items:baseline;justify-content:space-between}
+.top h1{font-family:var(--head);font-size:28px;font-weight:600;margin:0}
+.top .sub{color:var(--muted);font-size:14px}
+.tab{display:none;flex:1;min-height:0}
+.tab.on{display:grid}
+.card{background:var(--card);border-radius:20px;padding:16px 18px;min-width:0;min-height:0}
+.lbl{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pill{font-size:11.5px;font-weight:700;letter-spacing:0;text-transform:none;padding:3px 9px;border-radius:999px;background:var(--card2);color:var(--soft)}
+svg.i{width:20px;height:20px}
+
+/* ---------- Entretenimiento ---------- */
+.t-ent{grid-template-columns:1.55fr 1fr;grid-template-rows:auto 1fr;gap:14px}
+.yt{display:flex;flex-direction:column}
+.yt .ytbox{flex:1}
+.tv{grid-row:1/3;display:flex;flex-direction:column}
+.chs{display:flex;gap:8px;margin-bottom:12px}
+.chs button{padding:8px 16px;border-radius:12px;background:var(--card2);font-weight:700;font-size:14px;color:var(--soft)}
+.chs button.on{background:var(--ent);color:#1a0f0b}
+.screen{flex:1;border-radius:16px;overflow:hidden;position:relative;background:
+  radial-gradient(120% 90% at 70% 20%,#3a5a8c 0,#1d2c47 45%,#0b1220 100%)}
+.screen .live{position:absolute;top:12px;left:12px;background:#e5383b;color:#fff;font-size:11px;font-weight:800;letter-spacing:.08em;padding:4px 8px;border-radius:6px}
+.screen .ttl{position:absolute;left:16px;bottom:58px;font-family:var(--head);font-size:22px;font-weight:600}
+.screen .ttl small{display:block;font-family:var(--font);font-size:13px;color:var(--soft);font-weight:500}
+.screen .bar{position:absolute;left:16px;right:16px;bottom:16px;display:flex;align-items:center;gap:12px}
+.screen .bar button{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center}
+.screen .bar .vol{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.18);position:relative}
+.screen .bar .vol i{position:absolute;left:0;top:0;bottom:0;width:62%;background:#fff;border-radius:3px}
+.radios{display:flex;flex-direction:column;gap:8px}
+.rad{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--card2)}
+.rad .lg{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:700;font-size:13px;flex:none}
+.rad .tx{flex:1;min-width:0}
+.rad .tx b{display:block;font-size:15px}
+.rad .tx span{font-size:12px;color:var(--muted)}
+.rad .pb{width:36px;height:36px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center}
+.rad.playing{background:var(--ent-bg);box-shadow:inset 0 0 0 1.5px var(--ent)}
+.rad.playing .pb{background:var(--ent);color:#1a0f0b}
+.eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px;margin-right:4px}
+.eq i{width:3px;background:var(--ent);border-radius:1px}
+
+.yt .ytbox .pl{width:52px;height:36px;border-radius:10px;background:#ff3b3b;display:flex;align-items:center;justify-content:center;color:#fff}
+.yt .ytbox b{display:block;font-size:15px}.yt .ytbox span{font-size:12.5px;color:var(--soft)}
+.apps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.apps button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--card2);font-weight:700;font-size:14px}
+
+/* ---------- Clima ---------- */
+.t-cli{grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto 1fr;gap:14px}
+.t-cli .bars{grid-column:2/4}
+.wx{grid-column:1/4;display:flex;gap:22px;align-items:center}
+.wx .now{display:flex;align-items:center;gap:12px;min-width:200px}
+.wx .now .t{font-family:var(--head);font-size:46px;font-weight:500}
+.wx .now .d{font-size:13px;color:var(--soft);line-height:1.45}
+.hrs{flex:1;display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.hr{background:var(--card2);border-radius:12px;padding:6px 0;text-align:center;font-size:12px;color:var(--muted)}
+.hr b{display:block;color:var(--ink);font-size:15px;margin:2px 0}
+.hr.cur{box-shadow:inset 0 0 0 1.5px var(--cli);color:var(--ink)}
+.hr .rb{width:6px;height:16px;border-radius:3px;background:var(--line);margin:3px auto 1px;position:relative;overflow:hidden}
+.hr .rb i{position:absolute;left:0;right:0;bottom:0;background:var(--cool)}
+.ac{display:flex;flex-direction:column;gap:10px}
+.ac .row{display:flex;justify-content:space-between;align-items:flex-start}
+.ac .room{font-weight:700;font-size:16px}
+.ac .cur{font-family:var(--head);font-size:44px;font-weight:500;line-height:1}
+.ac .st{font-size:12.5px;color:var(--muted);margin-top:4px}
+.ac .st b{color:var(--warm)}
+.tg{display:flex;flex-direction:column;align-items:center;gap:4px}
+.tg small{font-size:10.5px;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.tg .ctl{display:flex;align-items:center;gap:6px}
+.tg .ctl button{width:34px;height:34px;border-radius:10px;background:var(--card2);font-size:20px;font-weight:700}
+.tg .ctl span{font-family:var(--head);font-size:22px;min-width:56px;text-align:center}
+.modes{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.modes button{background:var(--card2);border-radius:10px;padding:7px 0;font-size:12.5px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
+.modes button.heat{background:rgba(255,159,67,.16);color:var(--warm);box-shadow:inset 0 0 0 1.5px var(--warm)}
+.modes button.night{background:var(--pla-bg);color:var(--pla);box-shadow:inset 0 0 0 1.5px var(--pla)}
+.cost .big{font-family:var(--head);font-size:40px;font-weight:500;line-height:1}
+.cost .big small{font-size:16px;color:var(--muted);margin-left:4px}
+.cost .k{font-size:12px;color:var(--muted);margin-top:4px}
+.cost table{width:100%;margin-top:10px;border-collapse:collapse;font-size:14px}
+.cost td{padding:4px 0}.cost td:nth-child(2){text-align:right;font-family:var(--head);font-weight:600}
+.cost td:nth-child(3){text-align:right;color:var(--muted);font-size:11.5px;width:60px}
+.cost tr.tot td{border-top:1px solid var(--line);font-weight:700}
+.bars{grid-column:2/3}
+.mb{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;align-items:end;height:calc(100% - 30px);margin-top:6px}
+.mb div{display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;font-size:11px;color:var(--muted)}
+.mb i{display:block;width:70%;border-radius:6px;background:var(--cli)}
+.mb .cur i{background:var(--warm)}
+.mb .cur{color:var(--ink);font-weight:700}
+.price .strip{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;height:34px;margin-top:4px}
+.price .strip i{border-radius:3px}
+.price .strip i.now{outline:2px solid #fff;outline-offset:1px}
+.price .hh{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px}
+.price .pi{display:flex;flex-direction:column;gap:4px;margin-top:10px;font-size:13px;color:var(--soft)}
+.price .pi b{color:var(--ink)}
+
+/* ---------- Planning ---------- */
+.t-pla{grid-template-columns:1.25fr 1fr;grid-template-rows:auto 1fr;gap:14px}
+.cal{grid-row:1/3;display:flex;flex-direction:column}
+.cal .mon{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cal .mon b{font-family:var(--head);font-size:20px;font-weight:600}
+.cal .mon button{width:32px;height:32px;border-radius:10px;background:var(--card2)}
+.grid7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:auto repeat(5,1fr);gap:4px;flex:1;min-height:0}
+.grid7 .wd{font-size:11px;font-weight:700;color:var(--muted);text-align:center;padding-bottom:4px}
+.grid7 .d{border-radius:10px;padding:6px 7px;font-size:13px;font-weight:600;background:var(--card2);display:flex;flex-direction:column;gap:3px;min-height:0;overflow:hidden}
+.grid7 .d.out{opacity:.3}
+.grid7 .d.today{box-shadow:inset 0 0 0 2px var(--pla);background:var(--pla-bg)}
+.grid7 .ev{font-size:10.5px;font-weight:600;padding:1px 5px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.s{background:rgba(255,122,107,.22);color:#ffb3a4}
+.ev.r{background:rgba(89,160,255,.22);color:#a9cdff}
+.ev.c{background:rgba(76,211,138,.18);color:#9ce8bd}
+.agenda .it{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.agenda .it:last-child{border:0}
+.agenda .h{font-family:var(--head);font-weight:600;width:48px;color:var(--soft)}
+.agenda .it b{display:block;font-size:14.5px}
+.agenda .it span{font-size:12px;color:var(--muted)}
+.agenda .dot{width:4px;border-radius:2px;flex:none}
+.lower{display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0}
+.notes .n{background:#2b2840;border-radius:12px;padding:9px 11px;font-size:13.5px;margin-bottom:8px;color:#e6e1ff}
+.notes .n small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.shop .chips{display:flex;flex-wrap:wrap;gap:7px}
+.shop .chips span{background:rgba(76,211,138,.14);color:#bff0d3;padding:7px 12px;border-radius:999px;font-weight:600;font-size:14px}
+.shop .add{margin-top:10px;display:flex;gap:6px}
+.shop .add div{flex:1;background:var(--card2);border-radius:10px;padding:9px 12px;color:var(--muted);font-size:13.5px}
+.shop .add button{background:var(--good);color:#0b1a12;border-radius:10px;padding:0 14px;font-weight:700}
+
+/* ---------- añadidos del panel funcional ---------- */
+[hidden]{display:none!important}
+a{color:inherit;text-decoration:none}
+.msg{font-size:14px;color:var(--muted);line-height:1.5}
+.msg a{color:var(--pla)}
+.hr.past{opacity:.45}
+.hr svg.hw{width:22px;height:22px;display:block;margin:1px auto}
+.screen video,.ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;object-fit:contain}
+.screen .bigplay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;color:#fff}
+.screen .bigplay svg{width:34px;height:34px}
+.screen .ttl{bottom:18px}
+.xclose{position:absolute;top:10px;right:10px;z-index:3;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-weight:700}
+.screen .live{z-index:2}
+.ytwrap{flex:1;position:relative;border-radius:14px;overflow:hidden;min-height:118px}
+.ytbox{width:100%;height:100%;min-height:118px;border-radius:14px;background:linear-gradient(135deg,#2a1414,#3b1d1d);display:flex;align-items:center;gap:14px;padding:0 16px;text-align:left}
+.ytbox .pl{width:52px;height:36px;border-radius:10px;background:#ff3b3b;display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+.ytbox b{display:block;font-size:15px}.ytbox span span{font-size:12.5px;color:var(--soft)}
+.appb{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--card2);font-weight:700;font-size:14px}
+.rad{cursor:pointer}
+.rad .eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px;margin-right:5px}
+.rad .eq i{width:3px;height:4px;background:var(--ent);border-radius:1px;animation:eq 1s ease-in-out infinite}
+.rad .eq i:nth-child(2){animation-delay:.2s}.rad .eq i:nth-child(3){animation-delay:.4s}
+@keyframes eq{50%{height:12px}}
+.radios{gap:7px}
+.rad{padding:8px 12px}
+.ac{position:relative}
+.ac .st .m-heat{color:var(--warm)}.ac .st .m-cool{color:var(--cool)}.ac .st .m-dry{color:var(--cli)}
+.tg.dim,.modes button.dim{opacity:.35;pointer-events:none}
+.modes{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}
+.modes button svg{width:18px;height:18px}
+.modes button.on.cool{background:rgba(78,168,255,.16);color:var(--cool);box-shadow:inset 0 0 0 1.5px var(--cool)}
+.modes button.on.heat{background:rgba(255,159,67,.16);color:var(--warm);box-shadow:inset 0 0 0 1.5px var(--warm)}
+.modes button.on.dry{background:var(--cli-bg);color:var(--cli);box-shadow:inset 0 0 0 1.5px var(--cli)}
+.modes button.on.offm{background:rgba(255,107,107,.14);color:var(--off);box-shadow:inset 0 0 0 1.5px var(--off)}
+.modes button.on.night{background:var(--pla-bg);color:var(--pla);box-shadow:inset 0 0 0 1.5px var(--pla)}
+.mb .mv{font-size:11px;font-weight:700;color:var(--soft);white-space:nowrap}
+.bars .mb{height:calc(100% - 34px)}
+.grid7 .ev{background:color-mix(in srgb,var(--c) 22%,transparent);color:color-mix(in srgb,var(--c) 70%,#fff)}
+.grid7 .more{font-size:10px;color:var(--muted)}
+.cal{min-height:0}
+.agenda{overflow:auto}
+.agenda .h{font-size:13px;line-height:1.2}
+.scroll{overflow:auto;max-height:100%}
+.notes,.shop{display:flex;flex-direction:column;min-height:0}
+.notes .n{display:block;width:100%;text-align:left}
+.shop .chips{align-content:flex-start;flex:1}
+.chip{background:rgba(76,211,138,.14);color:#bff0d3;padding:7px 12px;border-radius:999px;font-weight:600;font-size:14px}
+.shop .add input{flex:1;min-width:0;background:var(--card2);border:0;border-radius:10px;padding:9px 12px;color:var(--ink);font:inherit;font-size:14px}
+.shop .add input::placeholder{color:var(--muted)}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+.panel{background:var(--card);border-radius:20px;width:min(560px,100%);max-height:90%;overflow:auto;padding:22px}
+.panel h2{font-family:var(--head);margin:0 0 8px;font-size:20px}
+.panel p{color:var(--soft);font-size:14px;line-height:1.5;margin:0 0 10px}
+.panel a{color:var(--pla);font-weight:700}
+.pactions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.pactions button{padding:10px 16px;border-radius:12px;font-weight:700;background:var(--card2)}
+.pactions .primary{background:var(--pla);color:#160f3a}
+.cfgrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.cfgrow select{background:var(--card2);color:var(--ink);border:0;border-radius:10px;padding:8px 10px;font:inherit}
+button.pill{cursor:pointer}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:12px}
+  .clock,.date{display:none}
+  .nav{flex-direction:row}
+  .users{margin:0 0 0 auto;border:0;padding:0}.users .lab{display:none}
+  .main{overflow:auto}
+  .tab.on{display:flex;flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">CASA<small>Salvador y Ramón</small></div>
+    <div class="clock num" id="clock">--:--</div>
+    <div class="date" id="date"></div>
+    <nav class="nav">
+      <button class="ent" data-t="ent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3zM8 21h8M10 9.5l4 2.5-4 2.5z"/></svg>Entretenimiento</button>
+      <button class="cli" data-t="cli"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0zM18 6h3M18 10h3"/></svg>Clima</button>
+      <button class="pla" data-t="pla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 10h16M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>Planning</button>
+    </nav>
+    <div class="users">
+      <div class="lab">Quién eres</div>
+      <div class="avs">
+        <button class="av s" data-u="S">S<span class="nm">Salvador</span></button>
+        <button class="av r" data-u="R">R<span class="nm">Ramón</span></button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="top"><h1 id="title">Entretenimiento</h1><span class="sub" id="sub"></span></div>
+
+    <!-- ENTRETENIMIENTO -->
+    <section class="tab t-ent" id="t-ent">
+      <div class="card tv">
+        <div class="lbl">Televisión en directo <span class="pill">RTVE</span></div>
+        <div class="chs" id="chs"></div>
+        <div class="screen" id="screen"></div>
+      </div>
+      <div class="card">
+        <div class="lbl">Radio en directo</div>
+        <div class="radios" id="radios"></div>
+      </div>
+      <div class="card yt">
+        <div class="lbl">YouTube <button class="pill" id="ytChange">Cambiar vídeo</button></div>
+        <div class="ytwrap" id="yt"></div>
+        <div class="apps">
+          <a class="appb" href="music://"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="#fa2d48" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>Apple Music</a>
+          <a class="appb" href="spotify:"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="#1db954" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M7.5 9.5c3-1 6.5-.7 9.2.8M8 12.6c2.5-.7 5.3-.4 7.4.8M8.6 15.4c2-.5 4-.3 5.6.6"/></svg>Spotify</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLIMA -->
+    <section class="tab t-cli" id="t-cli">
+      <div class="card wx"><div class="now" id="wxnow"><div class="d">Cargando el tiempo de Vigo…</div></div><div class="hrs" id="hrs"></div></div>
+      <div class="card ac" id="ac0"><div class="msg">Conectando con Home Assistant…</div></div>
+      <div class="card ac" id="ac1"></div>
+      <div class="card price"><div class="lbl">Luz hoy <span class="pill" id="pnow"></span></div><div id="price"></div></div>
+      <div class="card cost"><div class="lbl">Coste de los aires <span id="pfix"></span></div><div id="cost"></div></div>
+      <div class="card bars"><div class="lbl">Por meses <button class="pill" id="half"></button></div><div class="mb" id="months"></div></div>
+    </section>
+
+    <!-- PLANNING -->
+    <section class="tab t-pla" id="t-pla">
+      <div class="card cal">
+        <div class="mon"><button id="mPrev" aria-label="Mes anterior">‹</button><b id="mTitle"></b><button id="mNext" aria-label="Mes siguiente">›</button></div>
+        <div class="grid7" id="cal"></div>
+      </div>
+      <div class="card agenda">
+        <div class="lbl">Hoy <span><button class="pill" id="calCfg" aria-label="Elegir calendarios">⚙</button> <span class="pill" id="who"></span></span></div>
+        <div id="agenda"></div>
+      </div>
+      <div class="lower">
+        <div class="card notes"><div class="lbl">Mis notas <button class="pill" id="noteAdd" aria-label="Añadir nota">+</button></div><div id="notes" class="scroll"></div></div>
+        <div class="card shop"><div class="lbl">Compra <span class="pill">Compartida</span></div>
+          <div class="chips scroll" id="items"></div>
+          <form class="add" id="addForm"><input id="newItem" placeholder="Añadir…" autocomplete="off" aria-label="Añadir a la compra"><button type="submit">+</button></form></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="sheet" id="sheet" hidden><div class="panel" role="dialog" aria-labelledby="sheetTitle"><h2 id="sheetTitle"></h2><div id="sheetBody"></div></div></div>
+<script>
+/* ===== CASA · Panel 2 =====
+   Se sirve desde Home Assistant (carpeta www → /local/panel2.html) y comparte el inicio de sesión con el panel 1. */
+const LAT = 42.2406, LON = -8.7207, PLACE = "Vigo";
+const HA_LAN = "http://192.168.1.131";
+const RTVE = "https://rtvelivestream.rtve.es/rtvesec/";
+const CHANNELS = [
+  {k:"24h", t:"24h",  n:"Canal 24 horas", u: RTVE + "24h/24h_main_dvr.m3u8"},
+  {k:"la1", t:"La 1", n:"La 1",          u: RTVE + "la1/la1_main_dvr.m3u8"},
+  {k:"la2", t:"La 2", n:"La 2",          u: RTVE + "la2/la2_main_dvr.m3u8"}
+];
+const RADIOS = [
+  {k:"r1", t:"Radio Nacional", s:"Información",    lg:"R1", bg:"#fff",    fg:"#c62828", u: RTVE + "rne/rne_r1_main.m3u8"},
+  {k:"rg", t:"Radio Galega",   s:"Galicia",        lg:"RG", bg:"#0a64b4", fg:"#fff",    u: "https://crtvg-radiogalega-hls.flumotion.cloud/playlist.m3u8"},
+  {k:"r5", t:"Radio 5",        s:"Todo noticias",  lg:"R5", bg:"#ffe08a", fg:"#7a4b00", u: RTVE + "rne/rne_r5_madrid_main.m3u8"},
+  {k:"r3", t:"Radio 3",        s:"Música",         lg:"R3", bg:"#1f1f1f", fg:"#fff",    u: RTVE + "rne/rne_r3_main.m3u8"},
+  {k:"rc", t:"Radio Clásica",  s:"Música clásica", lg:"RC", bg:"#c9b8ff", fg:"#2d1a6b", u: RTVE + "rne/rne_r2_main.m3u8"}
+];
+// Modo Noche: interruptores de Home Assistant (los mismos que usa el panel 1)
+const NIGHT = {
+  "climate.aire_salon":      {helper:"input_boolean.noche_salon",      txt:"se apaga a la 01:00"},
+  "climate.aire_dormitorio": {helper:"input_boolean.noche_dormitorio", txt:"se apaga a la 01:00 · vuelve de 7 a 10 h"}
+};
+const USERS = {S:{n:"Salvador", re:/salva/i, c:"#ff7a6b"}, R:{n:"Ramón", re:/ram[oó]n/i, c:"#59a0ff"}};
+const SHARED_C = "#4cd38a";
+const TAX = 1.0511 * 1.21;   // impuesto eléctrico e IVA sobre el precio PVPC
+
+/* ---------- utilidades ---------- */
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt1 = n => (Math.round(n*10)/10).toFixed(1).replace(".", ",");
+const eur = v => v.toLocaleString("es-ES", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
+const pad = n => String(n).padStart(2, "0");
+const IC = {
+  play:'<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',
+  stop:'<path d="M7 7h10v10H7z" fill="currentColor" stroke="none"/>',
+  snow:'<path d="M12 2v20M4.9 6l14.2 12M19.1 6 4.9 18M9 4l3 2 3-2M9 20l3-2 3 2"/>',
+  flame:'<path d="M12 22c4 0 7-3 7-7 0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-2 2-5 5-5 8 0 4 3 7 7 7z"/>',
+  drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+  power:'<path d="M12 3v9M6.3 7a8 8 0 1 0 11.4 0"/>',
+  moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'
+};
+const svg = n => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
+
+/* ---------- reloj, pestañas y usuario ---------- */
+const fmtTime = new Intl.DateTimeFormat("es-ES",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"});
+const fmtDate = new Intl.DateTimeFormat("es-ES",{weekday:"long",day:"numeric",month:"long",timeZone:"Europe/Madrid"});
+function tick(){
+  const d = new Date(); $("clock").textContent = fmtTime.format(d);
+  const s = fmtDate.format(d); $("date").textContent = s[0].toUpperCase() + s.slice(1);
+}
+tick(); setInterval(tick, 5000);
+const TT = {ent:["Entretenimiento","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario y notas de cada uno · la compra es compartida"]};
+let tab = store.get("p2_tab", "ent");
+function show(t){
+  tab = t; store.set("p2_tab", t);
+  document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  document.querySelectorAll(".tab").forEach(s => s.classList.toggle("on", s.id === "t-" + t));
+  $("title").textContent = TT[t][0]; $("sub").textContent = TT[t][1];
+  if (t === "pla") loadCalendar();
+}
+document.querySelectorAll(".nav button").forEach(b => b.onclick = () => show(b.dataset.t));
+let user = store.get("p2_user", "S");
+function setUser(u){
+  user = u; store.set("p2_user", u);
+  document.querySelectorAll(".av").forEach(x => x.classList.toggle("on", x.dataset.u === u));
+  $("who").textContent = "Agenda de " + USERS[u].n;
+  calCache = {}; renderPlanning(); loadCalendar(); refreshNotes();
+}
+document.querySelectorAll(".av").forEach(b => b.onclick = () => setUser(b.dataset.u));
+
+/* ---------- Home Assistant: sesión y API ---------- */
+const HA = location.origin, CLIENT_ID = HA + "/", REDIRECT = HA + location.pathname;
+const onHA = location.protocol === "http:";
+let auth = store.get("ha_auth", null);
+async function tokenRequest(params){
+  const r = await fetch(HA + "/auth/token", {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body: new URLSearchParams({...params, client_id: CLIENT_ID})});
+  if (!r.ok) throw new Error("auth " + r.status);
+  return r.json();
+}
+async function getToken(){
+  auth = store.get("ha_auth", auth);
+  if (!auth) throw new Error("login");
+  if (auth.llat) return auth.llat;
+  if (auth.access && auth.expires > Date.now() + 60000) return auth.access;
+  if (!auth.refresh) throw new Error("login");
+  const t = await tokenRequest({grant_type:"refresh_token", refresh_token: auth.refresh});
+  auth.access = t.access_token; auth.expires = Date.now() + t.expires_in*1000; store.set("ha_auth", auth);
+  return auth.access;
+}
+async function api(path, body, method){
+  for (let i = 0; i < 2; i++){
+    const tok = await getToken();
+    const r = await fetch(HA + path, {method: method || (body ? "POST" : "GET"),
+      headers:{"Authorization":"Bearer " + tok, "Content-Type":"application/json"}, body: body ? JSON.stringify(body) : undefined, cache:"no-store"});
+    if (r.status === 401){ if (auth && auth.llat) throw new Error("login"); if (auth) auth.expires = 0; continue; }
+    if (!r.ok) throw new Error("HA " + r.status);
+    const tx = await r.text(); return tx ? JSON.parse(tx) : null;
+  }
+  throw new Error("login");
+}
+const service = (dom, srv, data) => api(`/api/services/${dom}/${srv}`, data);
+async function serviceResp(dom, srv, data){
+  const r = await api(`/api/services/${dom}/${srv}?return_response`, data);
+  return (r && (r.service_response || r)) || {};
+}
+let wsSeq = 1;
+async function wsCall(msg){
+  const tok = await getToken();
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(HA.replace(/^http/, "ws") + "/api/websocket"), id = wsSeq++;
+    const done = (fn, v) => { try{ ws.close(); }catch(e){} fn(v); };
+    const timer = setTimeout(() => done(reject, new Error("timeout")), 20000);
+    ws.onmessage = ev => { const m = JSON.parse(ev.data);
+      if (m.type === "auth_required") ws.send(JSON.stringify({type:"auth", access_token: tok}));
+      else if (m.type === "auth_ok") ws.send(JSON.stringify({...msg, id}));
+      else if (m.type === "auth_invalid"){ clearTimeout(timer); done(reject, new Error("login")); }
+      else if (m.id === id){ clearTimeout(timer); m.success ? done(resolve, m.result) : done(reject, new Error("ws")); } };
+    ws.onerror = () => { clearTimeout(timer); done(reject, new Error("ws")); };
+  });
+}
+function login(){
+  location.href = HA + "/auth/authorize?response_type=code&client_id=" + encodeURIComponent(CLIENT_ID) +
+    "&redirect_uri=" + encodeURIComponent(REDIRECT) + "&state=panel2";
+}
+async function finishLogin(){
+  const code = new URLSearchParams(location.search).get("code"); if (!code) return;
+  try{ history.replaceState(null, "", location.pathname); }catch(e){}
+  try{ const t = await tokenRequest({grant_type:"authorization_code", code});
+    auth = {access:t.access_token, expires:Date.now()+t.expires_in*1000, refresh:t.refresh_token}; store.set("ha_auth", auth);
+  }catch(e){ auth = null; }
+}
+function sheet(title, html){ $("sheetTitle").textContent = title; $("sheetBody").innerHTML = html; $("sheet").hidden = false; }
+function closeSheet(){ $("sheet").hidden = true; }
+$("sheet").addEventListener("click", e => { if (e.target === $("sheet") || e.target.closest("[data-close]")) closeSheet(); });
+let loginShown = false;
+function showLogin(){
+  if (!onHA){
+    sheet("Abre el panel desde casa", `<p>Este panel funciona desde Home Assistant, con el wifi de casa:</p>
+      <p><a href="${HA_LAN}/local/panel2.html">${HA_LAN}/local/panel2.html</a></p><div class="pactions"><button data-close>Cerrar</button></div>`);
+    return;
+  }
+  sheet("Conectar con Home Assistant", `<p>Para manejar la casa, el panel necesita entrar en Home Assistant una vez. El panel no guarda tu contraseña.</p>
+    <div class="pactions"><button data-close>Ahora no</button><button class="primary" id="goLogin">Iniciar sesión en Home Assistant</button></div>`);
+  $("goLogin").onclick = login;
+}
+function handleErr(err){
+  if (String(err && err.message) === "login"){ if (!loginShown){ loginShown = true; showLogin(); } }
+}
+
+/* ---------- Tiempo (Open-Meteo) ---------- */
+function wx(code, day=1){
+  const sun = '<circle cx="12" cy="11" r="4.5" fill="#f5b83d"/><g stroke="#f5b83d" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2M12 17.5v2M3.5 11h2M18.5 11h2M6 5l1.4 1.4M16.6 15.6 18 17M6 17l1.4-1.4M16.6 6.4 18 5"/></g>';
+  const moon = '<path d="M17 14.5A6.5 6.5 0 1 1 10.5 5a5 5 0 0 0 6.5 9.5z" fill="#c9cbe6"/>';
+  const cl = (x=0,y=0,c="#dfe3ee") => `<path transform="translate(${x} ${y})" d="M7 20h10.5a3.8 3.8 0 0 0 .4-7.6A5.5 5.5 0 0 0 7.3 12 4 4 0 0 0 7 20z" fill="${c}"/>`;
+  const small = day ? '<g transform="translate(-4 -4) scale(.75)">'+sun+'</g>' : '<g transform="translate(-3 -3) scale(.8)">'+moon+'</g>';
+  const rain = '<g stroke="#5b8fd0" stroke-width="2" stroke-linecap="round"><path d="M9 21.5l-1 2M13 21.5l-1 2M17 21.5l-1 2"/></g>';
+  let b;
+  if (code===0) b = day ? sun : moon; else if (code<=2) b = small + cl(1,-1); else if (code===3) b = cl(-2,-4,"#aeb6c8") + cl(1,-1);
+  else if (code===45||code===48) b = cl(0,-4) + '<g stroke="#9aa3ba" stroke-width="2" stroke-linecap="round"><path d="M4 19.5h16M6 22.5h12"/></g>';
+  else if (code>=71&&code<=77||code===85||code===86) b = cl(0,-3) + '<g fill="#8fb3e0"><circle cx="9" cy="21" r="1.3"/><circle cx="13" cy="22.5" r="1.3"/><circle cx="17" cy="21" r="1.3"/></g>';
+  else if (code>=95) b = cl(0,-4,"#b9bfd0") + '<path d="M12 16l-2.5 4h3l-2 4" stroke="#f5b83d" stroke-width="2" fill="none"/>';
+  else if (code>=80) b = small + cl(1,-3) + rain; else b = cl(0,-3) + rain;
+  return `<svg viewBox="0 0 24 25" aria-hidden="true">${b}</svg>`;
+}
+function wxText(c){
+  if (c===0) return "Despejado"; if (c===1) return "Casi despejado"; if (c===2) return "Intervalos de nubes"; if (c===3) return "Nublado";
+  if (c===45||c===48) return "Niebla"; if (c>=51&&c<=57) return "Llovizna"; if (c>=61&&c<=67) return "Lluvia";
+  if (c>=71&&c<=77) return "Nieve"; if (c>=80&&c<=82) return "Chubascos"; if (c>=95) return "Tormenta"; return "—";
+}
+const WX_URL = "https://api.open-meteo.com/v1/forecast?latitude="+LAT+"&longitude="+LON+
+  "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day"+
+  "&hourly=temperature_2m,precipitation_probability,weather_code,is_day"+
+  "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Europe%2FMadrid&forecast_days=2";
+function renderWeather(w){
+  const c = w.current, d = w.daily, h = w.hourly;
+  $("wxnow").innerHTML = `${wx(c.weather_code, c.is_day).replace('<svg','<svg width="48" height="48"')}
+    <div class="t num">${Math.round(c.temperature_2m)}°</div>
+    <div class="d"><b>${wxText(c.weather_code)}</b><br>${PLACE} · máx ${Math.round(d.temperature_2m_max[0])}° · mín ${Math.round(d.temperature_2m_min[0])}°<br>
+      Sensación ${Math.round(c.apparent_temperature)}° · viento ${Math.round(c.wind_speed_10m)} km/h · humedad ${c.relative_humidity_2m}%</div>`;
+  const today = d.time ? d.time[0] : c.time.slice(0,10), nowH = parseInt(c.time.slice(11,13), 10);
+  let s = "";
+  for (let hh = 8; hh <= 22; hh += 2){
+    const i = h.time.indexOf(today + "T" + pad(hh) + ":00"); if (i < 0) continue;
+    const p = h.precipitation_probability[i] ?? 0;
+    s += `<div class="hr ${nowH>=hh && nowH<hh+2 ? "cur":""} ${hh+2<=nowH ? "past":""}">${hh}h${wx(h.weather_code[i], h.is_day[i]).replace('<svg','<svg class="hw"')}<b class="num">${Math.round(h.temperature_2m[i])}°</b><div class="rb"><i style="height:${p}%"></i></div>${p}%</div>`;
+  }
+  $("hrs").innerHTML = s;
+}
+async function loadWeather(){
+  try{ const r = await fetch(WX_URL, {cache:"no-store"}); if (!r.ok) throw 0; const w = await r.json(); store.set("p2_wx", w); renderWeather(w); }
+  catch(e){ const o = store.get("p2_wx", null); if (o) renderWeather(o); }
+}
+loadWeather(); setInterval(loadWeather, 15*60*1000);
+
+/* ---------- Entretenimiento: tele, radio y YouTube (solo suena una cosa a la vez) ---------- */
+const player = new Audio(); player.preload = "none";
+let radioOn = null, radioErr = null, tvOn = false, ytOn = false;
+let ch = store.get("p2_ch", "24h"); if (!CHANNELS.some(c => c.k === ch)) ch = "24h";
+function stopAll(except){
+  if (except !== "radio" && radioOn){ player.pause(); player.removeAttribute("src"); player.load(); radioOn = null; renderRadios(); }
+  if (except !== "tv" && tvOn){ tvOn = false; renderTV(); }
+  if (except !== "yt" && ytOn){ ytOn = false; renderYT(); }
+}
+function renderTV(msg){
+  const c = CHANNELS.find(x => x.k === ch);
+  $("chs").innerHTML = CHANNELS.map(x => `<button class="${x.k===c.k?"on":""}" data-ch="${x.k}">${x.t}</button>`).join("");
+  const sc = $("screen");
+  if (!tvOn){
+    sc.innerHTML = `<span class="live">EN DIRECTO</span><button class="bigplay" data-play aria-label="Ver ${c.n}">${svg("play")}</button>
+      <div class="ttl">${c.n}<small>${msg || "Toca para verlo aquí"}</small></div>`;
+    return;
+  }
+  sc.innerHTML = `<video src="${c.u}" playsinline controls autoplay></video><span class="live">EN DIRECTO</span><button class="xclose" data-stop aria-label="Parar">✕</button>`;
+  const v = sc.querySelector("video"); v.play().catch(() => {});
+  v.addEventListener("error", () => { tvOn = false; renderTV("Sin señal ahora mismo. Toca para reintentar"); });
+}
+$("chs").addEventListener("click", e => { const b = e.target.closest("[data-ch]"); if (!b) return; ch = b.dataset.ch; store.set("p2_ch", ch); renderTV(); });
+$("screen").addEventListener("click", e => {
+  if (e.target.closest("[data-stop]")){ tvOn = false; renderTV(); return; }
+  if (!e.target.closest("[data-play]")) return;
+  stopAll("tv"); tvOn = true; renderTV();
+});
+function renderRadios(){
+  $("radios").innerHTML = RADIOS.map(r => {
+    const on = radioOn === r.k;
+    return `<div class="rad ${on?"playing":""}" data-r="${r.k}"><div class="lg" style="background:${r.bg};color:${r.fg}">${r.lg}</div>
+      <div class="tx"><b>${r.t}</b><span>${on ? '<span class="eq"><i></i><i></i><i></i></span>Sonando' : (radioErr === r.k ? "Sin señal, reintenta" : r.s)}</span></div>
+      <button class="pb" aria-label="${on?"Parar":"Escuchar"} ${r.t}">${svg(on?"stop":"play")}</button></div>`;
+  }).join("");
+}
+$("radios").addEventListener("click", async e => {
+  const row = e.target.closest("[data-r]"); if (!row) return;
+  const r = RADIOS.find(x => x.k === row.dataset.r);
+  if (radioOn === r.k){ stopAll(); return; }
+  stopAll("radio"); radioErr = null; radioOn = r.k; player.src = r.u; renderRadios();
+  try{ await player.play(); }catch(err){ radioErr = r.k; radioOn = null; renderRadios(); }
+});
+player.addEventListener("error", () => { if (radioOn){ radioErr = radioOn; radioOn = null; renderRadios(); } });
+function ytId(s){
+  const m = String(s||"").match(/(?:youtu\.be\/|v=|\/live\/|\/shorts\/|\/embed\/)([A-Za-z0-9_-]{11})/) || String(s||"").match(/^([A-Za-z0-9_-]{11})$/);
+  return m ? m[1] : null;
+}
+function renderYT(){
+  const id = ytId(store.get("tele_yt", "")), box = $("yt");
+  if (!ytOn || !id){
+    box.innerHTML = `<button class="ytbox" data-play><span class="pl">${svg("play")}</span><span><b>${id ? "Vídeo guardado" : "Elegir vídeo"}</b><span>${id ? "Toca para verlo aquí" : "Toca para pegar un enlace de YouTube"}</span></span></button>`;
+    return;
+  }
+  box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="YouTube"></iframe><button class="xclose" data-stop aria-label="Parar">✕</button>`;
+}
+function askYouTube(){
+  const v = prompt("Pega el enlace de un vídeo o directo de YouTube:", store.get("tele_yt", ""));
+  if (v == null) return false;
+  if (!ytId(v)){ alert("No reconozco ese enlace de YouTube."); return false; }
+  store.set("tele_yt", v.trim()); return true;
+}
+$("yt").addEventListener("click", e => {
+  if (e.target.closest("[data-stop]")){ ytOn = false; renderYT(); return; }
+  if (!e.target.closest("[data-play]")) return;
+  if (!ytId(store.get("tele_yt", "")) && !askYouTube()) return;
+  stopAll("yt"); ytOn = true; renderYT();
+});
+$("ytChange").onclick = () => { if (askYouTube()) renderYT(); };
+renderTV(); renderRadios(); renderYT();
+
+/* ---------- Clima: aires ---------- */
+let climates = [], helpers = {}, states = [];
+const acName = e => (e.attributes.friendly_name || e.entity_id).replace(/^aire( acondicionado)?\s*/i, "").replace(/^./, c => c.toUpperCase()) || "Aire";
+const MODE_TXT = {cool:"Frío", heat:"Calor", dry:"Secar", fan_only:"Ventilador", auto:"Automático", off:"Apagado", unavailable:"Sin conexión"};
+const MODES = [{m:"cool",t:"Frío",i:"snow",c:"cool"},{m:"heat",t:"Calor",i:"flame",c:"heat"},{m:"dry",t:"Secar",i:"drop",c:"dry"},{m:"off",t:"Apagar",i:"power",c:"offm"}];
+const pendingT = {}, timers = {};
+function acHTML(e){
+  const a = e.attributes, st = e.state, off = st === "off" || st === "unavailable";
+  const cfg = NIGHT[e.entity_id] && helpers[NIGHT[e.entity_id].helper] ? NIGHT[e.entity_id] : null;
+  const sleep = (a.preset_modes||[]).find(p => /sleep/i.test(p));
+  const night = cfg ? (!off && helpers[cfg.helper] === "on") : false;
+  const tgt = pendingT[e.entity_id] ?? a.temperature;
+  return `<div class="row"><div><div class="room">${esc(acName(e))}</div><div class="cur num">${a.current_temperature!=null ? fmt1(a.current_temperature)+"°" : "—"}</div>
+      <div class="st">${off ? (MODE_TXT[st]||st) : `<b class="m-${st}">${MODE_TXT[st]||st}</b>${night ? " · Noche, " + cfg.txt : ""}`}</div></div>
+    <div class="tg ${off?"dim":""}"><small>OBJETIVO</small><div class="ctl"><button data-act="minus" aria-label="Bajar">−</button><span class="num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span><button data-act="plus" aria-label="Subir">+</button></div></div></div>
+    <div class="modes">${MODES.filter(x => (a.hvac_modes||[]).includes(x.m)).map(x => `<button class="${st===x.m?"on "+x.c:""}" data-mode="${x.m}">${svg(x.i)}<span>${x.t}</span></button>`).join("")}
+      ${(cfg || sleep) ? `<button class="${night?"on night":""} ${off?"dim":""}" data-night>${svg("moon")}<span>Noche</span></button>` : ""}</div>`;
+}
+function renderACs(){
+  const list = [...climates].sort((x,y) => (/sal[oó]n/i.test(acName(y))) - (/sal[oó]n/i.test(acName(x))));
+  ["ac0","ac1"].forEach((id, i) => {
+    const e = list[i], box = $(id);
+    if (!e){ box.innerHTML = i === 0 ? '<div class="msg">No encuentro aires en Home Assistant.</div>' : ""; box.dataset.e = ""; return; }
+    box.dataset.e = e.entity_id; box.innerHTML = acHTML(e);
+  });
+}
+document.querySelectorAll(".t-cli .ac").forEach(card => card.addEventListener("click", async ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  const id = card.dataset.e, e = climates.find(c => c.entity_id === id); if (!e) return;
+  const a = e.attributes;
+  if (b.dataset.act){
+    const step = a.target_temp_step || 0.5;
+    let t = (pendingT[id] ?? a.temperature ?? 22) + (b.dataset.act === "plus" ? step : -step);
+    t = Math.min(a.max_temp ?? 30, Math.max(a.min_temp ?? 16, t));
+    pendingT[id] = t; card.querySelector(".ctl span").textContent = fmt1(t) + "°";
+    clearTimeout(timers[id]);
+    timers[id] = setTimeout(async () => {
+      try{ await service("climate", "set_temperature", {entity_id:id, temperature:t}); }catch(err){ handleErr(err); }
+      delete pendingT[id]; setTimeout(refreshHA, 1200);
+    }, 800);
+    return;
+  }
+  b.style.opacity = .5;
+  try{
+    if (b.dataset.mode){ await service("climate", "set_hvac_mode", {entity_id:id, hvac_mode:b.dataset.mode}); e.state = b.dataset.mode; }
+    else if (b.dataset.night){
+      const cfg = NIGHT[id] && helpers[NIGHT[id].helper] ? NIGHT[id] : null;
+      const on = b.classList.contains("on");
+      if (cfg){ await service("input_boolean", on ? "turn_off" : "turn_on", {entity_id: cfg.helper}); helpers[cfg.helper] = on ? "off" : "on"; }
+      const sleep = (a.preset_modes||[]).find(p => /sleep/i.test(p));
+      if (sleep && e.state !== "off"){ try{ await service("climate", "set_preset_mode", {entity_id:id, preset_mode: on ? "none" : sleep}); }catch(x){} }
+    }
+    renderACs(); setTimeout(refreshHA, 1200);
+  }catch(err){ b.style.opacity = 1; handleErr(err); }
+}));
+
+/* ---------- Clima: precio de la luz (PVPC) ---------- */
+let pvpcId = null, curPrice = store.get("kwh_price", 0.15);
+function renderPrice(){
+  const s = states.find(x => /pvpc/i.test(x.entity_id) && x.attributes && x.attributes.price_00h != null);
+  const pv = states.find(x => /pvpc/i.test(x.entity_id) && /€\/kWh|EUR\/kWh/i.test(x.attributes.unit_of_measurement||"") && !isNaN(parseFloat(x.state)));
+  pvpcId = pv ? pv.entity_id : null;
+  curPrice = pv ? parseFloat(pv.state) * TAX : store.get("kwh_price", 0.15);
+  if (!s){ $("price").innerHTML = '<div class="msg">Añade en Home Assistant la integración del precio de la luz (PVPC).</div>'; $("pnow").textContent = ""; return; }
+  const P = [...Array(24)].map((_,h) => { const v = parseFloat(s.attributes["price_" + pad(h) + "h"]); return isNaN(v) ? null : v*TAX; });
+  const vals = P.filter(v => v != null), mn = Math.min(...vals), mx = Math.max(...vals), now = new Date().getHours();
+  const f = v => v.toLocaleString("es-ES", {minimumFractionDigits:3, maximumFractionDigits:3});
+  const col = v => v == null ? "var(--line)" : `hsl(${Math.round(130 - 130*(mx>mn ? (v-mn)/(mx-mn) : 0))} 62% 50%)`;
+  const hMin = P.indexOf(mn), hMax = P.indexOf(mx), cheap = mn + (mx-mn)/3;
+  let next = -1; for (let h = now; h < 24; h++) if (P[h] != null && P[h] <= cheap){ next = h; break; }
+  $("price").innerHTML = `<div class="strip">${P.map((v,h) => `<i class="${h===now?"now":""}" style="background:${col(v)}"></i>`).join("")}</div>
+    <div class="hh"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div>
+    <div class="pi"><span>Más barata <b>${pad(hMin)}h · ${f(mn)} €</b></span><span>Más cara <b>${pad(hMax)}h · ${f(mx)} €</b></span>
+      <span>${next === now ? "<b>Ahora es hora barata</b>" : next > now ? `Barata desde las <b>${pad(next)}h</b>` : ""}</span></div>`;
+  $("pnow").textContent = P[now] != null ? "Ahora " + f(P[now]) + " €/kWh" : "";
+}
+
+/* ---------- Clima: coste de los aires (sensores estimados de Home Assistant) ---------- */
+let todayKWh = null, todayEUR = null, todayAt = 0, year = {}, yearAt = 0, yearLive = {}, half = null;
+const num = s => { const v = parseFloat(s.state); return isNaN(v) ? null : v; };
+const unit = s => s.attributes.unit_of_measurement || "";
+function energySensors(){
+  const names = climates.map(c => acName(c).toLowerCase());
+  const isAC = s => /aire|climate|midea/i.test(s.entity_id) || names.some(n => (s.attributes.friendly_name||"").toLowerCase().includes(n));
+  const sensors = states.filter(s => s.entity_id.startsWith("sensor.") && isAC(s) && num(s) != null);
+  let power = sensors.filter(s => /^sensor\.(?!aire_acondicionado_).*potencia/i.test(s.entity_id));
+  if (!power.length) power = sensors.filter(s => /potencia_en_tiempo_real/i.test(s.entity_id));
+  let energy = sensors.filter(s => /^sensor\.(?!aire_acondicionado_).*energia/i.test(s.entity_id) && /k?Wh/.test(unit(s)));
+  if (!energy.length) energy = sensors.filter(s => /consumo_total_de_energia/i.test(s.entity_id));
+  return {power, energy};
+}
+async function loadToday(energy){
+  if (!energy.length || Date.now() - todayAt < 5*60*1000) return; todayAt = Date.now();
+  try{
+    const d = new Date(); d.setHours(0,0,0,0);
+    const ids = energy.map(s => s.entity_id).concat(pvpcId ? [pvpcId] : []);
+    const h = await api(`/api/history/period/${encodeURIComponent(d.toISOString())}?filter_entity_id=${ids.join(",")}&minimal_response&no_attributes`);
+    const idOf = l => (l[0] && l[0].entity_id) || "";
+    const ser = (h||[]).map(l => l.map(x => ({v: parseFloat(x.state), at: Date.parse(x.last_changed || x.last_updated || d)})).filter(x => !isNaN(x.v)));
+    let prices = []; (h||[]).forEach((l,i) => { if (pvpcId && idOf(l) === pvpcId) prices = ser[i]; });
+    const priceAt = ts => { let p = null; for (const x of prices){ if (x.at <= ts) p = x.v; else break; } return p != null ? p*TAX : curPrice; };
+    let k = 0, e = 0;
+    (h||[]).forEach((l,i) => { if (pvpcId && idOf(l) === pvpcId) return; const s = ser[i];
+      for (let j = 1; j < s.length; j++){ const dk = Math.max(0, s[j].v - s[j-1].v); k += dk; e += dk * priceAt(s[j].at); } });
+    todayKWh = k; todayEUR = e;
+  }catch(err){}
+}
+async function loadYear(energy){
+  if (!energy.length || Date.now() - yearAt < 30*60*1000) return; yearAt = Date.now();
+  try{
+    const y0 = new Date(new Date().getFullYear(), 0, 1), ids = energy.map(s => s.entity_id);
+    const r = await wsCall({type:"recorder/statistics_during_period", start_time: y0.toISOString(), period:"hour",
+      statistic_ids: ids.concat(pvpcId ? [pvpcId] : []), types:["change","mean"], units:{energy:"kWh"}});
+    const ts = x => typeof x.start === "number" ? x.start : Date.parse(x.start);
+    const prices = new Map(); ((pvpcId && r[pvpcId]) || []).forEach(x => { if (x.mean != null) prices.set(ts(x), x.mean*TAX); });
+    const out = {};
+    ids.forEach(id => { const m = [...Array(12)].map(() => ({kwh:0, eur:0}));
+      (r[id]||[]).forEach(x => { const c = Math.max(0, x.change||0); if (!c) return; const t0 = ts(x), mo = new Date(t0).getMonth();
+        m[mo].kwh += c; m[mo].eur += c * (prices.get(t0) ?? curPrice); });
+      out[id] = m; });
+    year = out; renderCost();
+  }catch(err){ yearAt = Date.now() - 25*60*1000; }
+}
+function renderCost(){
+  const {power, energy} = energySensors();
+  loadToday(energy); loadYear(energy);
+  if (!power.length && !energy.length){ $("cost").innerHTML = '<div class="msg">No hay datos de consumo de los aires.</div>'; return; }
+  const W = s => num(s) * (unit(s) === "kW" ? 1000 : 1), totalW = power.reduce((a,s) => a + W(s), 0);
+  const mo = new Date().getMonth(); yearLive = {};
+  energy.forEach(s => { const base = (year[s.entity_id] || [...Array(12)].map(() => ({kwh:0, eur:0}))).map(m => ({...m}));
+    const inStats = base.reduce((a,m) => a + m.kwh, 0);
+    const extra = /^sensor\.(?!aire_acondicionado_)/.test(s.entity_id) ? Math.max(0, num(s)/(unit(s)==="Wh"?1000:1) - inStats) : 0;
+    base[mo].kwh += extra; base[mo].eur += extra * curPrice; yearLive[s.entity_id] = base; });
+  const sum = ids => { let k = 0, e = 0; ids.forEach(id => (yearLive[id]||[]).forEach(m => { k += m.kwh; e += m.eur; })); return {k, e}; };
+  const kwh = v => (v >= 100 ? Math.round(v) : fmt1(v)) + " kWh";
+  const rows = [...climates].sort((x,y) => (/sal[oó]n/i.test(acName(y))) - (/sal[oó]n/i.test(acName(x)))).map(c => {
+    const n = acName(c).toLowerCase(); const ids = energy.filter(s => (s.attributes.friendly_name||"").toLowerCase().includes(n)).map(s => s.entity_id);
+    const y = sum(ids); return `<tr><td>${esc(acName(c))}</td><td>${eur(y.e)}</td><td>${kwh(y.k)}</td></tr>`; }).join("");
+  const all = sum(energy.map(s => s.entity_id));
+  const today = todayKWh != null ? eur(todayEUR ?? todayKWh*curPrice) : "—";
+  $("cost").innerHTML = `<div class="big num">${eur(totalW/1000*curPrice).replace(" €","")}<small>€/h</small></div>
+    <div class="k">ahora ${Math.round(totalW)} W · hoy ${today}</div>
+    <table>${rows}<tr class="tot"><td>Total ${new Date().getFullYear()}</td><td>${eur(all.e)}</td><td>${kwh(all.k)}</td></tr></table>`;
+  $("pfix").innerHTML = pvpcId ? "" : `<button class="pill" id="priceBtn">${curPrice.toLocaleString("es-ES",{maximumFractionDigits:4})} €/kWh ✎</button>`;
+  renderMonths(energy.map(s => s.entity_id));
+}
+const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+function renderMonths(ids){
+  const cur = new Date().getMonth(); if (half == null) half = cur >= 6 ? 1 : 0;
+  const tot = MESES.map((_,i) => ids.reduce((a,id) => a + ((yearLive[id] && yearLive[id][i].eur) || 0), 0));
+  const mx = Math.max(...tot, 0.01);
+  $("months").innerHTML = tot.slice(half*6, half*6+6).map((v,j) => { const i = half*6 + j;
+    return `<div class="${i===cur?"cur":""}"><span class="mv">${v > 0 ? (v >= 10 ? Math.round(v) : v.toFixed(v < 1 ? 2 : 1).replace(".", ",")) + " €" : "—"}</span><i style="height:${Math.max(2, Math.round(v/mx*100))}%"></i>${MESES[i]}</div>`; }).join("");
+  $("half").textContent = half ? "Jul – Dic ⇄" : "Ene – Jun ⇄";
+}
+$("half").onclick = () => { half = half ? 0 : 1; renderCost(); };
+document.querySelector(".cost").addEventListener("click", e => {
+  if (!e.target.closest("#priceBtn")) return;
+  const v = prompt("Precio de la luz en €/kWh (con impuestos):", String(store.get("kwh_price", 0.15)).replace(".", ","));
+  if (v == null) return; const n = parseFloat(v.replace(",", ".")); if (!isNaN(n) && n > 0 && n < 2){ store.set("kwh_price", n); renderPrice(); renderCost(); }
+});
+
+/* ---------- Planning: calendario de cada uno ---------- */
+// Cada calendario de Home Assistant se asigna a Salvador (S), a Ramón (R) o a los dos (C).
+// Si no está elegido, se adivina por el nombre; se puede cambiar con ⚙.
+let calMonth = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+let calCache = {};
+function calendars(){ return states.filter(s => s.entity_id.startsWith("calendar.")); }
+function calOwner(id){
+  const cfg = store.get("p2_cals", {});
+  if (cfg[id]) return cfg[id];
+  const s = states.find(x => x.entity_id === id), n = (s && s.attributes.friendly_name || "") + " " + id;
+  if (USERS.S.re.test(n)) return "S"; if (USERS.R.re.test(n)) return "R";
+  if (/casa|compart|familia|hogar/i.test(n)) return "C";
+  return "-";
+}
+const myCals = () => calendars().map(s => s.entity_id).filter(id => { const o = calOwner(id); return o === user || o === "C"; });
+async function loadCalendar(){
+  const ids = myCals(), key = user + calMonth.toISOString();
+  if (!ids.length){ renderPlanning(); return; }
+  if (calCache[key] && Date.now() - calCache[key].at < 5*60*1000){ renderPlanning(); return; }
+  const start = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1), end = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 1);
+  const t0 = new Date(); t0.setHours(0,0,0,0); const t1 = new Date(t0.getTime() + 86400000);
+  const from = new Date(Math.min(start, t0)), to = new Date(Math.max(end, t1));
+  const evs = [];
+  await Promise.all(ids.map(async id => {
+    try{ const list = await api(`/api/calendars/${id}?start=${encodeURIComponent(from.toISOString())}&end=${encodeURIComponent(to.toISOString())}`);
+      (list||[]).forEach(ev => evs.push({...ev, own: calOwner(id)})); }catch(err){ handleErr(err); }
+  }));
+  calCache[key] = {at: Date.now(), evs}; renderPlanning();
+}
+const evStart = ev => ev.start.dateTime ? new Date(ev.start.dateTime) : new Date(ev.start.date + "T00:00:00");
+const evEnd = ev => ev.end.dateTime ? new Date(ev.end.dateTime) : new Date(ev.end.date + "T00:00:00");
+const allDay = ev => !ev.start.dateTime;
+const evColor = ev => ev.own === "C" ? SHARED_C : USERS[ev.own] ? USERS[ev.own].c : USERS[user].c;
+function renderPlanning(){
+  const mname = calMonth.toLocaleDateString("es-ES", {month:"long", year:"numeric"});
+  $("mTitle").textContent = mname[0].toUpperCase() + mname.slice(1);
+  const key = user + calMonth.toISOString(), evs = (calCache[key] && calCache[key].evs) || [];
+  const first = (calMonth.getDay() + 6) % 7, days = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  let h = ["L","M","X","J","V","S","D"].map(d => `<div class="wd">${d}</div>`).join("");
+  const cells = Math.ceil((first + days) / 7) * 7;
+  for (let c = 0; c < cells; c++){
+    const d = new Date(calMonth.getFullYear(), calMonth.getMonth(), c - first + 1), out = d.getMonth() !== calMonth.getMonth();
+    const d1 = new Date(d.getTime() + 86400000);
+    const dayEv = out ? [] : evs.filter(ev => evStart(ev) < d1 && evEnd(ev) > d).sort((a,b) => evStart(a) - evStart(b));
+    h += `<div class="d ${out?"out":""} ${+d === +today ? "today":""}">${d.getDate()}${dayEv.slice(0,3).map(ev => `<span class="ev" style="--c:${evColor(ev)}">${esc(ev.summary||"")}</span>`).join("")}${dayEv.length > 3 ? `<span class="more">+${dayEv.length-3}</span>` : ""}</div>`;
+  }
+  $("cal").innerHTML = h;
+  $("cal").style.gridTemplateRows = `auto repeat(${cells/7}, 1fr)`;
+  // Hoy
+  const tKey = user + new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
+  const tev = ((calCache[tKey] && calCache[tKey].evs) || evs).filter(ev => evStart(ev) < new Date(today.getTime()+86400000) && evEnd(ev) > today).sort((a,b) => evStart(a) - evStart(b));
+  const cals = calendars();
+  $("agenda").innerHTML = !cals.length ? `<div class="msg">Todavía no hay calendarios en Home Assistant. Cuando los conectemos, aquí saldrá la agenda de cada uno.</div>`
+    : !myCals().length ? `<div class="msg">No hay ningún calendario asignado a ${USERS[user].n}. Pulsa ⚙ para elegirlo.</div>`
+    : !tev.length ? `<div class="msg">Nada para hoy.</div>`
+    : tev.map(ev => `<div class="it"><span class="dot" style="background:${evColor(ev)}"></span><span class="h">${allDay(ev) ? "Todo<br>el día" : fmtTime.format(evStart(ev))}</span><div><b>${esc(ev.summary||"")}</b><span>${esc(ev.location || (ev.own === "C" ? "Los dos" : ""))}</span></div></div>`).join("");
+}
+$("mPrev").onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1); renderPlanning(); loadCalendar(); };
+$("mNext").onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 1); renderPlanning(); loadCalendar(); };
+$("calCfg").onclick = () => {
+  const cals = calendars(), todos = states.filter(s => s.entity_id.startsWith("todo."));
+  const notes = store.get("p2_notes", {});
+  const opt = (id, v, t) => `<option value="${v}" ${calOwner(id) === v ? "selected":""}>${t}</option>`;
+  sheet("Calendarios y notas", `<p>Elige de quién es cada calendario. Los de «Los dos» salen a ambos.</p>
+    ${cals.length ? cals.map(s => `<div class="cfgrow"><span>${esc(s.attributes.friendly_name || s.entity_id)}</span><select data-cal="${s.entity_id}">${opt(s.entity_id,"-","No mostrar")}${opt(s.entity_id,"S","Salvador")}${opt(s.entity_id,"R","Ramón")}${opt(s.entity_id,"C","Los dos")}</select></div>`).join("") : "<p><i>No hay calendarios en Home Assistant todavía.</i></p>"}
+    <p style="margin-top:14px">Lista de notas de cada uno:</p>
+    ${["S","R"].map(u => `<div class="cfgrow"><span>${USERS[u].n}</span><select data-notes="${u}"><option value="">Automático</option>${todos.map(t => `<option value="${t.entity_id}" ${notes[u] === t.entity_id ? "selected":""}>${esc(t.attributes.friendly_name || t.entity_id)}</option>`).join("")}</select></div>`).join("")}
+    <div class="pactions"><button data-close>Cancelar</button><button class="primary" id="cfgSave">Guardar</button></div>`);
+  $("cfgSave").onclick = () => {
+    const c = {}; document.querySelectorAll("[data-cal]").forEach(s => c[s.dataset.cal] = s.value); store.set("p2_cals", c);
+    const n = {}; document.querySelectorAll("[data-notes]").forEach(s => { if (s.value) n[s.dataset.notes] = s.value; }); store.set("p2_notes", n);
+    closeSheet(); calCache = {}; loadCalendar(); refreshNotes();
+  };
+};
+
+/* ---------- Planning: notas de cada uno y compra compartida (listas de Home Assistant) ---------- */
+function notesId(u){
+  const cfg = store.get("p2_notes", {}); if (cfg[u]) return cfg[u];
+  const t = states.find(s => s.entity_id.startsWith("todo.") && /nota/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && USERS[u].re.test(s.entity_id + " " + (s.attributes.friendly_name||"")));
+  return t ? t.entity_id : null;
+}
+const shopId = () => { const t = states.find(s => s.entity_id.startsWith("todo.") && /compra|shopping/i.test(s.entity_id + " " + (s.attributes.friendly_name||""))); return t ? t.entity_id : null; };
+let notes = [], items = [];
+async function getItems(id){ const r = await serviceResp("todo", "get_items", {entity_id:id, status:"needs_action"}); return (r[id] && r[id].items) || []; }
+async function refreshNotes(){
+  const id = notesId(user);
+  if (!id){ $("notes").innerHTML = `<div class="msg">Crea en Home Assistant una lista llamada «Notas ${USERS[user].n}» (Listas de tareas pendientes) y aparecerá aquí.</div>`; return; }
+  try{ notes = await getItems(id); }catch(err){ handleErr(err); }
+  $("notes").innerHTML = notes.length ? notes.map((n,i) => `<button class="n" data-i="${i}">${esc(n.summary)}${n.due || n.description ? `<small>${esc(n.description || n.due)}</small>` : ""}</button>`).join("")
+    : `<div class="msg">Sin notas. Pulsa + para añadir.</div>`;
+}
+$("notes").addEventListener("click", async e => {
+  const b = e.target.closest(".n"); if (!b) return; const n = notes[+b.dataset.i]; const id = notesId(user);
+  if (!confirm("¿Marcar como hecha «" + n.summary + "»?")) return;
+  try{ await service("todo", "update_item", {entity_id:id, item: n.uid || n.summary, status:"completed"}); }catch(err){ handleErr(err); }
+  refreshNotes();
+});
+$("noteAdd").onclick = async () => {
+  const id = notesId(user); if (!id){ refreshNotes(); return; }
+  const v = prompt("Nueva nota para " + USERS[user].n + ":"); if (!v || !v.trim()) return;
+  try{ await service("todo", "add_item", {entity_id:id, item: v.trim()}); }catch(err){ handleErr(err); }
+  refreshNotes();
+};
+async function refreshShop(){
+  const id = shopId();
+  if (!id){ $("items").innerHTML = '<div class="msg">No encuentro la lista de la compra en Home Assistant.</div>'; return; }
+  try{ items = await getItems(id); }catch(err){ handleErr(err); }
+  $("items").innerHTML = items.length ? items.map((t,i) => `<button class="chip" data-i="${i}">${esc(t.summary)}</button>`).join("") : '<div class="msg">Lista vacía.</div>';
+}
+$("items").addEventListener("click", async e => {
+  const b = e.target.closest(".chip"); if (!b) return; const t = items[+b.dataset.i];
+  b.style.opacity = .4;
+  try{ await service("todo", "remove_item", {entity_id: shopId(), item: t.summary}); }catch(err){ handleErr(err); }
+  refreshShop();
+});
+$("addForm").addEventListener("submit", async e => {
+  e.preventDefault(); const v = $("newItem").value.trim(); if (!v || !shopId()) return;
+  $("newItem").value = ""; $("newItem").blur();
+  try{ await service("todo", "add_item", {entity_id: shopId(), item: v}); }catch(err){ handleErr(err); }
+  refreshShop();
+});
+
+/* ---------- ciclo de actualización ---------- */
+async function refreshHA(){
+  try{
+    states = await api("/api/states");
+    helpers = Object.fromEntries(states.filter(s => s.entity_id.startsWith("input_boolean.")).map(s => [s.entity_id, s.state]));
+    climates = states.filter(s => s.entity_id.startsWith("climate."));
+    if (!Object.keys(pendingT).length) renderACs();
+    renderPrice(); renderCost();
+    refreshShop(); refreshNotes();
+    if (tab === "pla") loadCalendar();
+  }catch(err){ handleErr(err); }
+}
+(async () => {
+  show(tab); setUser(user);
+  if (!onHA){ showLogin(); return; }
+  await finishLogin();
+  refreshHA(); setInterval(refreshHA, 15000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden){ tick(); refreshHA(); loadWeather(); } });
+})();
+</script>
+</body>
+</html>
