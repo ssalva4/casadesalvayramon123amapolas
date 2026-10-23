@@ -282,7 +282,7 @@ button.pill{cursor:pointer}
 <body>
 <div class="app">
   <aside class="side">
-    <div class="brand">CASA<small>Salvador y Ramón</small></div>
+    <div class="brand">CASA<small>Salva y Ramón</small></div>
     <div class="clock num" id="clock">--:--</div>
     <div class="date" id="date"></div>
     <div class="stemps">
@@ -297,7 +297,7 @@ button.pill{cursor:pointer}
     <div class="users">
       <div class="lab">Quién eres</div>
       <div class="avs">
-        <button class="av s" data-u="S">S<span class="nm">Salvador</span></button>
+        <button class="av s" data-u="S">S<span class="nm">Salva</span></button>
         <button class="av r" data-u="R">R<span class="nm">Ramón</span></button>
       </div>
     </div>
@@ -380,7 +380,7 @@ const NIGHT = {
   "climate.aire_salon":      {helper:"input_boolean.noche_salon",      txt:"se apaga a la 01:00"},
   "climate.aire_dormitorio": {helper:"input_boolean.noche_dormitorio", txt:"se apaga a la 01:00 · vuelve de 7 a 10 h"}
 };
-const USERS = {S:{n:"Salvador", re:/salva/i, c:"#ff7a6b"}, R:{n:"Ramón", re:/ram[oó]n/i, c:"#59a0ff"}};
+const USERS = {S:{n:"Salva", re:/salva/i, c:"#ff7a6b"}, R:{n:"Ramón", re:/ram[oó]n/i, c:"#59a0ff"}};
 const SHARED_C = "#4cd38a";
 const TAX = 1.0511 * 1.21;   // impuesto eléctrico e IVA sobre el precio PVPC
 
@@ -884,7 +884,7 @@ $("calCfg").onclick = () => {
   const notes = store.get("p2_notes", {});
   const opt = (id, v, t) => `<option value="${v}" ${calOwner(id) === v ? "selected":""}>${t}</option>`;
   sheet("Calendarios y notas", `<p>Elige de quién es cada calendario. Los de «Los dos» salen a ambos.</p>
-    ${cals.length ? cals.map(s => `<div class="cfgrow"><span>${esc(s.attributes.friendly_name || s.entity_id)}</span><select data-cal="${s.entity_id}">${opt(s.entity_id,"-","No mostrar")}${opt(s.entity_id,"S","Salvador")}${opt(s.entity_id,"R","Ramón")}${opt(s.entity_id,"C","Los dos")}</select></div>`).join("") : "<p><i>No hay calendarios en Home Assistant todavía.</i></p>"}
+    ${cals.length ? cals.map(s => `<div class="cfgrow"><span>${esc(s.attributes.friendly_name || s.entity_id)}</span><select data-cal="${s.entity_id}">${opt(s.entity_id,"-","No mostrar")}${opt(s.entity_id,"S","Salva")}${opt(s.entity_id,"R","Ramón")}${opt(s.entity_id,"C","Los dos")}</select></div>`).join("") : "<p><i>No hay calendarios en Home Assistant todavía.</i></p>"}
     <p style="margin-top:14px">Lista de notas de cada uno:</p>
     ${["S","R"].map(u => `<div class="cfgrow"><span>${USERS[u].n}</span><select data-notes="${u}"><option value="">Automático</option>${todos.map(t => `<option value="${t.entity_id}" ${notes[u] === t.entity_id ? "selected":""}>${esc(t.attributes.friendly_name || t.entity_id)}</option>`).join("")}</select></div>`).join("")}
     <div class="pactions"><button data-close>Cancelar</button><button class="primary" id="cfgSave">Guardar</button></div>`);
