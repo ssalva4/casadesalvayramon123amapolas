@@ -894,9 +894,12 @@ function renderEnergy(states){
   const unit = s => (s.attributes.unit_of_measurement || "");
   const sensors = states.filter(s => s.entity_id.startsWith("sensor.") && isAC(s) && num(s) != null);
   // Midea: «potencia en tiempo real» y «consumo total de energía»; si no, los genéricos (sin el compresor)
-  let power = sensors.filter(s => /potencia_en_tiempo_real|realtime_power/i.test(s.entity_id));
+  // 1.º los sensores estimados que creamos en Home Assistant (potencia_aire_* y energia_aire_*)
+  let power = sensors.filter(s => /^sensor\.potencia_aire_/i.test(s.entity_id));
+  if (!power.length) power = sensors.filter(s => /potencia_en_tiempo_real|realtime_power/i.test(s.entity_id));
   if (!power.length) power = sensors.filter(s => (s.attributes.device_class === "power" || /^k?W$/.test(unit(s))) && !/compresor|compressor/i.test(s.entity_id));
-  let energy = sensors.filter(s => /consumo_total_de_energia|total_energy/i.test(s.entity_id));
+  let energy = sensors.filter(s => /^sensor\.energia_aire_/i.test(s.entity_id));
+  if (!energy.length) energy = sensors.filter(s => /consumo_total_de_energia|total_energy/i.test(s.entity_id));
   if (!energy.length) energy = sensors.filter(s => s.attributes.device_class === "energy" || /^k?Wh$/.test(unit(s)));
   // Precio: PVPC de Home Assistant (cambia cada hora) si está; si no, el precio fijo que pongas
   const pvpc = states.find(s => /pvpc/i.test(s.entity_id) && /€\/kWh|EUR\/kWh/i.test(s.attributes.unit_of_measurement||"") && !isNaN(parseFloat(s.state)));
