@@ -439,6 +439,7 @@ const I = {
   check:'<path d="M4 12l5 5L20 6"/>',
   home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
   cloud:'<path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18z"/>',
+  exit:'<path d="M14 3h6v18h-6"/><circle cx="8" cy="4.5" r="1.6"/><path d="M8.5 7.5 6.5 13l3 2.5V21M8.5 7.5l3 3.5 2.5-.5M6.5 13 4 17.5"/>',
   sunrise:'<circle cx="12" cy="13" r="4"/><path d="M12 3v3M4.2 6.2l2 2M19.8 6.2l-2 2M2 17h20M5 21h14"/>',
   star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>'
 };
@@ -620,7 +621,7 @@ function renderMedia(){
     }
     if (b.a === "ha:buenos_dias"){
       const on = atvAwake();
-      return `<button class="mbtn ${on ? "m-bye" : "m-morning"}" data-ha="buenos_dias">${svg(on ? "moon" : "sunrise")}<span>${on ? "Adiós" : "Buenos días"}</span></button>`;
+      return `<button class="mbtn ${on ? "m-bye" : "m-morning"}" data-ha="buenos_dias">${svg(on ? "exit" : "sunrise")}<span>${on ? "Adiós" : "Buenos días"}</span></button>`;
     }
     if (/^ha:/i.test(b.a)){
       const done = haDone === b.a;

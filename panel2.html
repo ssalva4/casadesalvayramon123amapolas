@@ -1006,7 +1006,7 @@ async function refreshHA(){
 /* ===== Buenos días / Adiós: según si el Apple TV está encendido ===== */
 const ATV = "media_player.apple_tv", ATV_REMOTE = "remote.apple_tv", AIRE_BD = "climate.aire_salon";
 const SUN_SVG = '<circle cx="12" cy="13" r="4"/><path d="M12 3v3M4.2 6.2l2 2M19.8 6.2l-2 2M2 17h20M5 21h14"/>';
-const MOON_SVG = '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>';
+const MOON_SVG = '<path d="M14 3h6v18h-6"/><circle cx="8" cy="4.5" r="1.6"/><path d="M8.5 7.5 6.5 13l3 2.5V21M8.5 7.5l3 3.5 2.5-.5M6.5 13 4 17.5"/>';
 let bdOverride = null;
 function atvAwake(){
   if (bdOverride && Date.now() < bdOverride.until) return bdOverride.on;
@@ -1019,7 +1019,7 @@ function renderMorning(msg){
   b.classList.toggle("bye", on);
   b.querySelector("svg").innerHTML = on ? MOON_SVG : SUN_SVG;
   b.querySelector("span").innerHTML = (on ? "Adiós" : "Buenos días") +
-    `<small id="morningSub">${msg || (on ? "Apaga aire y Apple TV" : "La 1 · salón a 20°")}</small>`;
+    `<small id="morningSub">${msg || (on ? "Apaga aire y tele" : "La 1 · salón a 20°")}</small>`;
 }
 $("morning").onclick = async () => {
   const b = $("morning"); if (b.classList.contains("busy")) return;
