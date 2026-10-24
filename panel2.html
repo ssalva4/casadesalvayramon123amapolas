@@ -46,6 +46,9 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .nav button.ent.on{background:var(--ent-bg)}.nav button.ent.on svg{color:var(--ent)}
 .nav button.cli.on{background:var(--cli-bg)}.nav button.cli.on svg{color:var(--cli)}
 .nav button.pla.on{background:var(--pla-bg)}.nav button.pla.on svg{color:var(--pla)}
+.tarifa{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:2px 0 10px}
+.tarifa .tv{font-size:34px;font-weight:700;line-height:1}.tarifa .tv small{font-size:15px;font-weight:600;color:var(--muted)}
+.tarifa .tk{font-size:12.5px;color:var(--muted);line-height:1.35}
 .morning{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px;border-radius:14px;background:rgba(233,162,59,.16);color:#9a5a00;font-weight:700;font-size:15px;text-align:left;box-shadow:inset 0 0 0 1.5px rgba(233,162,59,.55)}
 .morning svg{width:24px;height:24px;color:#e9a23b;flex:none}
 .morning small{display:block;font-size:11.5px;font-weight:600;opacity:.75;margin-top:2px}
@@ -335,7 +338,7 @@ button.pill{cursor:pointer}
       <div class="card wx"><div class="now" id="wxnow"><div class="d">Cargando el tiempo de Vigo…</div></div><div class="hrs" id="hrs"></div></div>
       <div class="card ac" id="ac0"><div class="msg">Conectando con Home Assistant…</div></div>
       <div class="card ac" id="ac1"></div>
-      <div class="card price"><div class="lbl">Luz hoy <span class="pill" id="pnow"></span></div><div id="price"></div></div>
+      <div class="card price"><div class="lbl">Tu luz <span class="pill" id="pnow"></span></div><div id="price"></div></div>
       <div class="card cost"><div class="lbl">Coste de los aires <span id="pfix"></span></div><div id="cost"></div></div>
       <div class="card bars"><div class="lbl">Por meses <button class="pill" id="half"></button></div><div class="mb" id="months"></div></div>
     </section>
@@ -404,6 +407,11 @@ const NIGHT = {
 const USERS = {S:{n:"Salva", re:/salva/i, c:"#ff7a6b"}, R:{n:"Ramón", re:/ram[oó]n/i, c:"#59a0ff"}};
 const SHARED_C = "#4cd38a";
 const TAX = 1.0511 * 1.21;   // impuesto eléctrico e IVA sobre el precio PVPC
+/* Tarifa real (factura Naturgy «Tarifa Por Uso Luz», 24/08–23/09/2026): mismo precio a todas horas */
+const TARIFA = {kwh: 0.144972, iee: 0.05112696, iva: 0.21, potP1: 0.110283, potP2: 0.033469, kw: 3.3, bono: 0.024688, contador: 0.02663,
+  factura: {total: 63.62, kwh: 257, desde: "24 ago", hasta: "23 sep"}};
+const KWH_FINAL = TARIFA.kwh * (1 + TARIFA.iee) * (1 + TARIFA.iva);                       // ≈ 0,184 €/kWh con impuestos
+const FIJO_DIA = (((TARIFA.potP1 + TARIFA.potP2) * TARIFA.kw + TARIFA.bono) * (1 + TARIFA.iee) + TARIFA.contador) * (1 + TARIFA.iva);  // ≈ 0,67 €/día
 
 /* ---------- utilidades ---------- */
 const $ = id => document.getElementById(id);
@@ -712,7 +720,7 @@ function acHTML(e){
       <div class="st">${roomH(e)!=null ? `💧 ${Math.round(roomH(e))}% · ` : ""}${off ? (MODE_TXT[st]||st) : `<b class="m-${st}">${MODE_TXT[st]||st}</b>${night ? " · Noche, " + cfg.txt : ""}`}</div></div>
     <div class="tg ${off?"dim":""}"><small>OBJETIVO</small><div class="ctl"><button data-act="minus" aria-label="Bajar">−</button><span class="num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span><button data-act="plus" aria-label="Subir">+</button></div></div></div>
     <div class="modes">${MODES.filter(x => (a.hvac_modes||[]).includes(x.m)).map(x => `<button class="${st===x.m?"on "+x.c:""}" data-mode="${x.m}">${svg(x.i)}<span>${x.t}</span></button>`).join("")}
-      ${(cfg || sleep) ? `<button class="${night?"on night":""} ${off?"dim":""}" data-night>${svg("moon")}<span>Noche</span></button>` : ""}</div>`;
+      ${(cfg || sleep) ? `<button class="${night?"on night":""} ${off?"dim":""}" data-night="1">${svg("moon")}<span>Noche</span></button>` : ""}</div>`;
 }
 function renderACs(){
   const list = [...climates].sort((x,y) => (/sal[oó]n/i.test(acName(y))) - (/sal[oó]n/i.test(acName(x))));
@@ -753,24 +761,18 @@ document.querySelectorAll(".t-cli .ac").forEach(card => card.addEventListener("c
 }));
 
 /* ---------- Clima: precio de la luz (PVPC) ---------- */
-let pvpcId = null, curPrice = store.get("kwh_price", 0.15);
+let pvpcId = null, curPrice = KWH_FINAL;
 function renderPrice(){
-  const s = states.find(x => /pvpc/i.test(x.entity_id) && x.attributes && x.attributes.price_00h != null);
-  const pv = states.find(x => /pvpc/i.test(x.entity_id) && /€\/kWh|EUR\/kWh/i.test(x.attributes.unit_of_measurement||"") && !isNaN(parseFloat(x.state)));
-  pvpcId = pv ? pv.entity_id : null;
-  curPrice = pv ? parseFloat(pv.state) * TAX : store.get("kwh_price", 0.15);
-  if (!s){ $("price").innerHTML = '<div class="msg">Añade en Home Assistant la integración del precio de la luz (PVPC).</div>'; $("pnow").textContent = ""; return; }
-  const P = [...Array(24)].map((_,h) => { const v = parseFloat(s.attributes["price_" + pad(h) + "h"]); return isNaN(v) ? null : v*TAX; });
-  const vals = P.filter(v => v != null), mn = Math.min(...vals), mx = Math.max(...vals), now = new Date().getHours();
-  const f = v => v.toLocaleString("es-ES", {minimumFractionDigits:3, maximumFractionDigits:3});
-  const col = v => v == null ? "var(--line)" : `hsl(${Math.round(130 - 130*(mx>mn ? (v-mn)/(mx-mn) : 0))} 62% 50%)`;
-  const hMin = P.indexOf(mn), hMax = P.indexOf(mx), cheap = mn + (mx-mn)/3;
-  let next = -1; for (let h = now; h < 24; h++) if (P[h] != null && P[h] <= cheap){ next = h; break; }
-  $("price").innerHTML = `<div class="strip">${P.map((v,h) => `<i class="${h===now?"now":""}" style="background:${col(v)}"></i>`).join("")}</div>
-    <div class="hh"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div>
-    <div class="pi"><span>Más barata <b>${pad(hMin)}h · ${f(mn)} €</b></span><span>Más cara <b>${pad(hMax)}h · ${f(mx)} €</b></span>
-      <span>${next === now ? "<b>Ahora es hora barata</b>" : next > now ? `Barata desde las <b>${pad(next)}h</b>` : ""}</span></div>`;
-  $("pnow").textContent = P[now] != null ? "Ahora " + f(P[now]) + " €/kWh" : "";
+  // Con tarifa de precio fijo no se usa el PVPC para nada: todos los costes salen de la factura
+  pvpcId = null; curPrice = KWH_FINAL;
+  const f3 = v => v.toLocaleString("es-ES", {minimumFractionDigits:3, maximumFractionDigits:3});
+  const f2 = v => v.toLocaleString("es-ES", {minimumFractionDigits:2, maximumFractionDigits:2});
+  const F = TARIFA.factura;
+  $("price").innerHTML = `<div class="tarifa"><div class="tv num">${f3(KWH_FINAL)}<small> €/kWh</small></div>
+      <div class="tk">con impuestos · ${f3(TARIFA.kwh)} sin impuestos<br>Mismo precio a todas horas</div></div>
+    <div class="pi"><span>Fijo (potencia ${String(TARIFA.kw).replace(".", ",")} kW) <b>${f2(FIJO_DIA)} €/día</b></span>
+      <span>Última factura <b>${f2(F.total)} €</b> · ${F.kwh} kWh (${F.desde} – ${F.hasta})</span></div>`;
+  $("pnow").textContent = "Naturgy · Por Uso Luz";
 }
 
 /* ---------- Clima: coste de los aires (sensores estimados de Home Assistant) ---------- */
@@ -839,7 +841,7 @@ function renderCost(){
   $("cost").innerHTML = `<div class="big num">${eur(totalW/1000*curPrice).replace(" €","")}<small>€/h</small></div>
     <div class="k">ahora ${Math.round(totalW)} W · hoy ${today}</div>
     <table>${rows}<tr class="tot"><td>Total ${new Date().getFullYear()}</td><td>${eur(all.e)}</td><td>${kwh(all.k)}</td></tr></table>`;
-  $("pfix").innerHTML = pvpcId ? "" : `<button class="pill" id="priceBtn">${curPrice.toLocaleString("es-ES",{maximumFractionDigits:4})} €/kWh ✎</button>`;
+  $("pfix").innerHTML = "";
   renderMonths(energy.map(s => s.entity_id));
 }
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
