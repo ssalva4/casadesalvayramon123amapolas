@@ -82,6 +82,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .ucur{font-family:var(--font-big);font-weight:300;font-size:38px;line-height:1;letter-spacing:-.02em;margin-top:2px}
 .tgtl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:4px}
 .tgtw{display:flex;flex-direction:column;align-items:center}
+.tgts{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px}
+.hwarn{color:#d9822b;font-weight:700}
 .ustate{font-size:13px;color:var(--muted);margin-top:2px}
 .tgt{display:flex;align-items:center;gap:4px}
 .tgt button{width:40px;height:40px;border-radius:12px;background:var(--card);font-size:22px;font-weight:600;line-height:1}
@@ -802,6 +804,16 @@ const MODES = [
 ];
 const MODE_TXT = {cool:"Frío", heat:"Calor", dry:"Secar", fan_only:"Ventilador", auto:"Automático", heat_cool:"Automático", off:"Apagado", unavailable:"Sin conexión", unknown:"—"};
 const SHOWN = ["cool","heat","dry","off"];   // modos que salen como botón
+
+/* Termostato con los sensores Tapo: el ± elige la temperatura REAL que quieres (ayudante input_number);
+   una automatización de Home Assistant ajusta el objetivo del aire para conseguirla. */
+const TERMO = {"climate.aire_salon": "input_number.temp_deseada_salon", "climate.aire_dormitorio": "input_number.temp_deseada_dormitorio"};
+const termoOf = e => {
+  const id = e && TERMO[e.entity_id], h = id && (window.__states || []).find(x => x.entity_id === id);
+  if (!h || isNaN(parseFloat(h.state))) return null;
+  return {id, v: parseFloat(h.state), min: +h.attributes.min || 16, max: +h.attributes.max || 28, step: +h.attributes.step || 0.5};
+};
+const humTxt = h => h == null ? "" : `<span class="${h >= 70 ? "hwarn" : ""}">💧 ${Math.round(h)}%${h >= 70 ? " ventilar" : ""}</span> · `;
 const pendingT = {};      // temperatura elegida y aún no enviada
 // Modo Noche guardado en un interruptor de Home Assistant (el aire no avisa de su modo Noche).
 // La automatización de Home Assistant apaga el aire a esa hora si el interruptor está encendido.
@@ -830,7 +842,8 @@ const timers = {};
 function unitHTML(e){
   const a = e.attributes, st = e.state;
   const off = st === "off" || st === "unavailable";
-  const tgt = pendingT[e.entity_id] ?? a.temperature;
+  const tm = termoOf(e);
+  const tgt = pendingT[e.entity_id] ?? (tm ? tm.v : a.temperature);
   const modes = MODES.filter(x => SHOWN.includes(x.m) && (a.hvac_modes||SHOWN).includes(x.m));
   const sleep = (a.preset_modes||[]).find(p => /sleep|noche/i.test(p));
   const cfg = NIGHT[e.entity_id] && helpers[NIGHT[e.entity_id].helper] ? NIGHT[e.entity_id] : null;
@@ -844,13 +857,13 @@ function unitHTML(e){
     <div class="uhead">
       <div><div class="uname">${esc(acName(e))}</div>
         <div class="ucur num" title="Temperatura de la habitación">${cur!=null ? fmt1(cur)+"°" : "—"}</div>
-        <div class="ustate">${hum != null ? `💧 ${Math.round(hum)}% · ` : ""}${esc(sub)}</div></div>
+        <div class="ustate">${humTxt(hum)}${esc(sub)}</div></div>
       <div class="tgtw"><div class="tgtl">Objetivo</div>
       <div class="tgt" aria-label="Temperatura objetivo">
         <button data-act="minus" aria-label="Bajar temperatura">−</button>
         <span class="tv num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span>
         <button data-act="plus" aria-label="Subir temperatura">+</button>
-      </div></div>
+      </div>${tm && !off && a.temperature != null ? `<div class="tgts">aire a ${fmt1(a.temperature)}°</div>` : ""}</div>
     </div>
     <div class="modes">
       ${modes.map(x => `<button class="mode k-${x.k} ${st===x.m?"on":""}" data-mode="${x.m}">${svg(x.i)}${x.t}</button>`).join("")}
@@ -869,13 +882,15 @@ $("acs").addEventListener("click", async ev => {
   const id = u.dataset.e, e = climates.find(c => c.entity_id === id); if (!e) return;
   const a = e.attributes;
   if (b.dataset.act){
-    const step = a.target_temp_step || 0.5;
-    let t = (pendingT[id] ?? a.temperature ?? 22) + (b.dataset.act === "plus" ? step : -step);
-    t = Math.min(a.max_temp ?? 30, Math.max(a.min_temp ?? 16, t));
+    const tm = termoOf(e);
+    const step = 1;   // de grado en grado
+    let t = Math.round(pendingT[id] ?? (tm ? tm.v : a.temperature) ?? 22) + (b.dataset.act === "plus" ? step : -step);
+    t = tm ? Math.min(tm.max, Math.max(tm.min, t)) : Math.min(a.max_temp ?? 30, Math.max(a.min_temp ?? 16, t));
     pendingT[id] = t; u.querySelector(".tv").textContent = fmt1(t)+"°";
     clearTimeout(timers[id]);
     timers[id] = setTimeout(async () => {
-      try{ await api("/api/services/climate/set_temperature", {entity_id:id, temperature:t}); }
+      try{ if (tm) await api("/api/services/input_number/set_value", {entity_id: tm.id, value: t});
+           else await api("/api/services/climate/set_temperature", {entity_id:id, temperature:t}); }
       catch(err){ handleErr(err); }
       delete pendingT[id]; setTimeout(refreshHA, 1200);
     }, 800);
