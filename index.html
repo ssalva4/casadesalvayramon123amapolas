@@ -813,6 +813,11 @@ const termoOf = e => {
   if (!h || isNaN(parseFloat(h.state))) return null;
   return {id, v: parseFloat(h.state), min: +h.attributes.min || 16, max: +h.attributes.max || 28, step: +h.attributes.step || 0.5};
 };
+const termoTxt = e => {   // qué está haciendo el aire para llegar a tu temperatura
+  const st = e.state, t = e.attributes.temperature;
+  if ((st === "heat" && t <= 17) || (st === "cool" && t >= 28)) return "en reposo · ya está a tu gusto";
+  return (st === "heat" ? "calentando" : st === "cool" ? "enfriando" : "aire") + ` · aire a ${fmt1(t)}°`;
+};
 const humTxt = h => h == null ? "" : `<span class="${h >= 70 ? "hwarn" : ""}">💧 ${Math.round(h)}%${h >= 70 ? " ventilar" : ""}</span> · `;
 const pendingT = {};      // temperatura elegida y aún no enviada
 // Modo Noche guardado en un interruptor de Home Assistant (el aire no avisa de su modo Noche).
@@ -863,7 +868,7 @@ function unitHTML(e){
         <button data-act="minus" aria-label="Bajar temperatura">−</button>
         <span class="tv num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span>
         <button data-act="plus" aria-label="Subir temperatura">+</button>
-      </div>${tm && !off && a.temperature != null ? `<div class="tgts">aire a ${fmt1(a.temperature)}°</div>` : ""}</div>
+      </div>${tm && !off && a.temperature != null ? `<div class="tgts">${termoTxt(e)}</div>` : ""}</div>
     </div>
     <div class="modes">
       ${modes.map(x => `<button class="mode k-${x.k} ${st===x.m?"on":""}" data-mode="${x.m}">${svg(x.i)}${x.t}</button>`).join("")}

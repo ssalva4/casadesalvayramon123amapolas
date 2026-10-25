@@ -721,6 +721,11 @@ const termoOf = e => {
   if (!h || isNaN(parseFloat(h.state))) return null;
   return {id, v: parseFloat(h.state), min: +h.attributes.min || 16, max: +h.attributes.max || 28, step: +h.attributes.step || 0.5};
 };
+const termoTxt = e => {   // qué está haciendo el aire para llegar a tu temperatura
+  const st = e.state, t = e.attributes.temperature;
+  if ((st === "heat" && t <= 17) || (st === "cool" && t >= 28)) return "en reposo · ya está a tu gusto";
+  return (st === "heat" ? "calentando" : st === "cool" ? "enfriando" : "aire") + ` · aire a ${fmt1(t)}°`;
+};
 const humTxt = h => h == null ? "" : `<span class="${h >= 70 ? "hwarn" : ""}">💧 ${Math.round(h)}%${h >= 70 ? " ventilar" : ""}</span> · `;
 const pendingT = {}, timers = {};
 function acHTML(e){
@@ -732,7 +737,7 @@ function acHTML(e){
   const tgt = pendingT[e.entity_id] ?? (tm ? tm.v : a.temperature);
   return `<div class="row"><div><div class="room">${esc(acName(e))}</div><div class="cur num">${roomT(e)!=null ? fmt1(roomT(e))+"°" : "—"}</div>
       <div class="st">${humTxt(roomH(e))}${off ? (MODE_TXT[st]||st) : `<b class="m-${st}">${MODE_TXT[st]||st}</b>${night ? " · Noche, " + cfg.txt : ""}`}</div></div>
-    <div class="tg ${off?"dim":""}"><small>OBJETIVO</small><div class="ctl"><button data-act="minus" aria-label="Bajar">−</button><span class="num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span><button data-act="plus" aria-label="Subir">+</button></div>${tm && !off && a.temperature != null ? `<div class="tgts">aire a ${fmt1(a.temperature)}°</div>` : ""}</div></div>
+    <div class="tg ${off?"dim":""}"><small>OBJETIVO</small><div class="ctl"><button data-act="minus" aria-label="Bajar">−</button><span class="num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span><button data-act="plus" aria-label="Subir">+</button></div>${tm && !off && a.temperature != null ? `<div class="tgts">${termoTxt(e)}</div>` : ""}</div></div>
     <div class="modes">${MODES.filter(x => (a.hvac_modes||[]).includes(x.m)).map(x => `<button class="${st===x.m?"on "+x.c:""}" data-mode="${x.m}">${svg(x.i)}<span>${x.t}</span></button>`).join("")}
       ${(cfg || sleep) ? `<button class="${night?"on night":""} ${off?"dim":""}" data-night="1">${svg("moon")}<span>Noche</span></button>` : ""}</div>`;
 }
