@@ -574,7 +574,8 @@ renderButtons();
 
 
 /* ===== Buenos días / Adiós: según si el Apple TV está encendido ===== */
-const ATV = "media_player.apple_tv", ATV_REMOTE = "remote.apple_tv", AIRE_BD = "climate.aire_salon";
+const ATV = "switch.tele",   // el enchufe de la tele decide: encendida → Adiós, apagada → Buenos días
+     ATV_MP = "media_player.apple_tv", ATV_REMOTE = "remote.apple_tv", AIRE_BD = "climate.aire_salon";
 let bdOverride = null;   // {on, until}: lo que acabamos de pulsar, mientras Home Assistant se pone al día
 function atvAwake(){
   if (bdOverride && Date.now() < bdOverride.until) return bdOverride.on;
