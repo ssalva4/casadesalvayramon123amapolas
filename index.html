@@ -206,6 +206,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .mhint{font-size:10.5px;color:var(--muted);text-align:right;margin-top:2px}
 
 /* --- Precio de la luz por horas --- */
+.tarifa{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.tarifa .tv{font-size:30px;font-weight:700;line-height:1}.tarifa .tv small{font-size:14px;font-weight:600;color:var(--muted)}
+.tarifa .tk{font-size:12.5px;color:var(--muted)}
 .prices{grid-column:8/13;display:flex;flex-direction:column;gap:8px;padding:14px 22px}
 .prices .label{margin:0}
 .strip{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:2px;height:30px}
@@ -326,7 +329,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   </section>
 
   <section class="card prices" aria-label="Precio de la luz por horas">
-    <h2 class="label">Precio de la luz hoy <span class="small" id="pnow"></span></h2>
+    <h2 class="label">Tu luz <span class="small" id="pnow"></span></h2>
     <div id="prices"><div class="msg">Cargando precios…</div></div>
   </section>
 
@@ -808,9 +811,10 @@ const TEMP_OFFSET = {"climate.aire_dormitorio": -2.0, "climate.aire_salon": -0.7
 const roomSensors = (e, dc) => {   // sensores de la habitación (p. ej. Tapo T310), no los del propio aire
   if (!e || !(window.__states || []).length) return null;
   const n = acName(e).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const s = window.__states.find(x => x.entity_id.startsWith("sensor.") && !/^sensor\.aire_acondicionado_/.test(x.entity_id) &&
+  const cand = window.__states.filter(x => x.entity_id.startsWith("sensor.") && !/^sensor\.aire_acondicionado_/.test(x.entity_id) &&
     x.attributes.device_class === dc && !isNaN(parseFloat(x.state)) &&
     (x.entity_id + " " + (x.attributes.friendly_name||"")).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(n));
+  const s = cand.find(x => /tapo|t31|^sensor /i.test((x.attributes.friendly_name||"") + " " + (x.attributes.model||""))) || cand[0];
   return s ? parseFloat(s.state) : null;
 };
 const roomH = e => roomSensors(e, "humidity");
@@ -951,7 +955,7 @@ function renderEnergy(states){
   if (!energy.length) energy = sensors.filter(s => /consumo_total_de_energia|total_energy/i.test(s.entity_id));
   if (!energy.length) energy = sensors.filter(s => s.attributes.device_class === "energy" || /^k?Wh$/.test(unit(s)));
   // Precio: PVPC de Home Assistant (cambia cada hora) si está; si no, el precio fijo que pongas
-  const pvpc = states.find(s => /pvpc/i.test(s.entity_id) && /€\/kWh|EUR\/kWh/i.test(s.attributes.unit_of_measurement||"") && !isNaN(parseFloat(s.state)));
+  const pvpc = null;   // tarifa de precio fijo: no se usa el PVPC
   pvpcId = pvpc ? pvpc.entity_id : null;
   loadToday(energy);
   if (!power.length && !energy.length){
@@ -960,7 +964,7 @@ function renderEnergy(states){
   }
   const W = s => num(s) * (unit(s) === "kW" ? 1000 : 1);
   const totalW = power.reduce((a,s) => a + W(s), 0);
-  const price = pvpc ? parseFloat(pvpc.state) * TAX : store.get("kwh_price", 0.15);   // €/kWh con impuestos
+  const price = KWH_FINAL;   // €/kWh con impuestos
   curPrice = price;
   loadYear(energy);
   const kwh = v => (v >= 100 ? Math.round(v) : fmt1(v)) + " kWh";
@@ -990,7 +994,7 @@ function renderEnergy(states){
     <div class="entab">${rows}
       <span class="n tot">Total ${new Date().getFullYear()}</span><span class="e tot">${all ? eur(all.eur) : "—"}</span><span class="k tot">${all ? kwh(all.kwh) : ""}</span>
     </div>`;
-  $("enPrice").innerHTML = pvpc ? "" : `<button id="priceBtn" style="font:inherit;color:inherit">${price.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:4})} €/kWh ✎</button>`;
+  $("enPrice").innerHTML = "";
   renderMonths(energy.map(s => s.entity_id));
 }
 const eur = v => v.toLocaleString("es-ES", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
@@ -1035,7 +1039,7 @@ async function loadYear(energy){
     const ts = x => typeof x.start === "number" ? x.start : Date.parse(x.start);
     const prices = new Map();
     ((pvpcId && r[pvpcId]) || []).forEach(x => { if (x.mean != null) prices.set(ts(x), x.mean * TAX); });
-    const fixed = store.get("kwh_price", 0.15);
+    const fixed = KWH_FINAL;
     const out = {};
     ids.forEach(id => {
       const m = [...Array(12)].map(() => ({kwh:0, eur:0}));
@@ -1066,6 +1070,11 @@ function renderMonths(ids){
 }
 // Impuestos sobre el precio PVPC de Home Assistant: impuesto eléctrico (5,11 %) e IVA (21 %)
 const TAX = 1.0511 * 1.21;
+/* Tarifa real (factura Naturgy «Tarifa Por Uso Luz», 24/08–23/09/2026): mismo precio a todas horas */
+const TARIFA = {kwh: 0.144972, iee: 0.05112696, iva: 0.21, potP1: 0.110283, potP2: 0.033469, kw: 3.3, bono: 0.024688, contador: 0.02663,
+  factura: {total: 63.62, kwh: 257, desde: "24 ago", hasta: "23 sep"}};
+const KWH_FINAL = TARIFA.kwh * (1 + TARIFA.iee) * (1 + TARIFA.iva);
+const FIJO_DIA = (((TARIFA.potP1 + TARIFA.potP2) * TARIFA.kw + TARIFA.bono) * (1 + TARIFA.iee) + TARIFA.contador) * (1 + TARIFA.iva);
 let pvpcId = null;
 // Consumo de hoy = suma de lo gastado desde las 00:00 (historial de Home Assistant).
 // Con PVPC, cada tramo se multiplica por el precio que tenía la luz en ese momento.
@@ -1112,27 +1121,12 @@ document.querySelector(".energy").addEventListener("click", e => {
 /* ----- Franja de precios PVPC (atributos price_00h … price_23h de la integración PVPC) ----- */
 function renderPrices(states){
   const box = $("prices"); if (!box) return;
-  const s = states.find(x => /pvpc/i.test(x.entity_id) && x.attributes && x.attributes.price_00h != null);
-  if (!s){
-    box.innerHTML = '<div class="msg">Añade en Home Assistant la integración «Precio de la luz en España (PVPC)» para ver aquí las horas baratas y caras.</div>';
-    $("pnow").textContent = ""; return;
-  }
-  const P = [...Array(24)].map((_,h) => { const v = parseFloat(s.attributes["price_" + String(h).padStart(2,"0") + "h"]); return isNaN(v) ? null : v * TAX; });
-  const vals = P.filter(v => v != null);
-  const mn = Math.min(...vals), mx = Math.max(...vals);
-  const now = new Date().getHours();
-  const color = v => { if (v == null) return "var(--line)"; const r = mx > mn ? (v - mn) / (mx - mn) : 0; return `hsl(${Math.round(130 - 130*r)} 62% 50%)`; };
-  const f = v => v.toLocaleString("es-ES", {minimumFractionDigits:3, maximumFractionDigits:3});
-  const hMin = P.indexOf(mn), hMax = P.indexOf(mx);
-  // próxima hora barata (tercio más barato) a partir de ahora
-  const cheapLimit = mn + (mx - mn) / 3;
-  let next = -1; for (let h = now; h < 24; h++){ if (P[h] != null && P[h] <= cheapLimit){ next = h; break; } }
-  box.innerHTML = `<div class="strip">${P.map((v,h) => `<i class="${h===now?"now":""}" style="background:${color(v)}" title="${String(h).padStart(2,"0")}h · ${v!=null?f(v)+" €/kWh":"—"}"></i>`).join("")}</div>
-    <div class="sthrs">${[0,3,6,9,12,15,18,21].map(h => `<span>${String(h).padStart(2,"0")}h</span>`).join("")}</div>
-    <div class="pinfo"><span>Más barata <b>${String(hMin).padStart(2,"0")}h · ${f(mn)} €</b></span>
-      <span>Más cara <b>${String(hMax).padStart(2,"0")}h · ${f(mx)} €</b></span>
-      ${next === now ? "<span><b>Ahora es hora barata</b></span>" : next > now ? `<span>Barata desde las <b>${String(next).padStart(2,"0")}h</b></span>` : ""}</div>`;
-  $("pnow").textContent = P[now] != null ? "Ahora " + f(P[now]) + " €/kWh" : "";
+  const f3 = v => v.toLocaleString("es-ES", {minimumFractionDigits:3, maximumFractionDigits:3});
+  const f2 = v => v.toLocaleString("es-ES", {minimumFractionDigits:2, maximumFractionDigits:2});
+  const F = TARIFA.factura;
+  box.innerHTML = `<div class="tarifa"><div class="tv num">${f3(KWH_FINAL)}<small> €/kWh</small></div>
+      <div class="tk">con impuestos · ${f3(TARIFA.kwh)} sin impuestos · mismo precio a todas horas</div></div>`;
+  $("pnow").textContent = "Naturgy · Por Uso Luz";
 }
 
 /* ----- Apple TV: lo que se está reproduciendo y mandos (integración Apple TV de Home Assistant) ----- */

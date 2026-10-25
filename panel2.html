@@ -392,9 +392,10 @@ const TEMP_OFFSET = {"climate.aire_dormitorio": -2.0, "climate.aire_salon": -0.7
 const roomSensors = (e, dc) => {   // sensores de la habitación (p. ej. Tapo T310), no los del propio aire
   if (!e || !(window.__states || []).length) return null;
   const n = acName(e).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const s = window.__states.find(x => x.entity_id.startsWith("sensor.") && !/^sensor\.aire_acondicionado_/.test(x.entity_id) &&
+  const cand = window.__states.filter(x => x.entity_id.startsWith("sensor.") && !/^sensor\.aire_acondicionado_/.test(x.entity_id) &&
     x.attributes.device_class === dc && !isNaN(parseFloat(x.state)) &&
     (x.entity_id + " " + (x.attributes.friendly_name||"")).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(n));
+  const s = cand.find(x => /tapo|t31|^sensor /i.test((x.attributes.friendly_name||"") + " " + (x.attributes.model||""))) || cand[0];
   return s ? parseFloat(s.state) : null;
 };
 const roomH = e => roomSensors(e, "humidity");
@@ -769,9 +770,7 @@ function renderPrice(){
   const f2 = v => v.toLocaleString("es-ES", {minimumFractionDigits:2, maximumFractionDigits:2});
   const F = TARIFA.factura;
   $("price").innerHTML = `<div class="tarifa"><div class="tv num">${f3(KWH_FINAL)}<small> €/kWh</small></div>
-      <div class="tk">con impuestos · ${f3(TARIFA.kwh)} sin impuestos<br>Mismo precio a todas horas</div></div>
-    <div class="pi"><span>Fijo (potencia ${String(TARIFA.kw).replace(".", ",")} kW) <b>${f2(FIJO_DIA)} €/día</b></span>
-      <span>Última factura <b>${f2(F.total)} €</b> · ${F.kwh} kWh (${F.desde} – ${F.hasta})</span></div>`;
+      <div class="tk">con impuestos · ${f3(TARIFA.kwh)} sin impuestos<br>Mismo precio a todas horas</div></div>`;
   $("pnow").textContent = "Naturgy · Por Uso Luz";
 }
 
