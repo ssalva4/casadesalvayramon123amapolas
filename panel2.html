@@ -65,7 +65,10 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 #h24 .pn{flex:1;display:flex;flex-direction:column;min-height:0}
 #h24 .pt{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:600}
 #h24 .pt b{color:var(--ink)}
-#h24 svg{flex:1;width:100%;min-height:60px}
+#h24 .plot{flex:1;position:relative;padding-left:34px;display:flex;min-height:60px}
+#h24 .plot svg{flex:1;width:100%;height:100%}
+#h24 .yl{position:absolute;left:0;width:30px;text-align:right;transform:translateY(-50%);font-size:10.5px;font-weight:700;color:var(--muted);line-height:1}
+#h24 .yl.ref{color:#3b7fc4}
 .morning{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px;border-radius:14px;background:rgba(233,162,59,.16);color:#9a5a00;font-weight:700;font-size:15px;text-align:left;box-shadow:inset 0 0 0 1.5px rgba(233,162,59,.55)}
 .morning svg{width:24px;height:24px;color:#e9a23b;flex:none}
 .morning small{display:block;font-size:11.5px;font-weight:600;opacity:.75;margin-top:2px}
@@ -949,15 +952,20 @@ function renderH24(){
   const panel = (title, a, b, unit, fixed, extra) => {
     const A = ser(a), B = ser(b), all = A.concat(B).map(p => p.v).concat(fixed || []);
     if (!all.length) return "";
+    const data = A.concat(B).map(p => p.v), dMin = data.length ? Math.min(...data) : null, dMax = data.length ? Math.max(...data) : null;
     let lo = Math.min(...all), hi = Math.max(...all); if (hi - lo < 2){ lo -= 1; hi += 1; } const pad = (hi - lo) * .12; lo -= pad; hi += pad;
     const Y = v => H - (v - lo) / (hi - lo) * H;
     const path = P => P.length ? "M" + P.map((p, i) => (i ? "L" + X(p.t).toFixed(1) + "," + Y(P[i-1].v).toFixed(1) + " " : "") + X(p.t).toFixed(1) + "," + Y(p.v).toFixed(1)).join(" ") : "";
     const grid = [6, 12, 18].map(hh => { const t = end - hh*3600e3; return `<line x1="${X(t)}" x2="${X(t)}" y1="0" y2="${H}" stroke="var(--line)" stroke-width="1"/>`; }).join("");
     const now = v => v != null && !isNaN(v) ? (Number.isInteger(v) ? v : fmt1(v)) + unit : "—";
+    const lab = v => (unit === "°" ? fmt1(v) : Math.round(v)) + unit.trim();
+    const ylab = v => `<span class="yl" style="top:${(Y(v) / H * 100).toFixed(1)}%">${lab(v)}</span>`;
+    const hl = v => `<line x1="0" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
     return `<div class="pn"><div class="pt"><span>${title}</span><span><b style="color:#e08a3c">${now(a && parseFloat(a.state))}</b> · <b style="color:#6b6fd6">${now(b && parseFloat(b.state))}</b></span></div>
-      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${extra ? extra(Y) : ""}
+      <div class="plot">${dMax != null ? ylab(dMax) + (dMax - dMin >= .2 ? ylab(dMin) : "") : ""}${fixed && fixed.length ? ylab(fixed[0]).replace('class="yl"', 'class="yl ref"') : ""}
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${dMax != null ? hl(dMax) + hl(dMin) : ""}${extra ? extra(Y) : ""}
         <path d="${path(A)}" fill="none" stroke="#e08a3c" stroke-width="2.2" vector-effect="non-scaling-stroke"/>
-        <path d="${path(B)}" fill="none" stroke="#6b6fd6" stroke-width="2.2" vector-effect="non-scaling-stroke"/></svg></div>`;
+        <path d="${path(B)}" fill="none" stroke="#6b6fd6" stroke-width="2.2" vector-effect="non-scaling-stroke"/></svg></div></div>`;
   };
   // franjas en las que el deshumidificador estuvo encendido
   const bands = Y => {
@@ -968,7 +976,7 @@ function renderH24(){
   };
   renderHoy(ser);
   $("h24").innerHTML = panel("Temperatura", s.ts, s.td, "°") + panel("Humedad", s.hs, s.hd, " %", [60], bands) +
-    `<div class="pt" style="font-weight:500;font-size:11px"><span>hace 24 h</span><span>18 h</span><span>12 h</span><span>6 h</span><span>ahora</span></div>`;
+    `<div class="pt" style="font-weight:500;font-size:11px;padding-left:34px"><span>hace 24 h</span><span>18 h</span><span>12 h</span><span>6 h</span><span>ahora</span></div>`;
 }
 
 function renderHoy(ser){
