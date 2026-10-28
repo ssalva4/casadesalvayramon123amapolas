@@ -113,6 +113,7 @@ svg.i{width:20px;height:20px}
 .ni .tx{padding:9px 11px 10px;display:flex;flex-direction:column;gap:4px;min-height:0}
 .ni b{font-size:14px;line-height:1.3;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .ni small{font-size:11px;color:var(--muted)}
+.nsrc{color:#fff;font-weight:700;font-size:10px;padding:1px 6px;border-radius:5px;margin-right:4px}
 .nsheet img{width:100%;border-radius:12px;margin-bottom:10px}
 .t-ent .apps{margin-top:auto;padding-top:10px}
 .yt{display:flex;flex-direction:column}
@@ -359,7 +360,7 @@ button.pill{cursor:pointer}
         <div class="chs" id="chs"></div>
         <div class="screen" id="screen"></div>
       </div>
-      <div class="card news"><div class="lbl">Noticias · El País <span class="pill" id="newsTime"></span></div><div class="nwrap"><div class="ncar" id="news"><div class="msg">Cargando noticias…</div></div><button class="narr l" id="nPrev" aria-label="Noticia anterior">‹</button><button class="narr r" id="nNext" aria-label="Noticia siguiente">›</button></div></div>
+      <div class="card news"><div class="lbl">Noticias · El País y Faro de Vigo <span class="pill" id="newsTime"></span></div><div class="nwrap"><div class="ncar" id="news"><div class="msg">Cargando noticias…</div></div><button class="narr l" id="nPrev" aria-label="Noticia anterior">‹</button><button class="narr r" id="nNext" aria-label="Noticia siguiente">›</button></div></div>
       <div class="card">
         <div class="lbl">Radio en directo</div>
         <div class="radios" id="radios"></div>
@@ -998,26 +999,30 @@ function renderHoy(ser){
 }
 
 /* ---------- Entretenimiento: noticias de El País (RSS) en carrusel ---------- */
-const NEWS_FEED = "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada";
+const NEWS_FEEDS = [{n: "El País", c: "#1b1b1b", u: "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada"},
+                    {n: "Faro de Vigo", c: "#0a5ca8", u: "https://www.farodevigo.es/rss/"}];
 let newsItems = [], newsAt = 0, newsTimer = null, newsHold = 0;
 const xTxt = (el, tag) => { const n = el.getElementsByTagName(tag)[0]; return n ? n.textContent.trim() : ""; };
 const stripHtml = h => { const d = document.createElement("div"); d.innerHTML = h; return (d.textContent || "").trim(); };
 async function loadNews(){
   if (newsItems.length && Date.now() - newsAt < 15*60*1000) return;
   newsAt = Date.now();
+  const parse = (txt, f) => [...new DOMParser().parseFromString(txt, "text/xml").getElementsByTagName("item")].slice(0, 15).map(it => {
+    const m = it.getElementsByTagNameNS("*", "content")[0] || it.getElementsByTagName("enclosure")[0] || it.getElementsByTagNameNS("*", "thumbnail")[0];
+    return {t: xTxt(it, "title"), d: stripHtml(xTxt(it, "description")), img: m ? m.getAttribute("url") : "", date: Date.parse(xTxt(it, "pubDate")), src: f.n, sc: f.c};
+  }).filter(n => n.t);
   try{
-    const xml = new DOMParser().parseFromString(await fetch(NEWS_FEED).then(r => r.text()), "text/xml");
-    newsItems = [...xml.getElementsByTagName("item")].slice(0, 20).map(it => {
-      const m = it.getElementsByTagNameNS("*", "content")[0] || it.getElementsByTagName("enclosure")[0] || it.getElementsByTagNameNS("*", "thumbnail")[0];
-      return {t: xTxt(it, "title"), d: stripHtml(xTxt(it, "description")), img: m ? m.getAttribute("url") : "", date: Date.parse(xTxt(it, "pubDate"))};
-    }).filter(n => n.t);
+    const lists = await Promise.all(NEWS_FEEDS.map(f => fetch(f.u).then(r => r.text()).then(t => parse(t, f)).catch(() => [])));
+    newsItems = [];   // intercaladas: una de cada periódico
+    for (let k = 0; k < Math.max(...lists.map(l => l.length)); k++) lists.forEach(l => { if (l[k]) newsItems.push(l[k]); });
+    if (!newsItems.length) throw new Error("sin noticias");
     renderNews();
   }catch(err){ newsAt = 0; $("news").innerHTML = '<div class="msg">No se han podido cargar las noticias. Lo vuelvo a intentar en un rato.</div>'; }
 }
 function renderNews(){
   if (!newsItems.length) return;
   const hace = t => { if (isNaN(t)) return ""; const m = Math.round((Date.now() - t) / 60000); return m < 60 ? `hace ${Math.max(1, m)} min` : `hace ${Math.round(m/60)} h`; };
-  $("news").innerHTML = newsItems.map((n, i) => `<button class="ni" data-ni="${i}"><span class="im" style="${n.img ? `background-image:url('${esc(n.img)}')` : ""}"></span><span class="tx"><b>${esc(n.t)}</b><small>${hace(n.date)}</small></span></button>`).join("");
+  $("news").innerHTML = newsItems.map((n, i) => `<button class="ni" data-ni="${i}"><span class="im" style="${n.img ? `background-image:url('${esc(n.img)}')` : ""}"></span><span class="tx"><b>${esc(n.t)}</b><small><span class="nsrc" style="background:${n.sc}">${esc(n.src)}</span> ${hace(n.date)}</small></span></button>`).join("");
   $("newsTime").textContent = new Date(newsAt).toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"});
   clearInterval(newsTimer);
   newsTimer = setInterval(() => {   // avanza solo cada 7 s; vuelve al principio al llegar al final
@@ -1035,7 +1040,7 @@ $("nPrev").onclick = () => newsMove(-1); $("nNext").onclick = () => newsMove(1);
 $("news").addEventListener("touchstart", () => { newsHold = Date.now() + 15000; }, {passive: true});
 $("news").addEventListener("click", e => {
   const b = e.target.closest("[data-ni]"); if (!b) return; const n = newsItems[+b.dataset.ni];
-  sheet(n.t, `<div class="nsheet">${n.img ? `<img src="${esc(n.img)}" alt="">` : ""}<p>${esc(n.d || "Sin resumen.")}</p></div><div class="pactions"><button data-close>Cerrar</button></div>`);
+  sheet(n.t, `<div class="nsheet"><p><span class="nsrc" style="background:${n.sc}">${esc(n.src)}</span></p>${n.img ? `<img src="${esc(n.img)}" alt="">` : ""}<p>${esc(n.d || "Sin resumen.")}</p></div><div class="pactions"><button data-close>Cerrar</button></div>`);
 });
 loadNews(); setInterval(loadNews, 15*60*1000);
 
