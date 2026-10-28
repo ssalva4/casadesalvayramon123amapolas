@@ -103,6 +103,9 @@ svg.i{width:20px;height:20px}
 .t-ent>.card:last-child{display:flex;flex-direction:column;grid-column:2;grid-row:1}
 .t-ent .tv{grid-column:1;grid-row:1}
 .t-ent .news{grid-column:1/3;grid-row:2;display:flex;flex-direction:column;min-height:0}
+.nwrap{flex:1;position:relative;display:flex;min-height:0}
+.narr{position:absolute;top:calc(50% - 18px);width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.82);color:var(--ink);font-size:22px;font-weight:600;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 6px rgba(0,0,0,.15);opacity:.75;z-index:2}
+.narr:active{opacity:1}.narr.l{left:6px}.narr.r{right:6px}
 .ncar{flex:1;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;min-height:0;padding-bottom:4px;scrollbar-width:none}
 .ncar::-webkit-scrollbar{display:none}
 .ni{flex:0 0 250px;scroll-snap-align:start;border-radius:14px;background:var(--card2);overflow:hidden;display:flex;flex-direction:column;text-align:left;padding:0}
@@ -356,7 +359,7 @@ button.pill{cursor:pointer}
         <div class="chs" id="chs"></div>
         <div class="screen" id="screen"></div>
       </div>
-      <div class="card news"><div class="lbl">Noticias · El País <span class="pill" id="newsTime"></span></div><div class="ncar" id="news"><div class="msg">Cargando noticias…</div></div></div>
+      <div class="card news"><div class="lbl">Noticias · El País <span class="pill" id="newsTime"></span></div><div class="nwrap"><div class="ncar" id="news"><div class="msg">Cargando noticias…</div></div><button class="narr l" id="nPrev" aria-label="Noticia anterior">‹</button><button class="narr r" id="nNext" aria-label="Noticia siguiente">›</button></div></div>
       <div class="card">
         <div class="lbl">Radio en directo</div>
         <div class="radios" id="radios"></div>
@@ -996,7 +999,7 @@ function renderHoy(ser){
 
 /* ---------- Entretenimiento: noticias de El País (RSS) en carrusel ---------- */
 const NEWS_FEED = "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada";
-let newsItems = [], newsAt = 0, newsTimer = null;
+let newsItems = [], newsAt = 0, newsTimer = null, newsHold = 0;
 const xTxt = (el, tag) => { const n = el.getElementsByTagName(tag)[0]; return n ? n.textContent.trim() : ""; };
 const stripHtml = h => { const d = document.createElement("div"); d.innerHTML = h; return (d.textContent || "").trim(); };
 async function loadNews(){
@@ -1018,10 +1021,18 @@ function renderNews(){
   $("newsTime").textContent = new Date(newsAt).toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"});
   clearInterval(newsTimer);
   newsTimer = setInterval(() => {   // avanza solo cada 7 s; vuelve al principio al llegar al final
-    const c = $("news"); if (!c || c.matches(":hover")) return;
+    const c = $("news"); if (!c || Date.now() < newsHold) return;
     c.scrollLeft + c.clientWidth >= c.scrollWidth - 5 ? c.scrollTo({left: 0}) : c.scrollBy({left: 262});
   }, 7000);
 }
+const newsMove = dir => {   // flechas: mueve una noticia y pausa el avance automático 15 s
+  const c = $("news"); newsHold = Date.now() + 15000;
+  if (dir > 0 && c.scrollLeft + c.clientWidth >= c.scrollWidth - 5) c.scrollTo({left: 0});
+  else if (dir < 0 && c.scrollLeft <= 5) c.scrollTo({left: c.scrollWidth});
+  else c.scrollBy({left: dir * 262});
+};
+$("nPrev").onclick = () => newsMove(-1); $("nNext").onclick = () => newsMove(1);
+$("news").addEventListener("touchstart", () => { newsHold = Date.now() + 15000; }, {passive: true});
 $("news").addEventListener("click", e => {
   const b = e.target.closest("[data-ni]"); if (!b) return; const n = newsItems[+b.dataset.ni];
   sheet(n.t, `<div class="nsheet">${n.img ? `<img src="${esc(n.img)}" alt="">` : ""}<p>${esc(n.d || "Sin resumen.")}</p></div><div class="pactions"><button data-close>Cerrar</button></div>`);
