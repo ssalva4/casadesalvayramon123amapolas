@@ -1044,6 +1044,15 @@ $("news").addEventListener("click", e => {
 });
 loadNews(); setInterval(loadNews, 15*60*1000);
 
+/* ---------- Se adapta a cualquier pantalla: el panel se diseña para 1000×820 y se escala para ocupar justo la ventana ---------- */
+function fitScreen(){
+  const app = document.querySelector(".app"), w = window.innerWidth, h = window.innerHeight;
+  if (w < 900){ app.style.zoom = ""; app.style.width = ""; app.style.height = ""; return; }   // móvil: diseño en columna
+  const z = Math.min(w / 1000, h / 820);
+  app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px";
+}
+window.addEventListener("resize", fitScreen); window.addEventListener("orientationchange", () => setTimeout(fitScreen, 300)); fitScreen();
+
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 function renderMonths(ids){
   const cur = new Date().getMonth(); if (half == null) half = cur >= 6 ? 1 : 0;
