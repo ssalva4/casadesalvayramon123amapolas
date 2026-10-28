@@ -345,7 +345,7 @@ button.pill{cursor:pointer}
       <div class="card ac" id="ac0"><div class="msg">Conectando con Home Assistant…</div></div>
       <div class="card ac" id="ac1"></div>
       <div class="card price"><div class="lbl">Tu luz <span class="pill" id="pnow"></span></div><div id="price"></div></div>
-      <div class="card cost"><div class="lbl">Coste de los aires <span id="pfix"></span></div><div id="cost"></div></div>
+      <div class="card cost"><div class="lbl">Coste de climatización <span id="pfix"></span></div><div id="cost"></div></div>
       <div class="card bars"><div class="lbl">Por meses <button class="pill" id="half"></button></div><div class="mb" id="months"></div></div>
     </section>
 
@@ -835,6 +835,10 @@ function energySensors(){
   if (!power.length) power = sensors.filter(s => /potencia_en_tiempo_real/i.test(s.entity_id));
   let energy = sensors.filter(s => /^sensor\.(?!aire_acondicionado_).*energia/i.test(s.entity_id) && /k?Wh/.test(unit(s)));
   if (!energy.length) energy = sensors.filter(s => /consumo_total_de_energia/i.test(s.entity_id));
+  // Deshumidificador (enchufe Tapo P110): su consumo también cuenta en los costes
+  const dh = states.filter(s => s.entity_id.startsWith("sensor.") && /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && num(s) != null);
+  power = power.concat(dh.filter(s => s.attributes.device_class === "power" || /^k?W$/.test(unit(s))));
+  energy = energy.concat(dh.filter(s => /k?Wh/.test(unit(s)) && /hoy|today|_dia|diario/i.test(s.entity_id + " " + (s.attributes.friendly_name||""))).slice(0, 1));
   return {power, energy};
 }
 async function loadToday(energy){
@@ -877,13 +881,15 @@ function renderCost(){
   const mo = new Date().getMonth(); yearLive = {};
   energy.forEach(s => { const base = (year[s.entity_id] || [...Array(12)].map(() => ({kwh:0, eur:0}))).map(m => ({...m}));
     const inStats = base.reduce((a,m) => a + m.kwh, 0);
-    const extra = /^sensor\.(?!aire_acondicionado_)/.test(s.entity_id) ? Math.max(0, num(s)/(unit(s)==="Wh"?1000:1) - inStats) : 0;
+    const extra = /^sensor\.(?!aire_acondicionado_).*energia/i.test(s.entity_id) ? Math.max(0, num(s)/(unit(s)==="Wh"?1000:1) - inStats) : 0;
     base[mo].kwh += extra; base[mo].eur += extra * curPrice; yearLive[s.entity_id] = base; });
   const sum = ids => { let k = 0, e = 0; ids.forEach(id => (yearLive[id]||[]).forEach(m => { k += m.kwh; e += m.eur; })); return {k, e}; };
   const kwh = v => (v >= 100 ? Math.round(v) : fmt1(v)) + " kWh";
   const rows = [...climates].sort((x,y) => (/sal[oó]n/i.test(acName(y))) - (/sal[oó]n/i.test(acName(x)))).map(c => {
     const n = acName(c).toLowerCase(); const ids = energy.filter(s => (s.attributes.friendly_name||"").toLowerCase().includes(n)).map(s => s.entity_id);
-    const y = sum(ids); return `<tr><td>${esc(acName(c))}</td><td>${eur(y.e)}</td><td>${kwh(y.k)}</td></tr>`; }).join("");
+    const y = sum(ids); return `<tr><td>${esc(acName(c))}</td><td>${eur(y.e)}</td><td>${kwh(y.k)}</td></tr>`; }).join("")
+    + energy.filter(s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||""))).map(s => {
+        const y = sum([s.entity_id]); return `<tr><td>Deshumidificador</td><td>${eur(y.e)}</td><td>${kwh(y.k)}</td></tr>`; }).join("");
   const all = sum(energy.map(s => s.entity_id));
   const today = todayKWh != null ? eur(todayEUR ?? todayKWh*curPrice) : "—";
   $("cost").innerHTML = `<div class="big num">${eur(totalW/1000*curPrice).replace(" €","")}<small>€/h</small></div>
