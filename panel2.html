@@ -834,7 +834,7 @@ function renderPrice(){
 }
 
 /* ---------- Clima: coste de los aires (sensores estimados de Home Assistant) ---------- */
-let todayKWh = null, todayEUR = null, todayAt = 0, year = {}, yearAt = 0, yearLive = {}, half = null;
+let ayer = null, todayKWh = null, todayEUR = null, todayAt = 0, year = {}, yearAt = 0, yearLive = {}, half = null;
 const num = s => { const v = parseFloat(s.state); return isNaN(v) ? null : v; };
 const unit = s => s.attributes.unit_of_measurement || "";
 function energySensors(){
@@ -875,12 +875,13 @@ async function loadYear(energy){
       statistic_ids: ids.concat(pvpcId ? [pvpcId] : []), types:["change","mean"], units:{energy:"kWh"}});
     const ts = x => typeof x.start === "number" ? x.start : Date.parse(x.start);
     const prices = new Map(); ((pvpcId && r[pvpcId]) || []).forEach(x => { if (x.mean != null) prices.set(ts(x), x.mean*TAX); });
-    const out = {};
+    const out = {}, hoy0 = new Date().setHours(0,0,0,0), ayer0 = hoy0 - 864e5; let ak = 0;
     ids.forEach(id => { const m = [...Array(12)].map(() => ({kwh:0, eur:0}));
       (r[id]||[]).forEach(x => { const c = Math.max(0, x.change||0); if (!c) return; const t0 = ts(x), mo = new Date(t0).getMonth();
+        if (t0 >= ayer0 && t0 < hoy0) ak += c;
         m[mo].kwh += c; m[mo].eur += c * (prices.get(t0) ?? curPrice); });
       out[id] = m; });
-    year = out; renderCost();
+    year = out; ayer = {kwh: ak, eur: ak * curPrice}; renderCost(); if (h24Data) renderH24();
   }catch(err){ yearAt = Date.now() - 25*60*1000; }
 }
 function renderCost(){
@@ -969,8 +970,8 @@ function renderHoy(ser){
   const hS = mean(s.hs), hD = mean(s.hd), hm = ms => `${Math.floor(ms/3600e3)} h ${String(Math.round(ms%3600e3/60e3)).padStart(2,"0")} min`;
   box.innerHTML = `
     <div class="r"><span>Gasto de hoy</span><span><b>${todayKWh != null ? eur(todayEUR ?? todayKWh*curPrice) : "—"}</b><small>${todayKWh != null ? fmt1(todayKWh) + " kWh" : ""}</small></span></div>
+    <div class="r"><span>Gasto de ayer</span><span><b>${ayer ? eur(ayer.eur) : "—"}</b><small>${ayer ? fmt1(ayer.kwh) + " kWh" : ""}</small></span></div>
     ${s.dh ? `<div class="r"><span>Deshumidificador hoy</span><span><b>${hm(onMs)}</b></span></div>` : ""}
-    <div class="r"><span>Dentro (24 h)</span><span><b>${T.length ? fmt1(Math.min(...T)) + "° – " + fmt1(Math.max(...T)) + "°" : "—"}</b></span></div>
     <div class="r"><span>Humedad media</span><span><b style="color:#e08a3c">${hS != null ? hS + " %" : "—"}</b> · <b style="color:#6b6fd6">${hD != null ? hD + " %" : "—"}</b></span></div>`;
 }
 
