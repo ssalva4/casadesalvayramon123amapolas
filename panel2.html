@@ -236,7 +236,7 @@ svg.i{width:20px;height:20px}
 .agenda .it b{display:block;font-size:14.5px}
 .agenda .it span{font-size:12px;color:var(--muted)}
 .agenda .dot{width:4px;border-radius:2px;flex:none}
-.lower{display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0}
+.lower{display:grid;grid-template-columns:1fr;gap:14px;min-height:0}
 .notes .n{background:#ece8ff;border-radius:12px;padding:9px 11px;font-size:13.5px;margin-bottom:8px;color:#2d2660}
 .notes .n small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
 .shop .chips{display:flex;flex-wrap:wrap;gap:7px}
@@ -428,9 +428,7 @@ button.pill{cursor:pointer}
       </div>
       <div class="lower">
         <div class="card notes"><div class="lbl" style="white-space:nowrap">Próximos 7 días <span class="pill" id="weekWho"></span></div><div id="week" class="scroll"></div></div>
-        <div class="card shop"><div class="lbl">Compra <span class="pill">Compartida</span></div>
-          <div class="chips scroll" id="items"></div>
-          <form class="add" id="addForm"><input id="newItem" placeholder="Añadir…" autocomplete="off" aria-label="Añadir a la compra"><button type="submit">+</button></form></div>
+
       </div>
     </section>
   </main>
@@ -516,7 +514,7 @@ function tick(){
   const s = fmtDate.format(d); $("date").textContent = s[0].toUpperCase() + s.slice(1);
 }
 tick(); setInterval(tick, 5000);
-const TT = {ent:["Entretenimiento","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario de cada uno · la compra es compartida"]};
+const TT = {ent:["Entretenimiento","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario y próximos días"]};
 let tab = "cli";   // al abrir el panel, siempre en Clima
 function show(t){
   tab = t;
@@ -1225,24 +1223,8 @@ async function refreshNotes(){   // se mantiene el nombre: lo llaman el refresco
   });
   box.innerHTML = h;
 }
-async function refreshShop(){
-  const id = shopId();
-  if (!id){ $("items").innerHTML = '<div class="msg">No encuentro la lista de la compra en Home Assistant.</div>'; return; }
-  try{ items = await getItems(id); }catch(err){ handleErr(err); }
-  $("items").innerHTML = items.length ? items.map((t,i) => `<button class="chip" data-i="${i}">${esc(t.summary)}</button>`).join("") : '<div class="msg">Lista vacía.</div>';
-}
-$("items").addEventListener("click", async e => {
-  const b = e.target.closest(".chip"); if (!b) return; const t = items[+b.dataset.i];
-  b.style.opacity = .4;
-  try{ await service("todo", "remove_item", {entity_id: shopId(), item: t.summary}); }catch(err){ handleErr(err); }
-  refreshShop();
-});
-$("addForm").addEventListener("submit", async e => {
-  e.preventDefault(); const v = $("newItem").value.trim(); if (!v || !shopId()) return;
-  $("newItem").value = ""; $("newItem").blur();
-  try{ await service("todo", "add_item", {entity_id: shopId(), item: v}); }catch(err){ handleErr(err); }
-  refreshShop();
-});
+async function refreshShop(){}   // Planning ya no tiene lista de la compra
+
 
 /* ---------- ciclo de actualización ---------- */
 async function refreshHA(){
