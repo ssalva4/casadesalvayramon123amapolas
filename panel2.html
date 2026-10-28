@@ -96,8 +96,18 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 svg.i{width:20px;height:20px}
 
 /* ---------- Entretenimiento ---------- */
-.t-ent{grid-template-columns:1.7fr 1fr;grid-template-rows:1fr;gap:14px}
-.t-ent>.card:last-child{display:flex;flex-direction:column}
+.t-ent{grid-template-columns:1.7fr 1fr;grid-template-rows:auto 1fr;gap:14px}
+.t-ent>.card:last-child{display:flex;flex-direction:column;grid-column:2;grid-row:1/3}
+.t-ent .tv{grid-column:1;grid-row:1}
+.t-ent .news{grid-column:1;grid-row:2;display:flex;flex-direction:column;min-height:0}
+.ncar{flex:1;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;min-height:0;padding-bottom:4px;scrollbar-width:none}
+.ncar::-webkit-scrollbar{display:none}
+.ni{flex:0 0 250px;scroll-snap-align:start;border-radius:14px;background:var(--card2);overflow:hidden;display:flex;flex-direction:column;text-align:left;padding:0}
+.ni .im{width:100%;aspect-ratio:16/9;background:#ddd center/cover no-repeat;flex:none}
+.ni .tx{padding:9px 11px 10px;display:flex;flex-direction:column;gap:4px;min-height:0}
+.ni b{font-size:14px;line-height:1.3;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ni small{font-size:11px;color:var(--muted)}
+.nsheet img{width:100%;border-radius:12px;margin-bottom:10px}
 .t-ent .apps{margin-top:auto;padding-top:10px}
 .yt{display:flex;flex-direction:column}
 .yt .ytbox{flex:1}
@@ -112,7 +122,7 @@ svg.i{width:20px;height:20px}
 .chs{align-items:center}
 .chs .sep{width:1px;background:var(--line);margin:4px 2px}
 
-.screen{flex:1;border-radius:16px;overflow:hidden;position:relative;background:
+.screen{flex:none;aspect-ratio:16/9;width:100%;border-radius:16px;overflow:hidden;position:relative;background:
   radial-gradient(120% 90% at 70% 20%,#3a5a8c 0,#1d2c47 45%,#0b1220 100%)}
 .screen .live{position:absolute;top:12px;left:12px;background:#e5383b;color:#fff;font-size:11px;font-weight:800;letter-spacing:.08em;padding:4px 8px;border-radius:6px}
 .screen{color:#fff}
@@ -343,6 +353,7 @@ button.pill{cursor:pointer}
         <div class="chs" id="chs"></div>
         <div class="screen" id="screen"></div>
       </div>
+      <div class="card news"><div class="lbl">Noticias · El País <span class="pill" id="newsTime"></span></div><div class="ncar" id="news"><div class="msg">Cargando noticias…</div></div></div>
       <div class="card">
         <div class="lbl">Radio en directo</div>
         <div class="radios" id="radios"></div>
@@ -974,6 +985,40 @@ function renderHoy(ser){
     ${s.dh ? `<div class="r"><span>Deshumidificador hoy</span><span><b>${hm(onMs)}</b></span></div>` : ""}
     <div class="r"><span>Humedad media</span><span><b style="color:#e08a3c">${hS != null ? hS + " %" : "—"}</b> · <b style="color:#6b6fd6">${hD != null ? hD + " %" : "—"}</b></span></div>`;
 }
+
+/* ---------- Entretenimiento: noticias de El País (RSS) en carrusel ---------- */
+const NEWS_FEED = "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada";
+let newsItems = [], newsAt = 0, newsTimer = null;
+const xTxt = (el, tag) => { const n = el.getElementsByTagName(tag)[0]; return n ? n.textContent.trim() : ""; };
+const stripHtml = h => { const d = document.createElement("div"); d.innerHTML = h; return (d.textContent || "").trim(); };
+async function loadNews(){
+  if (newsItems.length && Date.now() - newsAt < 15*60*1000) return;
+  newsAt = Date.now();
+  try{
+    const xml = new DOMParser().parseFromString(await fetch(NEWS_FEED).then(r => r.text()), "text/xml");
+    newsItems = [...xml.getElementsByTagName("item")].slice(0, 20).map(it => {
+      const m = it.getElementsByTagNameNS("*", "content")[0] || it.getElementsByTagName("enclosure")[0] || it.getElementsByTagNameNS("*", "thumbnail")[0];
+      return {t: xTxt(it, "title"), d: stripHtml(xTxt(it, "description")), img: m ? m.getAttribute("url") : "", date: Date.parse(xTxt(it, "pubDate"))};
+    }).filter(n => n.t);
+    renderNews();
+  }catch(err){ newsAt = 0; $("news").innerHTML = '<div class="msg">No se han podido cargar las noticias. Lo vuelvo a intentar en un rato.</div>'; }
+}
+function renderNews(){
+  if (!newsItems.length) return;
+  const hace = t => { if (isNaN(t)) return ""; const m = Math.round((Date.now() - t) / 60000); return m < 60 ? `hace ${Math.max(1, m)} min` : `hace ${Math.round(m/60)} h`; };
+  $("news").innerHTML = newsItems.map((n, i) => `<button class="ni" data-ni="${i}"><span class="im" style="${n.img ? `background-image:url('${esc(n.img)}')` : ""}"></span><span class="tx"><b>${esc(n.t)}</b><small>${hace(n.date)}</small></span></button>`).join("");
+  $("newsTime").textContent = new Date(newsAt).toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"});
+  clearInterval(newsTimer);
+  newsTimer = setInterval(() => {   // avanza solo cada 7 s; vuelve al principio al llegar al final
+    const c = $("news"); if (!c || c.matches(":hover")) return;
+    c.scrollLeft + c.clientWidth >= c.scrollWidth - 5 ? c.scrollTo({left: 0}) : c.scrollBy({left: 262});
+  }, 7000);
+}
+$("news").addEventListener("click", e => {
+  const b = e.target.closest("[data-ni]"); if (!b) return; const n = newsItems[+b.dataset.ni];
+  sheet(n.t, `<div class="nsheet">${n.img ? `<img src="${esc(n.img)}" alt="">` : ""}<p>${esc(n.d || "Sin resumen.")}</p></div><div class="pactions"><button data-close>Cerrar</button></div>`);
+});
+loadNews(); setInterval(loadNews, 15*60*1000);
 
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 function renderMonths(ids){
