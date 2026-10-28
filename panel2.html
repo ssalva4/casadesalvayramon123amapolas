@@ -131,7 +131,7 @@ svg.i{width:20px;height:20px}
 
 /* ---------- Clima ---------- */
 .t-cli{grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto 1fr;gap:14px}
-.t-cli .bars{grid-column:2/4}
+.t-cli .bars{grid-column:1/4}
 .wx{grid-column:1/4;display:flex;gap:22px;align-items:center}
 .wx .now{display:flex;align-items:center;gap:12px;min-width:200px}
 .wx .now .t{font-family:var(--head);font-size:46px;font-weight:500}
@@ -344,8 +344,7 @@ button.pill{cursor:pointer}
       <div class="card wx"><div class="now" id="wxnow"><div class="d">Cargando el tiempo de Vigo…</div></div><div class="hrs" id="hrs"></div></div>
       <div class="card ac" id="ac0"><div class="msg">Conectando con Home Assistant…</div></div>
       <div class="card ac" id="ac1"></div>
-      <div class="card price"><div class="lbl">Tu luz <span class="pill" id="pnow"></span></div><div id="price"></div></div>
-      <div class="card cost"><div class="lbl">Coste de climatización <span id="pfix"></span></div><div id="cost"></div></div>
+      <div class="card cost"><div class="lbl">Coste climatización <span id="pfix" style="white-space:nowrap"></span></div><div id="cost"></div></div>
       <div class="card bars"><div class="lbl">Por meses <button class="pill" id="half"></button></div><div class="mb" id="months"></div></div>
     </section>
 
@@ -814,14 +813,8 @@ document.querySelectorAll(".t-cli .ac").forEach(card => card.addEventListener("c
 /* ---------- Clima: precio de la luz (PVPC) ---------- */
 let pvpcId = null, curPrice = KWH_FINAL;
 function renderPrice(){
-  // Con tarifa de precio fijo no se usa el PVPC para nada: todos los costes salen de la factura
+  // Tarifa de precio fijo (Naturgy): el precio se muestra en la tarjeta de costes
   pvpcId = null; curPrice = KWH_FINAL;
-  const f3 = v => v.toLocaleString("es-ES", {minimumFractionDigits:3, maximumFractionDigits:3});
-  const f2 = v => v.toLocaleString("es-ES", {minimumFractionDigits:2, maximumFractionDigits:2});
-  const F = TARIFA.factura;
-  $("price").innerHTML = `<div class="tarifa"><div class="tv num">${f3(KWH_FINAL)}<small> €/kWh</small></div>
-      <div class="tk">con impuestos · ${f3(TARIFA.kwh)} sin impuestos<br>Mismo precio a todas horas</div></div>`;
-  $("pnow").textContent = "Naturgy · Por Uso Luz";
 }
 
 /* ---------- Clima: coste de los aires (sensores estimados de Home Assistant) ---------- */
@@ -896,7 +889,7 @@ function renderCost(){
   $("cost").innerHTML = `<div class="big num">${eur(totalW/1000*curPrice).replace(" €","")}<small>€/h</small></div>
     <div class="k">ahora ${Math.round(totalW)} W · hoy ${today}</div>
     <table>${rows}<tr class="tot"><td>Total ${new Date().getFullYear()}</td><td>${eur(all.e)}</td><td>${kwh(all.k)}</td></tr></table>`;
-  $("pfix").innerHTML = "";
+  $("pfix").innerHTML = `<span class="pill">${KWH_FINAL.toLocaleString("es-ES",{minimumFractionDigits:3, maximumFractionDigits:3})} €/kWh</span>`;
   renderMonths(energy.map(s => s.entity_id));
 }
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
