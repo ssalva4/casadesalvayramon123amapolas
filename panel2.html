@@ -739,7 +739,8 @@ const dehumOf = e => {
 };
 const dehumHTML = e => {
   const d = dehumOf(e); if (!d) return "";
-  const txt = !d.on ? "apagado · se enciende por encima del 60 %"
+  const noche = (window.__states || []).some(x => x.entity_id === "input_boolean.noche_dormitorio" && x.state === "on");
+  const txt = !d.on ? (noche ? "en pausa por el modo Noche · hasta las 10:00" : "apagado · se enciende por encima del 60 %")
     : (d.w != null && d.w > 5 ? `secando · ${Math.round(d.w)} W · se apaga al 60 %` : "en espera · ¿depósito lleno?");
   return `<div class="dehum ${d.on ? "on" : ""}"><span class="dx"><span class="dn">Deshumidificador</span><span class="dt">${txt}</span></span>
     <button data-dehum="${esc(d.id)}" data-on="${d.on ? 1 : 0}">${d.on ? "Apagar" : "Encender"}</button></div>`;
