@@ -717,7 +717,7 @@ $("saveBtn").onclick = () => {
 const HA = location.origin;
 const CLIENT_ID = HA + "/";
 const REDIRECT = HA + location.pathname;
-const onHA = location.protocol === "http:" || /:8123$/.test(location.host);
+const onHA = !/github\.io$/i.test(location.hostname);   // servido desde Home Assistant (en casa o desde fuera, http o https)
 let auth = store.get("ha_auth", null);   // {access, expires, refresh} o {llat}
 let climates = [];
 const fmt1 = n => (Math.round(n*10)/10).toFixed(1).replace(".", ",");

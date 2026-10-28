@@ -466,7 +466,7 @@ document.querySelectorAll(".av").forEach(b => b.onclick = () => setUser(b.datase
 
 /* ---------- Home Assistant: sesión y API ---------- */
 const HA = location.origin, CLIENT_ID = HA + "/", REDIRECT = HA + location.pathname;
-const onHA = location.protocol === "http:";
+const onHA = !/github\.io$/i.test(location.hostname);   // servido desde Home Assistant (en casa o desde fuera, http o https)
 let auth = store.get("ha_auth", null);
 async function tokenRequest(params){
   const r = await fetch(HA + "/auth/token", {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"},
