@@ -105,7 +105,8 @@ svg.i{width:20px;height:20px}
 .t-ent .tv>.lbl{grid-column:1/3}
 .t-ent .tv .chs{flex-direction:column;margin:0;gap:8px;align-items:center}
 .t-ent .tv .chs .sep{width:30px;height:1px;margin:2px 0}
-.t-ent .tv .screen{width:88%;height:auto;aspect-ratio:16/9;align-self:start;justify-self:center}
+.t-ent .tv .screen{width:100%;height:auto;aspect-ratio:16/9;align-self:start;justify-self:center}
+.tactil .t-ent .tv .screen{width:88%}   /* iPad: un poco más pequeña; en el iMac, a todo el ancho */
 .t-ent .news{grid-column:1/3;grid-row:2;display:flex;flex-direction:column;min-height:0}
 .nwrap{flex:1;position:relative;display:flex;min-height:0}
 .narr{position:absolute;top:calc(50% - 18px);width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.82);color:var(--ink);font-size:22px;font-weight:600;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 6px rgba(0,0,0,.15);opacity:.75;z-index:2}
@@ -1060,6 +1061,7 @@ $("news").addEventListener("click", e => {
 loadNews(); setInterval(loadNews, 15*60*1000);
 
 /* ---------- Se adapta a cualquier pantalla: el panel se diseña para 1000×820 y se escala para ocupar justo la ventana ---------- */
+document.documentElement.classList.toggle("tactil", matchMedia("(pointer: coarse)").matches);
 function fitScreen(){
   const app = document.querySelector(".app"), w = window.innerWidth, h = window.innerHeight;
   if (w < 900){ app.style.zoom = ""; app.style.width = ""; app.style.height = ""; return; }   // móvil: diseño en columna
