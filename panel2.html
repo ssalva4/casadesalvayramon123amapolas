@@ -306,6 +306,10 @@ a{color:inherit;text-decoration:none}
 .scroll{overflow:auto;max-height:100%}
 .notes,.shop{display:flex;flex-direction:column;min-height:0}
 .notes .n{display:block;width:100%;text-align:left}
+.wday{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 4px}
+.wday:first-child{margin-top:0}
+.wev{display:flex;gap:10px;align-items:baseline;padding:6px 0 6px 10px;border-left:3px solid var(--c);margin-bottom:4px;font-size:14px}
+.wev .wt{font-size:12px;color:var(--muted);min-width:44px}.wev .ws{font-weight:600;color:var(--ink)}
 .shop .chips{align-content:flex-start;flex:1}
 .chip{background:#e4f0e2;color:#24603a;padding:7px 12px;border-radius:999px;font-weight:600;font-size:14px}
 .shop .add input{flex:1;min-width:0;background:var(--card2);border:0;border-radius:10px;padding:9px 12px;color:var(--ink);font:inherit;font-size:14px}
@@ -423,7 +427,7 @@ button.pill{cursor:pointer}
         <div id="agenda"></div>
       </div>
       <div class="lower">
-        <div class="card notes"><div class="lbl">Mis notas <button class="pill" id="noteAdd" aria-label="Añadir nota">+</button></div><div id="notes" class="scroll"></div></div>
+        <div class="card notes"><div class="lbl" style="white-space:nowrap">Próximos 7 días <span class="pill" id="weekWho"></span></div><div id="week" class="scroll"></div></div>
         <div class="card shop"><div class="lbl">Compra <span class="pill">Compartida</span></div>
           <div class="chips scroll" id="items"></div>
           <form class="add" id="addForm"><input id="newItem" placeholder="Añadir…" autocomplete="off" aria-label="Añadir a la compra"><button type="submit">+</button></form></div>
@@ -512,7 +516,7 @@ function tick(){
   const s = fmtDate.format(d); $("date").textContent = s[0].toUpperCase() + s.slice(1);
 }
 tick(); setInterval(tick, 5000);
-const TT = {ent:["Entretenimiento","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario y notas de cada uno · la compra es compartida"]};
+const TT = {ent:["Entretenimiento","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario de cada uno · la compra es compartida"]};
 let tab = "cli";   // al abrir el panel, siempre en Clima
 function show(t){
   tab = t;
@@ -1121,7 +1125,7 @@ function calOwner(id){
   const s = states.find(x => x.entity_id === id), n = (s && s.attributes.friendly_name || "") + " " + id;
   if (USERS.S.re.test(n)) return "S"; if (USERS.R.re.test(n)) return "R";
   if (/casa|compart|familia|hogar/i.test(n)) return "C";
-  return "-";
+  return "S";   // de momento todos los calendarios de iCloud son de Salva
 }
 const myCals = () => calendars().map(s => s.entity_id).filter(id => { const o = calOwner(id); return o === user || o === "C"; });
 async function loadCalendar(){
@@ -1194,25 +1198,33 @@ function notesId(u){
 const shopId = () => { const t = states.find(s => s.entity_id.startsWith("todo.") && /compra|shopping/i.test(s.entity_id + " " + (s.attributes.friendly_name||""))); return t ? t.entity_id : null; };
 let notes = [], items = [];
 async function getItems(id){ const r = await serviceResp("todo", "get_items", {entity_id:id, status:"needs_action"}); return (r[id] && r[id].items) || []; }
-async function refreshNotes(){
-  const id = notesId(user);
-  if (!id){ $("notes").innerHTML = `<div class="msg">Crea en Home Assistant una lista llamada «Notas ${USERS[user].n}» (Listas de tareas pendientes) y aparecerá aquí.</div>`; return; }
-  try{ notes = await getItems(id); }catch(err){ handleErr(err); }
-  $("notes").innerHTML = notes.length ? notes.map((n,i) => `<button class="n" data-i="${i}">${esc(n.summary)}${n.due || n.description ? `<small>${esc(n.description || n.due)}</small>` : ""}</button>`).join("")
-    : `<div class="msg">Sin notas. Pulsa + para añadir.</div>`;
+/* ---------- Planning: próximos 7 días (sustituye a las notas) ---------- */
+let weekCache = null;
+async function refreshNotes(){   // se mantiene el nombre: lo llaman el refresco y el cambio de usuario
+  const box = $("week"); if (!box) return;
+  const ids = myCals();
+  $("weekWho").textContent = USERS[user].n;
+  if (!ids.length){ box.innerHTML = '<div class="msg">No hay calendarios conectados.</div>'; return; }
+  const key = user + ids.join(",");
+  if (!weekCache || weekCache.key !== key || Date.now() - weekCache.at > 5*60*1000){
+    const from = new Date(); from.setHours(0,0,0,0); from.setDate(from.getDate() + 1);
+    const to = new Date(from.getTime() + 7*86400000), evs = [];
+    await Promise.all(ids.map(async id => {
+      try{ const list = await api(`/api/calendars/${id}?start=${encodeURIComponent(from.toISOString())}&end=${encodeURIComponent(to.toISOString())}`);
+        (list||[]).forEach(ev => evs.push({...ev, own: calOwner(id)})); }catch(err){}
+    }));
+    weekCache = {key, at: Date.now(), evs: evs.sort((a,b) => evStart(a) - evStart(b))};
+  }
+  const evs = weekCache.evs;
+  if (!evs.length){ box.innerHTML = '<div class="msg">Nada en el calendario los próximos 7 días.</div>'; return; }
+  let h = "", last = "";
+  evs.forEach(ev => {
+    const d = evStart(ev), dk = d.toDateString();
+    if (dk !== last){ last = dk; const t = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"short"}); h += `<div class="wday">${t[0].toUpperCase() + t.slice(1)}</div>`; }
+    h += `<div class="wev" style="--c:${evColor(ev)}"><span class="wt">${allDay(ev) ? "Todo el día" : d.toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"})}</span><span class="ws">${esc(ev.summary || "")}</span></div>`;
+  });
+  box.innerHTML = h;
 }
-$("notes").addEventListener("click", async e => {
-  const b = e.target.closest(".n"); if (!b) return; const n = notes[+b.dataset.i]; const id = notesId(user);
-  if (!confirm("¿Marcar como hecha «" + n.summary + "»?")) return;
-  try{ await service("todo", "update_item", {entity_id:id, item: n.uid || n.summary, status:"completed"}); }catch(err){ handleErr(err); }
-  refreshNotes();
-});
-$("noteAdd").onclick = async () => {
-  const id = notesId(user); if (!id){ refreshNotes(); return; }
-  const v = prompt("Nueva nota para " + USERS[user].n + ":"); if (!v || !v.trim()) return;
-  try{ await service("todo", "add_item", {entity_id:id, item: v.trim()}); }catch(err){ handleErr(err); }
-  refreshNotes();
-};
 async function refreshShop(){
   const id = shopId();
   if (!id){ $("items").innerHTML = '<div class="msg">No encuentro la lista de la compra en Home Assistant.</div>'; return; }
