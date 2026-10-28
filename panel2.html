@@ -105,7 +105,7 @@ svg.i{width:20px;height:20px}
 .t-ent .tv>.lbl{grid-column:1/3}
 .t-ent .tv .chs{flex-direction:column;margin:0;gap:8px;align-items:center}
 .t-ent .tv .chs .sep{width:30px;height:1px;margin:2px 0}
-.t-ent .tv .screen{width:100%;height:auto;aspect-ratio:16/9;align-self:start}
+.t-ent .tv .screen{width:88%;height:auto;aspect-ratio:16/9;align-self:start;justify-self:center}
 .t-ent .news{grid-column:1/3;grid-row:2;display:flex;flex-direction:column;min-height:0}
 .nwrap{flex:1;position:relative;display:flex;min-height:0}
 .narr{position:absolute;top:calc(50% - 18px);width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.82);color:var(--ink);font-size:22px;font-weight:600;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 6px rgba(0,0,0,.15);opacity:.75;z-index:2}
@@ -113,7 +113,8 @@ svg.i{width:20px;height:20px}
 .ncar{flex:1;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;min-height:0;padding-bottom:4px;scrollbar-width:none}
 .ncar::-webkit-scrollbar{display:none}
 .ni{flex:0 0 250px;scroll-snap-align:start;border-radius:14px;background:var(--card2);overflow:hidden;display:flex;flex-direction:column;text-align:left;padding:0}
-.ni .im{width:100%;flex:1;min-height:60px;background:#ddd center/cover no-repeat}
+.ni .im{width:100%;flex:1;min-height:60px;background:#ddd;overflow:hidden;position:relative}
+.ni .im img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .ni .tx{flex:none;padding:8px 11px 9px;display:flex;flex-direction:column;gap:4px;min-height:0}
 .ni b{font-size:14px;line-height:1.3;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ni small{font-size:11px;color:var(--muted)}
@@ -495,6 +496,8 @@ function show(t){
   document.querySelectorAll(".tab").forEach(s => s.classList.toggle("on", s.id === "t-" + t));
   $("title").textContent = TT[t][0]; $("sub").textContent = TT[t][1];
   if (t === "pla") loadCalendar();
+  if (t !== "ent" && typeof stopAll === "function") stopAll("radio");   // libera el vídeo al cambiar de pestaña; la radio sigue sonando
+  if (t === "cli" && typeof renderH24 === "function") renderH24();
 }
 document.querySelectorAll(".nav button").forEach(b => b.onclick = () => show(b.dataset.t));
 let user = store.get("p2_user", "S");
@@ -933,7 +936,7 @@ function renderCost(){
   renderMonths(energy.map(s => s.entity_id));
 }
 /* ---------- Clima: últimas 24 h (sensores Tapo + deshumidificador) ---------- */
-let h24At = 0, h24Data = null;
+let h24At = 0, h24Data = null, h24Sig = "";
 const noAcc = t => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 function h24Sensors(){
   const f = (dc, re) => states.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === dc && re.test(noAcc(x.attributes.friendly_name)));
@@ -951,11 +954,15 @@ async function loadH24(){
     const h = await api(`/api/history/period/${encodeURIComponent(new Date(start).toISOString())}?filter_entity_id=${ids.join(",")}&minimal_response&no_attributes`);
     const by = {};
     (h || []).forEach(l => { if (!l.length) return; by[l[0].entity_id] = l.map(x => ({t: Math.max(start, Date.parse(x.last_changed || x.last_updated)), v: x.state})); });
-    h24Data = {s, by, start}; renderH24();
+    const SLOT = 10*60*1000;   // una muestra cada 10 min (como mucho 145 puntos por línea)
+    Object.keys(by).forEach(id => { const m = new Map(); by[id].forEach(p => m.set(Math.floor(p.t / SLOT), p)); by[id] = [...m.values()]; });
+    h24Data = {s, by, start}; h24Sig = ""; renderH24();
   }catch(err){ h24At = 0; }
 }
 function renderH24(){
-  if (!h24Data) return;
+  if (!h24Data || tab !== "cli") return;
+  const sig = h24At + "|" + Math.floor(Date.now() / 60000) + "|" + Object.values(h24Data.s).map(e => e ? e.entity_id && (states.find(x => x.entity_id === e.entity_id) || e).state : "").join(",");
+  if (sig === h24Sig) return; h24Sig = sig;
   const {s, by, start} = h24Data, end = Date.now(), W = 600, H = 100, X = t => (t - start) / (end - start) * W;
   const ser = e => e ? (by[e.entity_id] || []).map(p => ({t: p.t, v: parseFloat(p.v)})).filter(p => !isNaN(p.v)).concat(!isNaN(parseFloat(e.state)) ? [{t: end, v: parseFloat(e.state)}] : []) : [];
   const panel = (title, a, b, unit, fixed, extra) => {
@@ -1012,9 +1019,12 @@ const stripHtml = h => { const d = document.createElement("div"); d.innerHTML = 
 async function loadNews(){
   if (newsItems.length && Date.now() - newsAt < 15*60*1000) return;
   newsAt = Date.now();
-  const parse = (txt, f) => [...new DOMParser().parseFromString(txt, "text/xml").getElementsByTagName("item")].slice(0, 15).map(it => {
-    const m = it.getElementsByTagNameNS("*", "content")[0] || it.getElementsByTagName("enclosure")[0] || it.getElementsByTagNameNS("*", "thumbnail")[0];
-    return {t: xTxt(it, "title"), d: stripHtml(xTxt(it, "description")), img: m ? m.getAttribute("url") : "", date: Date.parse(xTxt(it, "pubDate")), src: f.n, sc: f.c};
+  const parse = (txt, f) => [...new DOMParser().parseFromString(txt, "text/xml").getElementsByTagName("item")].slice(0, 8).map(it => {
+    // la imagen más pequeña que traiga la noticia (ahorra memoria en el iPad)
+    const ims = [...it.getElementsByTagNameNS("*", "thumbnail"), ...it.getElementsByTagNameNS("*", "content"), ...it.getElementsByTagName("enclosure")].filter(m => m.getAttribute("url"));
+    ims.sort((a, b) => (+a.getAttribute("width") || 9999) - (+b.getAttribute("width") || 9999));
+    const m = ims[0];
+    return {t: xTxt(it, "title"), d: stripHtml(xTxt(it, "description")).slice(0, 600), img: m ? m.getAttribute("url") : "", date: Date.parse(xTxt(it, "pubDate")), src: f.n, sc: f.c};
   }).filter(n => n.t);
   try{
     const lists = await Promise.all(NEWS_FEEDS.map(f => fetch(f.u).then(r => r.text()).then(t => parse(t, f)).catch(() => [])));
@@ -1027,11 +1037,11 @@ async function loadNews(){
 function renderNews(){
   if (!newsItems.length) return;
   const hace = t => { if (isNaN(t)) return ""; const m = Math.round((Date.now() - t) / 60000); return m < 60 ? `hace ${Math.max(1, m)} min` : `hace ${Math.round(m/60)} h`; };
-  $("news").innerHTML = newsItems.map((n, i) => `<button class="ni" data-ni="${i}"><span class="im" style="${n.img ? `background-image:url('${esc(n.img)}')` : ""}"></span><span class="tx"><b>${esc(n.t)}</b><small><span class="nsrc" style="background:${n.sc}">${esc(n.src)}</span> ${hace(n.date)}</small></span></button>`).join("");
+  $("news").innerHTML = newsItems.map((n, i) => `<button class="ni" data-ni="${i}"><span class="im">${n.img ? `<img src="${esc(n.img)}" alt="" loading="lazy" decoding="async">` : ""}</span><span class="tx"><b>${esc(n.t)}</b><small><span class="nsrc" style="background:${n.sc}">${esc(n.src)}</span> ${hace(n.date)}</small></span></button>`).join("");
   $("newsTime").textContent = new Date(newsAt).toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"});
   clearInterval(newsTimer);
   newsTimer = setInterval(() => {   // avanza solo cada 7 s; vuelve al principio al llegar al final
-    const c = $("news"); if (!c || Date.now() < newsHold) return;
+    const c = $("news"); if (!c || Date.now() < newsHold || document.hidden || tab !== "ent") return;
     c.scrollLeft + c.clientWidth >= c.scrollWidth - 5 ? c.scrollTo({left: 0}) : c.scrollBy({left: 262});
   }, 7000);
 }
@@ -1199,6 +1209,7 @@ $("addForm").addEventListener("submit", async e => {
 
 /* ---------- ciclo de actualización ---------- */
 async function refreshHA(){
+  if (document.hidden) return;   // en segundo plano no se gasta nada
   try{
     states = await api("/api/states"); window.__states = states; if (typeof renderMorning === "function") renderMorning();
     helpers = Object.fromEntries(states.filter(s => s.entity_id.startsWith("input_boolean.")).map(s => [s.entity_id, s.state]));
