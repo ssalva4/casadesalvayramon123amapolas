@@ -65,9 +65,11 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 #h24 .pn{flex:1;display:flex;flex-direction:column;min-height:0}
 #h24 .pt{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:600}
 #h24 .pt b{color:var(--ink)}
-#h24 .plot{flex:1;position:relative;padding-left:34px;display:flex;min-height:60px}
+#h24 .plot{flex:1;position:relative;padding:0 34px;display:flex;min-height:60px}
 #h24 .plot svg{flex:1;width:100%;height:100%}
-#h24 .yl{position:absolute;left:0;width:30px;text-align:right;transform:translateY(-50%);font-size:10.5px;font-weight:700;color:var(--muted);line-height:1}
+#h24 .yl{position:absolute;left:0;width:30px;text-align:right;}
+#h24 .yl.r{left:auto;right:0;text-align:left}
+#h24 .yl{transform:translateY(-50%);font-size:10.5px;font-weight:700;color:var(--muted);line-height:1}
 #h24 .yl.ref{color:#3b7fc4}
 .morning{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px;border-radius:14px;background:rgba(233,162,59,.16);color:#9a5a00;font-weight:700;font-size:15px;text-align:left;box-shadow:inset 0 0 0 1.5px rgba(233,162,59,.55)}
 .morning svg{width:24px;height:24px;color:#e9a23b;flex:none}
@@ -411,7 +413,7 @@ button.pill{cursor:pointer}
       <div class="card ac" id="ac0"><div class="msg">Conectando con Home Assistant…</div></div>
       <div class="card ac" id="ac1"></div>
       <div class="card cost"><div class="lbl">Coste climatización <span id="pfix" style="white-space:nowrap"></span></div><div id="cost"></div></div>
-      <div class="card h24"><div class="lbl">Últimas 24 h <span class="leg"><span><i style="background:#e08a3c"></i>Salón</span><span><i style="background:#6b6fd6"></i>Dorm.</span><span><i style="background:rgba(59,127,196,.35);height:8px"></i>Deshum.</span></span></div><div id="h24"></div></div>
+      <div class="card h24"><div class="lbl">Últimas 24 h <span class="leg"><span><i style="background:#d64545"></i>Temp.</span><span><i style="background:#3b7fc4"></i>Humedad</span><span><i style="background:rgba(59,127,196,.3);height:8px"></i>Deshum.</span></span></div><div id="h24"></div></div>
       <div class="card hoy"><div class="lbl">Hoy en casa</div><div id="hoy"></div></div>
       <div class="card bars"><div class="lbl">Por meses <button class="pill" id="half"></button></div><div class="mb" id="months"></div></div>
     </section>
@@ -993,34 +995,34 @@ function renderH24(){
   if (sig === h24Sig) return; h24Sig = sig;
   const {s, by, start} = h24Data, end = Date.now(), W = 600, H = 100, X = t => (t - start) / (end - start) * W;
   const ser = e => e ? (by[e.entity_id] || []).map(p => ({t: p.t, v: parseFloat(p.v)})).filter(p => !isNaN(p.v)).concat(!isNaN(parseFloat(e.state)) ? [{t: end, v: parseFloat(e.state)}] : []) : [];
-  const panel = (title, a, b, unit, fixed, extra) => {
-    const A = ser(a), B = ser(b), all = A.concat(B).map(p => p.v).concat(fixed || []);
-    if (!all.length) return "";
-    const data = A.concat(B).map(p => p.v), dMin = data.length ? Math.min(...data) : null, dMax = data.length ? Math.max(...data) : null;
-    let lo = Math.min(...all), hi = Math.max(...all); if (hi - lo < 2){ lo -= 1; hi += 1; } const pad = (hi - lo) * .12; lo -= pad; hi += pad;
-    const Y = v => H - (v - lo) / (hi - lo) * H;
-    const path = P => P.length ? "M" + P.map((p, i) => (i ? "L" + X(p.t).toFixed(1) + "," + Y(P[i-1].v).toFixed(1) + " " : "") + X(p.t).toFixed(1) + "," + Y(p.v).toFixed(1)).join(" ") : "";
-    const grid = [6, 12, 18].map(hh => { const t = end - hh*3600e3; return `<line x1="${X(t)}" x2="${X(t)}" y1="0" y2="${H}" stroke="var(--line)" stroke-width="1"/>`; }).join("");
-    const now = v => v != null && !isNaN(v) ? (Number.isInteger(v) ? v : fmt1(v)) + unit : "—";
-    const lab = v => (unit === "°" ? fmt1(v) : Math.round(v)) + unit.trim();
-    const ylab = v => `<span class="yl" style="top:${(Y(v) / H * 100).toFixed(1)}%">${lab(v)}</span>`;
-    const hl = v => `<line x1="0" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
-    return `<div class="pn"><div class="pt"><span>${title}</span><span><b style="color:#e08a3c">${now(a && parseFloat(a.state))}</b> · <b style="color:#6b6fd6">${now(b && parseFloat(b.state))}</b></span></div>
-      <div class="plot">${dMax != null ? ylab(dMax) + (dMax - dMin >= .2 ? ylab(dMin) : "") : ""}${fixed && fixed.length ? ylab(fixed[0]).replace('class="yl"', 'class="yl ref"') : ""}
-      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${dMax != null ? hl(dMax) + hl(dMin) : ""}${extra ? extra(Y) : ""}
-        <path d="${path(A)}" fill="none" stroke="#e08a3c" stroke-width="2.2" vector-effect="non-scaling-stroke"/>
-        <path d="${path(B)}" fill="none" stroke="#6b6fd6" stroke-width="2.2" vector-effect="non-scaling-stroke"/></svg></div></div>`;
-  };
-  // franjas en las que el deshumidificador estuvo encendido
-  const bands = Y => {
-    let out = "";
-    if (s.dh){ const L = (by[s.dh.entity_id] || []).concat([{t: end, v: s.dh.state}]);
-      for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on") out += `<rect x="${X(L[i].t)}" width="${Math.max(1, X(L[i+1].t) - X(L[i].t))}" y="0" height="${H}" fill="rgba(59,127,196,.16)"/>`; }
-    return out + `<line x1="0" x2="${W}" y1="${Y(60)}" y2="${Y(60)}" stroke="#3b7fc4" stroke-width="1.2" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/>`;
+  const TC = "#d64545", HC = "#3b7fc4";   // temperatura en rojo, humedad en azul
+  const scale = (P, fixed, minSpan) => { const v = P.map(p => p.v).concat(fixed || []); if (!v.length) return null;
+    let lo = Math.min(...v), hi = Math.max(...v); if (hi - lo < minSpan){ const m = (hi + lo) / 2; lo = m - minSpan/2; hi = m + minSpan/2; }
+    const pad = (hi - lo) * .12; lo -= pad; hi += pad; return v2 => H - (v2 - lo) / (hi - lo) * H; };
+  const path = (P, Y) => P.length ? "M" + P.map((p, i) => (i ? "L" + X(p.t).toFixed(1) + "," + Y(P[i-1].v).toFixed(1) + " " : "") + X(p.t).toFixed(1) + "," + Y(p.v).toFixed(1)).join(" ") : "";
+  const grid = [6, 12, 18].map(hh => { const t = end - hh*3600e3; return `<line x1="${X(t)}" x2="${X(t)}" y1="0" y2="${H}" stroke="var(--line)" stroke-width="1"/>`; }).join("");
+  const mm = P => P.length ? [Math.min(...P.map(p => p.v)), Math.max(...P.map(p => p.v))] : null;
+  // una gráfica por estancia: temperatura (eje izquierdo) y humedad (eje derecho)
+  const room = (title, te, he, withBands) => {
+    const T = ser(te), Hm = ser(he); if (!T.length && !Hm.length) return "";
+    const YT = scale(T, [], 2), YH = scale(Hm, [60], 10), tm = mm(T), hmm = mm(Hm);
+    const yl = (Y, v, txt, side, col) => `<span class="yl ${side}" style="top:${(Y(v) / H * 100).toFixed(1)}%;color:${col}">${txt}</span>`;
+    let labs = "";
+    if (tm){ labs += yl(YT, tm[1], fmt1(tm[1]) + "°", "l", TC); if (tm[1] - tm[0] >= .2) labs += yl(YT, tm[0], fmt1(tm[0]) + "°", "l", TC); }
+    if (hmm){ labs += yl(YH, hmm[1], Math.round(hmm[1]) + "%", "r", HC); if (hmm[1] - hmm[0] >= 1) labs += yl(YH, hmm[0], Math.round(hmm[0]) + "%", "r", HC); }
+    let extra = "";
+    if (withBands && s.dh){ const L = (by[s.dh.entity_id] || []).concat([{t: end, v: s.dh.state}]);
+      for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on") extra += `<rect x="${X(L[i].t)}" width="${Math.max(1, X(L[i+1].t) - X(L[i].t))}" y="0" height="${H}" fill="rgba(59,127,196,.13)"/>`; }
+    if (YH) extra += `<line x1="0" x2="${W}" y1="${YH(60)}" y2="${YH(60)}" stroke="${HC}" stroke-width="1" stroke-dasharray="5 4" opacity=".6" vector-effect="non-scaling-stroke"/>`;
+    const cur = e => e && !isNaN(parseFloat(e.state)) ? parseFloat(e.state) : null, ct = cur(te), ch = cur(he);
+    return `<div class="pn"><div class="pt"><span>${title}</span><span><b style="color:${TC}">${ct != null ? fmt1(ct) + "°" : "—"}</b> · <b style="color:${HC}">${ch != null ? Math.round(ch) + " %" : "—"}</b></span></div>
+      <div class="plot">${labs}<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${extra}
+        ${YT ? `<path d="${path(T, YT)}" fill="none" stroke="${TC}" stroke-width="2.2" vector-effect="non-scaling-stroke"/>` : ""}
+        ${YH ? `<path d="${path(Hm, YH)}" fill="none" stroke="${HC}" stroke-width="2.2" vector-effect="non-scaling-stroke"/>` : ""}</svg></div></div>`;
   };
   renderHoy(ser);
-  $("h24").innerHTML = panel("Temperatura", s.ts, s.td, "°") + panel("Humedad", s.hs, s.hd, " %", [60], bands) +
-    `<div class="pt" style="font-weight:500;font-size:11px;padding-left:34px"><span>hace 24 h</span><span>18 h</span><span>12 h</span><span>6 h</span><span>ahora</span></div>`;
+  $("h24").innerHTML = room("Salón", s.ts, s.hs, false) + room("Dormitorio", s.td, s.hd, true) +
+    `<div class="pt" style="font-weight:500;font-size:11px;padding:0 34px"><span>hace 24 h</span><span>18 h</span><span>12 h</span><span>6 h</span><span>ahora</span></div>`;
 }
 
 function renderHoy(ser){
@@ -1035,7 +1037,7 @@ function renderHoy(ser){
     <div class="r"><span>Gasto de hoy</span><span><b>${todayKWh != null ? eur(todayEUR ?? todayKWh*curPrice) : "—"}</b><small>${todayKWh != null ? fmt1(todayKWh) + " kWh" : ""}</small></span></div>
     <div class="r"><span>Gasto de ayer</span><span><b>${ayer ? eur(ayer.eur) : "—"}</b><small>${ayer ? fmt1(ayer.kwh) + " kWh" : ""}</small></span></div>
     ${s.dh ? `<div class="r"><span>Deshumidificador hoy</span><span><b>${hm(onMs)}</b></span></div>` : ""}
-    <div class="r"><span>Humedad media</span><span><b style="color:#e08a3c">${hS != null ? hS + " %" : "—"}</b> · <b style="color:#6b6fd6">${hD != null ? hD + " %" : "—"}</b></span></div>`;
+    <div class="r"><span>Humedad media</span><span><small>salón</small> <b>${hS != null ? hS + " %" : "—"}</b> · <small>dorm.</small> <b>${hD != null ? hD + " %" : "—"}</b></span></div>`;
 }
 
 /* ---------- Entretenimiento: noticias de El País (RSS) en carrusel ---------- */
