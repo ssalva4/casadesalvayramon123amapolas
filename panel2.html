@@ -327,6 +327,25 @@ a{color:inherit;text-decoration:none}
 .cfgrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
 .cfgrow select{background:var(--card2);color:var(--ink);border:0;border-radius:10px;padding:8px 10px;font:inherit}
 button.pill{cursor:pointer}
+/* ---------- Barra lateral compacta (iPad e iMac): solo iconos y cifras ---------- */
+@media (min-width:901px){
+  .app{grid-template-columns:92px 1fr}
+  .side{padding:14px 8px 16px;align-items:center}
+  .brand,.date{display:none}
+  .clock{font-size:25px;padding:4px 0 12px;text-align:center}
+  .stemps{padding:0 0 14px;width:100%;gap:8px}
+  .stemp{flex-direction:column;gap:3px;padding:8px 2px;justify-content:center}
+  .stemp div{justify-content:center;flex:none}.stemp div span{display:none}
+  .stemp b{font-size:17px}
+  .nav{width:100%;align-items:center;gap:8px}
+  .nav button{font-size:0;gap:0;justify-content:center;width:62px;height:56px;padding:0}
+  .nav button svg{width:26px;height:26px;margin:0}
+  .morning{width:62px;height:56px;padding:0;justify-content:center;margin-top:12px}
+  .morning span{display:none}.morning svg{width:28px;height:28px}
+  .users{width:100%;padding:12px 0 0}.users .lab,.av .nm{display:none}
+  .avs{flex-direction:column;align-items:center;gap:10px;padding:0}
+  .av{width:44px;height:44px;font-size:20px}
+}
 @media (max-width:900px){   /* móvil (iPhone): todo en una columna, se desplaza hacia abajo, pestañas abajo */
   html,body{height:auto;min-height:100%}
   .app{display:block;height:auto;min-height:100vh}
@@ -372,9 +391,9 @@ button.pill{cursor:pointer}
       <div class="stemp out" title="Fuera, en Vigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z"/><path d="M18 3l1.5 1.5M21 8h-2M18 13l1.5-1.5"/></svg><div><b class="num" id="tOut">—</b><span>Fuera</span></div></div>
     </div>
     <nav class="nav">
-      <button class="cli" data-t="cli"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0zM18 6h3M18 10h3"/></svg>Clima</button>
-      <button class="ent" data-t="ent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3zM8 21h8M10 9.5l4 2.5-4 2.5z"/></svg>Entretenimiento</button>
-      <button class="pla" data-t="pla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 10h16M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>Planning</button>
+      <button class="cli" data-t="cli" title="Clima" aria-label="Clima"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0zM18 6h3M18 10h3"/></svg>Clima</button>
+      <button class="ent" data-t="ent" title="Entretenimiento" aria-label="Entretenimiento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3zM8 21h8M10 9.5l4 2.5-4 2.5z"/></svg>Entretenimiento</button>
+      <button class="pla" data-t="pla" title="Planning" aria-label="Planning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 10h16M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>Planning</button>
     </nav>
     <button class="morning" id="morning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="4"/><path d="M12 3v3M4.2 6.2l2 2M19.8 6.2l-2 2M2 17h20M5 21h14"/></svg><span>Buenos días<small id="morningSub">La 1 · salón a 20°</small></span></button>
     <div class="users">
@@ -1268,6 +1287,7 @@ function renderMorning(msg){
   const b = $("morning"); if (!b) return;
   const on = atvAwake();
   b.classList.toggle("bye", on);
+  b.title = on ? "Adiós · apaga aire y tele" : "Buenos días · La 1 y salón a 20°"; b.setAttribute("aria-label", b.title);
   b.querySelector("svg").innerHTML = on ? MOON_SVG : SUN_SVG;
   b.querySelector("span").innerHTML = (on ? "Adiós" : "Buenos días") +
     `<small id="morningSub">${msg || (on ? "Apaga aire y tele" : "La 1 · salón a 20°")}</small>`;
