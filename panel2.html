@@ -797,7 +797,9 @@ const termoOf = e => {
 const dehumOf = e => {
   if (!e || !/dormitorio/i.test(acName(e))) return null;
   const S = window.__states || [];
-  const sw = S.find(x => /^switch\./.test(x.entity_id) && /deshumid/i.test(x.entity_id + " " + (x.attributes.friendly_name || "")));
+  // el interruptor principal del enchufe (no sus ajustes: «LED», «Apagado automático»…)
+  const sw = S.find(x => x.entity_id === "switch.deshumidificador") ||
+             S.find(x => /^switch\./.test(x.entity_id) && /^deshumidificador$/i.test((x.attributes.friendly_name || "").trim()));
   if (!sw) return null;
   const nm = (sw.attributes.friendly_name || "").toLowerCase();
   const pw = S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === "power" &&
