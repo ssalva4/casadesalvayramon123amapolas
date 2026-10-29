@@ -238,7 +238,7 @@ svg.i{width:20px;height:20px}
 .agenda .it b{display:block;font-size:14.5px}
 .agenda .it span{font-size:12px;color:var(--muted)}
 .agenda .dot{width:4px;border-radius:2px;flex:none}
-.lower{display:grid;grid-template-columns:1fr;gap:14px;min-height:0}
+.lower{display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0}
 .notes .n{background:#ece8ff;border-radius:12px;padding:9px 11px;font-size:13.5px;margin-bottom:8px;color:#2d2660}
 .notes .n small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
 .shop .chips{display:flex;flex-wrap:wrap;gap:7px}
@@ -311,7 +311,8 @@ a{color:inherit;text-decoration:none}
 .wday{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 4px}
 .wday:first-child{margin-top:0}
 .wev{display:flex;gap:10px;align-items:baseline;padding:6px 0 6px 10px;border-left:3px solid var(--c);margin-bottom:4px;font-size:14px}
-.wev .wt{font-size:12px;color:var(--muted);min-width:44px}.wev .ws{font-weight:600;color:var(--ink)}
+.wev .wt{font-size:12px;color:var(--muted);min-width:44px}
+.rem .wev{justify-content:space-between}.rem .wev .wt{min-width:0;text-align:right;white-space:nowrap}.rem .wev.late .wt{color:#d64545;font-weight:700}.wev .ws{font-weight:600;color:var(--ink)}
 .shop .chips{align-content:flex-start;flex:1}
 .chip{background:#e4f0e2;color:#24603a;padding:7px 12px;border-radius:999px;font-weight:600;font-size:14px}
 .shop .add input{flex:1;min-width:0;background:var(--card2);border:0;border-radius:10px;padding:9px 12px;color:var(--ink);font:inherit;font-size:14px}
@@ -449,6 +450,7 @@ button.pill{cursor:pointer}
       </div>
       <div class="lower">
         <div class="card notes"><div class="lbl" style="white-space:nowrap">Próximos 7 días <span class="pill" id="weekWho"></span></div><div id="week" class="scroll"></div></div>
+        <div class="card notes rem"><div class="lbl" style="white-space:nowrap">Recordatorios <span class="pill" id="remAt"></span></div><div id="rems" class="scroll"></div></div>
 
       </div>
     </section>
@@ -1221,7 +1223,26 @@ let notes = [], items = [];
 async function getItems(id){ const r = await serviceResp("todo", "get_items", {entity_id:id, status:"needs_action"}); return (r[id] && r[id].items) || []; }
 /* ---------- Planning: próximos 7 días (sustituye a las notas) ---------- */
 let weekCache = null;
+/* Recordatorios de Apple: los manda un Atajo del iPhone a la lista «Recordatorios» de Home Assistant (solo lectura aquí) */
+let remAt = 0;
+async function refreshRems(){
+  const box = $("rems"); if (!box) return;
+  const ent = states.find(x => x.entity_id === "todo.recordatorios");
+  if (!ent){ box.innerHTML = '<div class="msg">Aún no hay recordatorios.</div>'; return; }
+  if (Date.now() - remAt < 60*1000 && box.dataset.done) return; remAt = Date.now();
+  let items = []; try{ items = await getItems("todo.recordatorios"); }catch(err){ return; }
+  box.dataset.done = 1;
+  $("remAt").textContent = ent.last_changed ? "act. " + new Date(ent.last_changed).toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"}) : "";
+  if (!items.length){ box.innerHTML = '<div class="msg">Sin recordatorios pendientes.</div>'; return; }
+  const due = i => i.due ? new Date(i.due.length <= 10 ? i.due + "T23:59:00" : i.due) : null, now = new Date();
+  items.sort((a, b) => (due(a) || 9e15) - (due(b) || 9e15));
+  box.innerHTML = items.map(i => { const d = due(i), late = d && d < now;
+    const when = !d ? "" : d.toDateString() === now.toDateString() ? "hoy " + (i.due.length > 10 ? d.toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"}) : "")
+      : d.toLocaleDateString("es-ES", {weekday:"short", day:"numeric", month:"short"}) + (i.due.length > 10 ? " " + d.toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"}) : "");
+    return `<div class="wev ${late ? "late" : ""}" style="--c:${late ? "#d64545" : "#9aa0b4"}"><span class="ws">${esc(i.summary)}</span>${when ? `<span class="wt">${esc(when.trim())}</span>` : ""}</div>`; }).join("");
+}
 async function refreshNotes(){   // se mantiene el nombre: lo llaman el refresco y el cambio de usuario
+  refreshRems();
   const box = $("week"); if (!box) return;
   const ids = myCals();
   $("weekWho").textContent = USERS[user].n;
