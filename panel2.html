@@ -878,8 +878,8 @@ document.querySelectorAll(".t-cli .ac").forEach(card => card.addEventListener("c
   const a = e.attributes;
   if (b.dataset.act){
     const tm = termoOf(e);
-    const step = 1;   // de grado en grado
-    let t = Math.round(pendingT[id] ?? (tm ? tm.v : a.temperature) ?? 22) + (b.dataset.act === "plus" ? step : -step);
+    const step = 0.5;   // de medio en medio grado
+    let t = Math.round(((pendingT[id] ?? (tm ? tm.v : a.temperature) ?? 22) + (b.dataset.act === "plus" ? step : -step)) * 2) / 2;
     t = tm ? Math.min(tm.max, Math.max(tm.min, t)) : Math.min(a.max_temp ?? 30, Math.max(a.min_temp ?? 16, t));
     pendingT[id] = t; card.querySelector(".ctl span").textContent = fmt1(t) + "°";
     clearTimeout(timers[id]);
