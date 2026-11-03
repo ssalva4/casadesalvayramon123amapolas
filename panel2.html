@@ -495,7 +495,7 @@ const roomH = e => roomSensors(e, "humidity");
 const roomT = e => { const s = roomSensors(e, "temperature"); if (s != null) return s;   // si hay sensor, manda el sensor
   const v = e && e.attributes.current_temperature; return typeof v === "number" ? v + (TEMP_OFFSET[e.entity_id] || 0) : null; };
 const NIGHT = {
-  "climate.aire_salon":      {helper:"input_boolean.noche_salon",      txt:"se apaga a la 01:00"},
+  "climate.aire_salon":      {helper:"input_boolean.noche_salon",      txt:"se apaga a las 00:00"},
   "climate.aire_dormitorio": {helper:"input_boolean.noche_dormitorio", txt:"se apaga a la 01:00 · vuelve de 7 a 10 h"}
 };
 const USERS = {S:{n:"Salva", re:/salva/i, c:"#ff7a6b"}, R:{n:"Ramón", re:/ram[oó]n/i, c:"#59a0ff"}};
