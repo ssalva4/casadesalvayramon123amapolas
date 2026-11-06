@@ -255,7 +255,7 @@ a{color:inherit;text-decoration:none}
 .msg a{color:var(--pla)}
 .hr.past{opacity:.45}
 .hr svg.hw{width:22px;height:22px;display:block;margin:1px auto}
-.screen video,.ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;object-fit:contain}
+.screen video,.screen iframe,.ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;object-fit:contain}
 .screen .bigplay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;color:#fff}
 .screen .bigplay svg{width:34px;height:34px}
 .screen .ttl{bottom:18px}
@@ -745,7 +745,7 @@ function renderTV(msg){
   const sc = $("screen");
   if (c.k === "yt"){
     if (tvOn && ytPlay){
-      sc.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${ytPlay}?autoplay=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="YouTube"></iframe>
+      sc.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${ytPlay}?autoplay=1&playsinline=1&rel=0&origin=${encodeURIComponent(location.origin)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" title="YouTube"></iframe>
         <button class="yback" data-yback>‹ Resultados</button><button class="xclose" data-stop aria-label="Parar">✕</button>`;
     } else { sc.innerHTML = ytPanel(); }
     return;
@@ -756,7 +756,7 @@ function renderTV(msg){
     return;
   }
   if (c.y){
-    sc.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${c.y}?autoplay=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="${c.n}"></iframe><span class="live">EN DIRECTO</span><button class="xclose" data-stop aria-label="Parar">✕</button>`;
+    sc.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${c.y}?autoplay=1&playsinline=1&rel=0&origin=${encodeURIComponent(location.origin)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" title="${c.n}"></iframe><span class="live">EN DIRECTO</span><button class="xclose" data-stop aria-label="Parar">✕</button>`;
     return;
   }
   sc.innerHTML = `<video src="${c.u}" playsinline controls autoplay></video><span class="live">EN DIRECTO</span><button class="xclose" data-stop aria-label="Parar">✕</button>`;
