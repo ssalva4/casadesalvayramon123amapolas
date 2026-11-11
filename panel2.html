@@ -54,6 +54,10 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .dehum .dx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}.dehum .dn{font-weight:700}.dehum .dt{color:var(--muted);font-size:11.5px}
 .dehum button{padding:6px 12px;border-radius:10px;font-weight:700;font-size:12.5px;background:rgba(0,0,0,.06)}
 .dehum.on{background:rgba(80,140,200,.16)}.dehum.on button{background:#3b7fc4;color:#fff}
+.dehum .dlock{width:40px;height:40px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none;background:#fff;color:#d64545;border:2px solid #d64545}
+.dehum .dlock .i{width:20px;height:20px}
+.dehum .dlock.lk{background:#d64545;color:#fff;box-shadow:0 0 0 4px rgba(214,69,69,.18)}
+.dehum.lk{background:rgba(214,69,69,.10)}.dehum.lk .dt{color:#b33a3a;font-weight:600}
 .hwarn{color:#d9822b;font-weight:700}
 .h24{display:flex;flex-direction:column;min-height:0}
 .h24 .lbl{white-space:nowrap}
@@ -835,14 +839,19 @@ const dehumOf = e => {
     ((x.attributes.friendly_name || "").toLowerCase().startsWith(nm) || /deshumid/i.test(x.entity_id)));
   return {id: sw.entity_id, on: sw.state === "on", w: pw ? parseFloat(pw.state) : null};
 };
+const DEHUM_LOCK = "input_boolean.deshumidificador_bloqueado";
 const dehumHTML = e => {
   const d = dehumOf(e); if (!d) return "";
   const hr = new Date().getHours();
   const noche = hr >= 23 || hr < 10 || (window.__states || []).some(x => x.entity_id === "input_boolean.noche_dormitorio" && x.state === "on");
-  const txt = !d.on ? (noche ? "apagado de noche · vuelve a las 10:00" : "apagado · se enciende por encima del 60 %")
+  const lkS = (window.__states || []).find(x => x.entity_id === DEHUM_LOCK), lk = lkS && lkS.state === "on";
+  const txt = lk ? "bloqueado · no se enciende aunque haya humedad"
+    : !d.on ? (noche ? "apagado de noche · vuelve a las 10:00" : "apagado · se enciende por encima del 60 %")
     : (d.w != null && d.w > 5 ? `secando · ${Math.round(d.w)} W · se apaga al 60 %` : "con corriente pero parado · ¿depósito lleno?");
-  return `<div class="dehum ${d.on ? "on" : ""}"><span class="dx"><span class="dn">Deshumidificador</span><span class="dt">${txt}</span></span>
-    <button data-dehum="${esc(d.id)}" data-on="${d.on ? 1 : 0}">${d.on ? "Apagar" : "Encender"}</button></div>`;
+  const btn = lkS
+    ? `<button class="dlock ${lk ? "lk" : ""}" data-dlock="${lk ? 1 : 0}" aria-label="${lk ? "Desbloquear el deshumidificador" : "Bloquear el deshumidificador"}" title="${lk ? "Bloqueado: toca para que vuelva a funcionar solo" : "Toca para apagarlo y que no se encienda"}">${svg("power")}</button>`
+    : `<button data-dehum="${esc(d.id)}" data-on="${d.on ? 1 : 0}">${d.on ? "Apagar" : "Encender"}</button>`;
+  return `<div class="dehum ${lk ? "lk" : d.on ? "on" : ""}"><span class="dx"><span class="dn">Deshumidificador</span><span class="dt">${txt}</span></span>${btn}</div>`;
 };
 const termoTxt = e => {   // qué está haciendo el aire para llegar a tu temperatura
   const st = e.state, t = e.attributes.temperature;
@@ -874,6 +883,12 @@ function renderACs(){
 }
 document.querySelectorAll(".t-cli .ac").forEach(card => card.addEventListener("click", async ev => {
   const b = ev.target.closest("button"); if (!b) return;
+  if (b.dataset.dlock){
+    b.style.opacity = .5;
+    try{ await service("input_boolean", b.dataset.dlock === "1" ? "turn_off" : "turn_on", {entity_id: DEHUM_LOCK}); setTimeout(refreshHA, 1500); }
+    catch(err){ b.style.opacity = 1; handleErr(err); }
+    return;
+  }
   if (b.dataset.dehum){
     b.style.opacity = .5;
     try{ await service("switch", b.dataset.on === "1" ? "turn_off" : "turn_on", {entity_id: b.dataset.dehum}); setTimeout(refreshHA, 1500); }
