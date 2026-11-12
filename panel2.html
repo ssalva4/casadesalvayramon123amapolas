@@ -840,6 +840,25 @@ const dehumOf = e => {
   return {id: sw.entity_id, on: sw.state === "on", w: pw ? parseFloat(pw.state) : null};
 };
 const DEHUM_LOCK = "input_boolean.deshumidificador_bloqueado";
+const DEHUM_BATH = "switch.deshumidificador_bano", DEHUM_BATH_LOCK = "input_boolean.deshumidificador_bano_bloqueado";
+/* Baño: sensor Tapo + deshumidificador propio; va en la tarjeta del salón */
+const bathHTML = e => {
+  if (!e || !/sal[oó]n/i.test(acName(e))) return "";
+  const S = window.__states || [], g = id => S.find(x => x.entity_id === id);
+  const fs = dc => S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === dc && /sensor ba[ñn]o/i.test(x.attributes.friendly_name || ""));
+  const tS = fs("temperature"), hS = fs("humidity"), sw = g(DEHUM_BATH), lkS = g(DEHUM_BATH_LOCK);
+  if (!tS && !hS && !sw) return "";
+  const t = tS ? parseFloat(tS.state) : null, h = hS ? parseFloat(hS.state) : null;
+  const pw = S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === "power" && /deshumidificador_ba[ñn]o/i.test(x.entity_id));
+  const w = pw ? parseFloat(pw.state) : null, on = sw && sw.state === "on", lk = lkS && lkS.state === "on";
+  const hr = new Date().getHours(), noche = hr >= 23 || hr < 10;
+  const dtxt = !sw || sw.state === "unavailable" ? "deshumidificador sin conectar"
+    : lk ? "bloqueado · no se enciende aunque haya humedad"
+    : !on ? (noche ? "deshum. apagado de noche · vuelve a las 10:00" : "deshum. apagado · se enciende por encima del 60 %")
+    : (w != null && w > 5 ? `secando · ${Math.round(w)} W · se apaga al 60 %` : "con corriente pero parado · ¿depósito lleno?");
+  const btn = sw && lkS ? `<button class="dlock ${lk ? "lk" : ""}" data-dlock="${lk ? 1 : 0}" data-lockid="${DEHUM_BATH_LOCK}" aria-label="${lk ? "Desbloquear" : "Bloquear"} el deshumidificador del baño">${svg("power")}</button>` : "";
+  return `<div class="dehum ${lk ? "lk" : on ? "on" : ""}"><span class="dx"><span class="dn">Baño · ${t != null && !isNaN(t) ? fmt1(t) + "°" : "—"} · 💧${h != null && !isNaN(h) ? Math.round(h) + "%" : "—"}</span><span class="dt">${dtxt}</span></span>${btn}</div>`;
+};
 const dehumHTML = e => {
   const d = dehumOf(e); if (!d) return "";
   const hr = new Date().getHours();
@@ -871,7 +890,7 @@ function acHTML(e){
       <div class="st">${humTxt(roomH(e))}${off ? (MODE_TXT[st]||st) : `<b class="m-${st}">${MODE_TXT[st]||st}</b>${night ? " · Noche, " + cfg.txt : ""}`}</div></div>
     <div class="tg ${off?"dim":""}"><small>OBJETIVO</small><div class="ctl"><button data-act="minus" aria-label="Bajar">−</button><span class="num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span><button data-act="plus" aria-label="Subir">+</button></div>${tm && !off && a.temperature != null ? `<div class="tgts">${termoTxt(e)}</div>` : ""}</div></div>
     <div class="modes">${MODES.filter(x => (a.hvac_modes||[]).includes(x.m)).map(x => `<button class="${st===x.m?"on "+x.c:""}" data-mode="${x.m}">${svg(x.i)}<span>${x.t}</span></button>`).join("")}
-      ${(cfg || sleep) ? `<button class="${night?"on night":""} ${off?"dim":""}" data-night="1">${svg("moon")}<span>Noche</span></button>` : ""}</div>${dehumHTML(e)}`;
+      ${(cfg || sleep) ? `<button class="${night?"on night":""} ${off?"dim":""}" data-night="1">${svg("moon")}<span>Noche</span></button>` : ""}</div>${dehumHTML(e)}${bathHTML(e)}`;
 }
 function renderACs(){
   const list = [...climates].sort((x,y) => (/sal[oó]n/i.test(acName(y))) - (/sal[oó]n/i.test(acName(x))));
@@ -885,7 +904,7 @@ document.querySelectorAll(".t-cli .ac").forEach(card => card.addEventListener("c
   const b = ev.target.closest("button"); if (!b) return;
   if (b.dataset.dlock){
     b.style.opacity = .5;
-    try{ await service("input_boolean", b.dataset.dlock === "1" ? "turn_off" : "turn_on", {entity_id: DEHUM_LOCK}); setTimeout(refreshHA, 1500); }
+    try{ await service("input_boolean", b.dataset.dlock === "1" ? "turn_off" : "turn_on", {entity_id: b.dataset.lockid || DEHUM_LOCK}); setTimeout(refreshHA, 1500); }
     catch(err){ b.style.opacity = 1; handleErr(err); }
     return;
   }
@@ -936,6 +955,7 @@ function renderPrice(){
 let ayer = null, todayKWh = null, todayEUR = null, todayAt = 0, year = {}, yearAt = 0, yearLive = {}, half = null;
 const num = s => { const v = parseFloat(s.state); return isNaN(v) ? null : v; };
 const unit = s => s.attributes.unit_of_measurement || "";
+const isBath = s => /ba[ñn]o/i.test(s.entity_id + " " + (s.attributes.friendly_name||""));
 function energySensors(){
   const names = climates.map(c => acName(c).toLowerCase());
   const isAC = s => /aire|climate|midea/i.test(s.entity_id) || names.some(n => (s.attributes.friendly_name||"").toLowerCase().includes(n));
@@ -947,7 +967,8 @@ function energySensors(){
   // Deshumidificador (enchufe Tapo P110): su consumo también cuenta en los costes
   const dh = states.filter(s => s.entity_id.startsWith("sensor.") && /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && num(s) != null);
   power = power.concat(dh.filter(s => s.attributes.device_class === "power" || /^k?W$/.test(unit(s))));
-  energy = energy.concat(dh.filter(s => /k?Wh/.test(unit(s)) && /hoy|today|_dia|diario/i.test(s.entity_id + " " + (s.attributes.friendly_name||""))).slice(0, 1));
+  const dhE = dh.filter(s => /k?Wh/.test(unit(s)) && /hoy|today|_dia|diario/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")));
+  energy = energy.concat([dhE.find(s => !isBath(s)), dhE.find(isBath)].filter(Boolean));
   return {power, energy};
 }
 async function loadToday(energy){
@@ -998,7 +1019,7 @@ function renderCost(){
   const kwh = v => (v >= 100 ? Math.round(v) : fmt1(v)) + " kWh";
   const parts = [...climates].sort((x,y) => (/sal[oó]n/i.test(acName(y))) - (/sal[oó]n/i.test(acName(x)))).map(c => {
       const n = acName(c).toLowerCase(); return {n: acName(c), ...monthOf(energy.filter(s => (s.attributes.friendly_name||"").toLowerCase().includes(n)).map(s => s.entity_id))}; })
-    .concat(energy.filter(s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||""))).map(s => ({n: "Deshumidificador", ...monthOf([s.entity_id])})));
+    .concat(energy.filter(s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||""))).map(s => ({n: isBath(s) ? "Deshumid. baño" : "Deshumid. dormitorio", ...monthOf([s.entity_id])})));
   const all = monthOf(energy.map(s => s.entity_id));
   const pct = e => all.e > 0 ? Math.round(e / all.e * 100) : 0;
   const rows = parts.map(p => `<tr><td>${esc(p.n)}<i class="pbar" style="width:${pct(p.e)}%"></i></td><td>${all.e > 0 ? pct(p.e) + " %" : "—"}</td><td>${kwh(p.k)}</td></tr>`).join("");
@@ -1017,7 +1038,9 @@ function h24Sensors(){
   const f = (dc, re) => states.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === dc && re.test(noAcc(x.attributes.friendly_name)));
   return {ts: f("temperature", /sensor salon/i), td: f("temperature", /sensor dormitorio/i),
           hs: f("humidity", /sensor salon/i), hd: f("humidity", /sensor dormitorio/i),
-          dh: states.find(x => /^switch\..*deshumid/i.test(x.entity_id))};
+          hb: f("humidity", /sensor bano/i),
+          dh: states.find(x => x.entity_id === "switch.deshumidificador"),
+          db: states.find(x => x.entity_id === DEHUM_BATH)};
 }
 async function loadH24(){
   if (h24Data && Date.now() - h24At < 10*60*1000){ renderH24(); return; }
@@ -1073,16 +1096,18 @@ function renderH24(){
 function renderHoy(ser){
   const box = $("hoy"); if (!box || !h24Data) return;
   const {s, by} = h24Data, t0 = new Date().setHours(0,0,0,0), end = Date.now();
-  let onMs = 0;
-  if (s.dh){ const L = (by[s.dh.entity_id] || []).concat([{t: end, v: s.dh.state}]);
-    for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on"){ const a = Math.max(t0, L[i].t), b = L[i+1].t; if (b > a) onMs += b - a; } }
+  const onOf = sw => { let ms = 0; if (!sw) return 0; const L = (by[sw.entity_id] || []).concat([{t: end, v: sw.state}]);
+    for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on"){ const a = Math.max(t0, L[i].t), b = L[i+1].t; if (b > a) ms += b - a; } return ms; };
+  const onMs = onOf(s.dh), onB = onOf(s.db);
   const T = ser(s.ts).concat(ser(s.td)).map(p => p.v), mean = e => { const v = ser(e).map(p => p.v); return v.length ? Math.round(v.reduce((a,b) => a+b, 0) / v.length) : null; };
-  const hS = mean(s.hs), hD = mean(s.hd), hm = ms => `${Math.floor(ms/3600e3)} h ${String(Math.round(ms%3600e3/60e3)).padStart(2,"0")} min`;
+  const hS = mean(s.hs), hD = mean(s.hd), hB = mean(s.hb), hm = ms => `${Math.floor(ms/3600e3)} h ${String(Math.round(ms%3600e3/60e3)).padStart(2,"0")} min`,
+    hm2 = ms => `${Math.floor(ms/3600e3)}h${String(Math.round(ms%3600e3/60e3)).padStart(2,"0")}`;
   box.innerHTML = `
     <div class="r"><span>Gasto de hoy</span><span><b>${todayKWh != null ? eur(todayEUR ?? todayKWh*curPrice) : "—"}</b><small>${todayKWh != null ? fmt1(todayKWh) + " kWh" : ""}</small></span></div>
     <div class="r"><span>Gasto de ayer</span><span><b>${ayer ? eur(ayer.eur) : "—"}</b><small>${ayer ? fmt1(ayer.kwh) + " kWh" : ""}</small></span></div>
-    ${s.dh ? `<div class="r"><span>Deshumidificador hoy</span><span><b>${hm(onMs)}</b></span></div>` : ""}
-    <div class="r"><span>Humedad media</span><span><small>salón</small> <b>${hS != null ? hS + " %" : "—"}</b> · <small>dorm.</small> <b>${hD != null ? hD + " %" : "—"}</b></span></div>`;
+    ${s.dh && s.db ? `<div class="r"><span>Deshum. hoy</span><span style="white-space:nowrap"><small>dorm.</small> <b>${hm2(onMs)}</b> · <small>baño</small> <b>${hm2(onB)}</b></span></div>`
+      : s.dh ? `<div class="r"><span>Deshumidificador hoy</span><span><b>${hm(onMs)}</b></span></div>` : ""}
+    <div class="r"><span>${s.hb ? "Humedad" : "Humedad media"}</span><span style="white-space:nowrap"><small>salón</small> <b>${hS != null ? hS + "%" : "—"}</b> · <small>dorm.</small> <b>${hD != null ? hD + "%" : "—"}</b>${s.hb ? ` · <small>baño</small> <b>${hB != null ? hB + "%" : "—"}</b>` : ""}</span></div>`;
 }
 
 /* ---------- Entretenimiento: noticias de El País (RSS) en carrusel ---------- */
