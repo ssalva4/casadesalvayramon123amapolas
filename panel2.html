@@ -882,7 +882,8 @@ const dehumOf = e => {
              S.find(x => /^switch\./.test(x.entity_id) && /^deshumidificador$/i.test((x.attributes.friendly_name || "").trim()));
   if (!sw) return null;
   const nm = (sw.attributes.friendly_name || "").toLowerCase();
-  const pw = S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === "power" &&
+  const pw = S.find(x => x.entity_id === "sensor.deshumidificador_consumo_actual") ||
+    S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === "power" && !/ba[ñn]o/i.test(x.entity_id + " " + (x.attributes.friendly_name || "")) &&
     ((x.attributes.friendly_name || "").toLowerCase().startsWith(nm) || /deshumid/i.test(x.entity_id)));
   return {id: sw.entity_id, on: sw.state === "on", w: pw ? parseFloat(pw.state) : null};
 };
