@@ -1,0 +1,1963 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CASA</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Casa">
+<style>
+:root{
+  --bg:#efe9df; --side:#e7dfd1; --card:#fbf8f3; --card2:#f1ebe1; --line:#e2d9cb;
+  --ink:#1f2433; --muted:#7a7570; --soft:#4f4b55;
+  --ent:#e8613f; --ent-bg:rgba(232,97,63,.13);
+  --cli:#1f9e91; --cli-bg:rgba(31,158,145,.13);
+  --pla:#6b5be0; --pla-bg:rgba(107,91,224,.13);
+  --warm:#d9772c; --cool:#2f7fb8; --off:#c4473d; --good:#3f9c5a;
+  --head:"Space Grotesk",system-ui,sans-serif; --font:"DM Sans",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.app{display:grid;grid-template-columns:200px 1fr;height:100%}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Menú lateral ---------- */
+.side{background:var(--side);display:flex;flex-direction:column;padding:22px 14px 18px;border-right:1px solid var(--line)}
+.brand{font-family:var(--head);font-weight:700;font-size:26px;letter-spacing:.14em;padding:0 10px 4px}
+.brand small{display:block;font-family:var(--font);font-weight:500;font-size:12px;letter-spacing:0;color:var(--muted);margin-top:4px}
+.clock{font-family:var(--head);font-size:38px;font-weight:500;padding:18px 10px 0;line-height:1}
+.date{font-size:13px;color:var(--muted);padding:4px 10px 12px}
+.stemps{display:flex;flex-direction:column;gap:6px;padding:0 4px 16px}
+.stemp{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:8px 12px}
+.stemp div{display:flex;align-items:baseline;justify-content:space-between;flex:1}
+.stemp svg{width:22px;height:22px;flex:none;color:var(--warm)}
+.stemp.out svg{color:var(--cool)}
+.stemp b{display:block;font-family:var(--head);font-size:20px;font-weight:600;line-height:1}
+.stemp span{font-size:11px;color:var(--muted);font-weight:600}
+.nav{display:flex;flex-direction:column;gap:6px}
+.nav button{display:flex;align-items:center;gap:12px;padding:12px 12px;border-radius:14px;font-weight:600;font-size:15px;color:var(--soft);text-align:left}
+.nav button svg{width:22px;height:22px;flex:none}
+.nav button.on{color:var(--ink)}
+.nav button.ent.on{background:var(--ent-bg)}.nav button.ent.on svg{color:var(--ent)}
+.nav button.cli.on{background:var(--cli-bg)}.nav button.cli.on svg{color:var(--cli)}
+.nav button.pla.on{background:var(--pla-bg)}.nav button.pla.on svg{color:var(--pla)}
+.tarifa{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:2px 0 10px}
+.tarifa .tv{font-size:34px;font-weight:700;line-height:1}.tarifa .tv small{font-size:15px;font-weight:600;color:var(--muted)}
+.tarifa .tk{font-size:12.5px;color:var(--muted);line-height:1.35}
+.tgts{font-size:11px;color:var(--muted);font-weight:600;margin-top:4px;text-align:center}
+.dehum{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px 10px;border-radius:12px;background:rgba(80,140,200,.08);font-size:12.5px}
+.dehum .dx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}.dehum .dn{font-weight:700}.dehum .dt{color:var(--muted);font-size:11.5px}
+.dehum button{padding:6px 12px;border-radius:10px;font-weight:700;font-size:12.5px;background:rgba(0,0,0,.06)}
+.dehum.on{background:rgba(80,140,200,.16)}.dehum.on button{background:#3b7fc4;color:#fff}
+.dehum .dlock{width:40px;height:40px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none;background:#fff;color:#d64545;border:2px solid #d64545}
+.dehum .dlock .i{width:20px;height:20px}
+.dehum .dlock.lk{background:#d64545;color:#fff;box-shadow:0 0 0 4px rgba(214,69,69,.18)}
+.dehum.lk{background:rgba(214,69,69,.10)}.dehum.lk .dt{color:#b33a3a;font-weight:600}
+.hwarn{color:#d9822b;font-weight:700}
+.h24{display:flex;flex-direction:column;min-height:0}
+.h24 .lbl{white-space:nowrap}
+.h24 .leg{display:flex;gap:8px;font-size:11px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0}
+.h24 .leg i{display:inline-block;width:10px;height:3px;border-radius:2px;vertical-align:middle;margin-right:4px}
+.hoy .r{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--soft)}
+.hoy .r:last-child{border-bottom:0}.hoy .r b{font-family:var(--head);font-size:17px;color:var(--ink);font-weight:600}.hoy .r small{color:var(--muted);font-size:11.5px;margin-left:4px}
+#h24{flex:1;display:flex;flex-direction:column;gap:6px;min-height:0}
+#h24 .pn{flex:1;display:flex;flex-direction:column;min-height:0}
+#h24 .pt{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:600}
+#h24 .pt b{color:var(--ink)}
+#h24 .plot{flex:1;position:relative;padding:0 34px;display:flex;min-height:60px}
+#h24 .plot svg{flex:1;width:100%;height:100%}
+#h24 .yl{position:absolute;left:0;width:30px;text-align:right;}
+#h24 .yl.r{left:auto;right:0;text-align:left}
+#h24 .yl{transform:translateY(-50%);font-size:10.5px;font-weight:700;color:var(--muted);line-height:1}
+#h24 .yl.ref{color:#3b7fc4}
+.morning{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px;border-radius:14px;background:rgba(233,162,59,.16);color:#9a5a00;font-weight:700;font-size:15px;text-align:left;box-shadow:inset 0 0 0 1.5px rgba(233,162,59,.55)}
+.morning svg{width:24px;height:24px;color:#e9a23b;flex:none}
+.morning small{display:block;font-size:11.5px;font-weight:600;opacity:.75;margin-top:2px}
+.morning.busy{opacity:.55}
+.morning.bye{background:rgba(107,111,214,.14);color:#3d3f9a;box-shadow:inset 0 0 0 1.5px rgba(107,111,214,.5)}
+.morning.bye svg{color:#6b6fd6}
+.users{margin-top:auto;border-top:1px solid var(--line);padding-top:16px;padding-bottom:22px}
+.users .lab{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;padding:0 10px 10px}
+.avs{display:flex;gap:14px;padding:0 10px}
+.av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:24px;font-weight:700;position:relative;opacity:.55;transition:.15s}
+.av.s{background:linear-gradient(135deg,#ff9a6b,#e2557a)}
+.av.r{background:linear-gradient(135deg,#59c2ff,#6b6bff)}
+.av{color:#fff}
+.av.on{opacity:1;box-shadow:0 0 0 3px var(--side),0 0 0 5px var(--pla)}
+.av .nm{position:absolute;bottom:-18px;font-family:var(--font);font-size:11px;font-weight:600;color:var(--muted)}
+.av.on .nm{color:var(--ink)}
+
+/* ---------- Contenido ---------- */
+.main{padding:20px 22px;overflow:hidden;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;align-items:baseline;justify-content:space-between}
+.top h1{font-family:var(--head);font-size:28px;font-weight:600;margin:0}
+.top .sub{color:var(--muted);font-size:14px}
+.tab{display:none;flex:1;min-height:0}
+.tab.on{display:grid}
+.card{background:var(--card);border-radius:20px;padding:16px 18px;min-width:0;min-height:0}
+.lbl{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pill{font-size:11.5px;font-weight:700;letter-spacing:0;text-transform:none;padding:3px 9px;border-radius:999px;background:var(--card2);color:var(--soft)}
+svg.i{width:20px;height:20px}
+
+/* ---------- Entretenimiento ---------- */
+.t-ent{grid-template-columns:2.3fr 1fr;grid-template-rows:auto minmax(240px,1fr);gap:14px}
+.t-ent>.card:last-child{display:flex;flex-direction:column;grid-column:2;grid-row:1}
+.t-ent .tv{grid-column:1;grid-row:1;display:grid;grid-template-columns:52px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);column-gap:12px;min-height:0}
+.t-ent .tv>.lbl{grid-column:1/3}
+.t-ent .tv .chs{flex-direction:column;margin:0;gap:8px;align-items:center}
+.t-ent .tv .chs .sep{width:30px;height:1px;margin:2px 0}
+.t-ent .tv .screen{width:100%;max-width:calc(var(--tvmaxh, 400px) * 16 / 9);height:auto;aspect-ratio:16/9;align-self:start;justify-self:center}   /* la tele usa todo el ancho que permite el alto de la pantalla */
+.t-ent .news{grid-column:1/3;grid-row:2;display:flex;flex-direction:column;min-height:0}
+.nwrap{flex:1;position:relative;display:flex;min-height:0}
+.narr{position:absolute;top:calc(50% - 18px);width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.82);color:var(--ink);font-size:22px;font-weight:600;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 6px rgba(0,0,0,.15);opacity:.75;z-index:2}
+.narr:active{opacity:1}.narr.l{left:6px}.narr.r{right:6px}
+.ncar{flex:1;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;min-height:0;padding-bottom:4px;scrollbar-width:none}
+.ncar::-webkit-scrollbar{display:none}
+.ni{flex:0 0 250px;scroll-snap-align:start;border-radius:14px;background:var(--card2);overflow:hidden;display:flex;flex-direction:column;text-align:left;padding:0}
+.ni .im{width:100%;flex:1;min-height:60px;background:#ddd;overflow:hidden;position:relative}
+.ni .im img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ni .tx{flex:none;padding:8px 11px 9px;display:flex;flex-direction:column;gap:4px;min-height:0}
+.ni b{font-size:14px;line-height:1.3;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ni small{font-size:11px;color:var(--muted)}
+.nsrc{color:#fff;font-weight:700;font-size:10px;padding:1px 6px;border-radius:5px;margin-right:4px}
+.nsheet img{width:100%;border-radius:12px;margin-bottom:10px}
+.t-ent .apps{margin-top:auto;padding-top:10px}
+.t-ent .apps .appb{white-space:nowrap;font-size:13px;padding:10px 8px;gap:7px}
+.yt{display:flex;flex-direction:column}
+.yt .ytbox{flex:1}
+.tv{display:flex;flex-direction:column}
+.chs{display:flex;gap:8px;margin-bottom:12px}
+.chs button{padding:8px 16px;border-radius:12px;background:var(--card2);font-weight:700;font-size:14px;color:var(--soft)}
+.chs button.on{background:var(--ent);color:#fff}
+.chs button.logo{padding:0;width:46px;height:46px;border-radius:12px;overflow:hidden;background:#fff;opacity:.55;transition:.15s}
+.chs button.logo img{width:100%;height:100%;object-fit:cover;display:block}
+.chs button.logo.on{opacity:1;box-shadow:0 0 0 2px var(--card),0 0 0 4.5px var(--ent);background:#fff}
+
+.chs{align-items:center}
+.chs .sep{width:1px;background:var(--line);margin:4px 2px}
+
+.screen{flex:none;aspect-ratio:16/9;width:100%;border-radius:16px;overflow:hidden;position:relative;background:
+  radial-gradient(120% 90% at 70% 20%,#3a5a8c 0,#1d2c47 45%,#0b1220 100%)}
+.screen .live{position:absolute;top:12px;left:12px;background:#e5383b;color:#fff;font-size:11px;font-weight:800;letter-spacing:.08em;padding:4px 8px;border-radius:6px}
+.screen{color:#fff}
+.screen .ttl small{color:#c5cbe0!important}
+.screen .ttl{position:absolute;left:16px;bottom:58px;font-family:var(--head);font-size:22px;font-weight:600}
+.screen .ttl small{display:block;font-family:var(--font);font-size:13px;color:var(--soft);font-weight:500}
+.screen .bar{position:absolute;left:16px;right:16px;bottom:16px;display:flex;align-items:center;gap:12px}
+.screen .bar button{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center}
+.screen .bar .vol{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.18);position:relative}
+.screen .bar .vol i{position:absolute;left:0;top:0;bottom:0;width:62%;background:#fff;border-radius:3px}
+.radios{display:flex;flex-direction:column;gap:8px}
+.rad{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--card2)}
+.rad .lg{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:700;font-size:13px;flex:none}
+.rad .tx{flex:1;min-width:0}
+.rad .tx b{display:block;font-size:15px}
+.rad .tx span{font-size:12px;color:var(--muted)}
+.rad .pb{width:36px;height:36px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center}
+.rad.playing{background:var(--ent-bg);box-shadow:inset 0 0 0 1.5px var(--ent)}
+.rad.playing .pb{background:var(--ent);color:#fff}
+.eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px;margin-right:4px}
+.eq i{width:3px;background:var(--ent);border-radius:1px}
+
+.yt .ytbox .pl{width:52px;height:36px;border-radius:10px;background:#ff3b3b;display:flex;align-items:center;justify-content:center;color:#fff}
+.yt .ytbox b{display:block;font-size:15px}.yt .ytbox span{font-size:12.5px;color:var(--soft)}
+.apps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.apps button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--card2);font-weight:700;font-size:14px}
+
+/* ---------- Clima ---------- */
+.t-cli{grid-template-columns:repeat(6,1fr);grid-template-rows:auto auto 1fr;gap:14px}
+.t-cli .ac{grid-column:span 2}
+.t-cli .h24{grid-column:1/7;grid-row:3}
+#h24{flex-direction:row!important;gap:22px}
+#h24 .pn .ax{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);font-weight:500;padding:2px 34px 0}
+.t-cos{grid-template-columns:1fr 2fr;grid-template-rows:auto 1fr;gap:14px}
+.t-cos .bars{grid-column:2/3;grid-row:1/3}
+.t-cos .hoy{grid-column:1/2;grid-row:2}
+.t-cos .mb{grid-template-columns:repeat(12,1fr)!important;gap:10px;height:190px!important;flex:none}
+.t-cos .bars{display:flex;flex-direction:column;min-height:0}
+.mb .stk{display:flex;flex-direction:column-reverse;width:70%;border-radius:6px;overflow:hidden;background:var(--line)}
+.mb .stk b{display:block;min-height:1px}
+.mb .cur .stk{box-shadow:0 0 0 2px var(--warm)}
+.mleg{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--muted);font-weight:600;margin:-2px 0 6px}
+.mleg i,.mtable th i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.mtable{flex:1;min-height:0;overflow:auto;margin-top:14px;border-top:1px solid var(--line)}
+.mtable table{width:100%;border-collapse:collapse;font-size:13px}
+.mtable th{position:sticky;top:0;background:var(--card);text-align:right;font-size:11px;font-weight:700;color:var(--muted);padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+.mtable th:first-child,.mtable td:first-child{text-align:left}
+.mtable td{text-align:right;padding:6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mtable td small{color:var(--muted);font-size:10.5px}
+.mtable td.k{color:var(--muted);font-size:11.5px}
+.mtable tr.cur td{background:rgba(214,140,40,.08)}
+.mtable tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--line)}
+.cost .dot{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:6px;vertical-align:middle}
+.nav button.cos.on{background:rgba(214,140,40,.15)}.nav button.cos.on svg{color:#c27a1a}
+.t-cli .bath{grid-column:5/7;display:flex;flex-direction:column}
+.bath .gauge{position:relative;height:10px;border-radius:6px;background:linear-gradient(90deg,#e9e2d6,#cfe0f1);margin:22px 0 22px}
+.bath .gauge i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:#3b7fc4}
+.bath .gauge .mk{position:absolute;top:-5px;width:2px;height:20px;background:var(--ink);opacity:.55}
+.bath .gauge .ml{position:absolute;top:16px;font-size:10.5px;color:var(--muted);transform:translateX(-50%);white-space:nowrap}
+.bath .gauge .mt{position:absolute;top:-19px;font-size:10.5px;color:var(--muted);transform:translateX(-50%);white-space:nowrap}
+.bath .bfoot{margin-top:auto;font-size:12px;color:var(--muted)}
+.nav button.cfg.on{background:rgba(31,36,51,.08)}
+.tab.t-cfg.on{display:block;overflow-y:auto;padding-bottom:10px}
+.t-cfg .cols{columns:3 300px;column-gap:14px}
+.t-cfg .card{break-inside:avoid;margin:0 0 14px;display:block}
+.t-cfg h3{font-size:15px;margin:0 0 8px;display:flex;align-items:center;gap:8px}
+.t-cfg h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
+.cf-r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--soft)}
+.cf-r:last-child{border-bottom:0}
+.cf-r.col{flex-direction:column;align-items:stretch;gap:6px}
+.cf-r .ctl{display:flex;align-items:center;gap:6px}
+.cf-r .ctl button{width:30px;height:30px;border-radius:9px;background:var(--card2);font-weight:700;font-size:16px}
+.cf-r .ctl b{min-width:52px;text-align:center;font-family:var(--head);font-size:16px;color:var(--ink)}
+.cf-r input[type=time]{font:inherit;font-size:15px;font-weight:600;color:var(--ink);background:var(--card2);border:0;border-radius:9px;padding:5px 8px}
+.cf-r input[type=time]:disabled{opacity:.4}
+.sw{width:44px;height:26px;border-radius:13px;background:#cfc7ba;position:relative;flex:none;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sw.on{background:var(--cli)}.sw.on::after{left:21px}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg button{padding:6px 10px;border-radius:9px;background:var(--card2);font-size:12.5px;font-weight:600;color:var(--soft)}
+.seg button.on{background:var(--ink);color:#fff}
+.cf-note{font-size:11.5px;color:var(--muted);margin:2px 0 4px}
+.t-cfg .dim{opacity:.45;pointer-events:none}
+.wx{grid-column:1/7;display:flex;gap:22px;align-items:center}
+.wx .now{display:flex;align-items:center;gap:12px;min-width:200px}
+.wx .now .t{font-family:var(--head);font-size:46px;font-weight:500}
+.wx .now .d{font-size:13px;color:var(--soft);line-height:1.45}
+.hrs{flex:1;display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.hr{background:var(--card2);border-radius:12px;padding:6px 0;text-align:center;font-size:12px;color:var(--muted)}
+.hr b{display:block;color:var(--ink);font-size:15px;margin:2px 0}
+.hr.cur{box-shadow:inset 0 0 0 1.5px var(--cli);color:var(--ink)}
+.hr .rb{width:6px;height:16px;border-radius:3px;background:var(--line);margin:3px auto 1px;position:relative;overflow:hidden}
+.hr .rb i{position:absolute;left:0;right:0;bottom:0;background:var(--cool)}
+.ac{display:flex;flex-direction:column;gap:10px}
+.ac .row{display:flex;justify-content:space-between;align-items:flex-start}
+.ac .room{font-weight:700;font-size:16px}
+.ac .cur{font-family:var(--head);font-size:44px;font-weight:500;line-height:1}
+.ac .st{font-size:12.5px;color:var(--muted);margin-top:4px}
+.ac .st b{color:var(--warm)}
+.tg{display:flex;flex-direction:column;align-items:center;gap:4px}
+.tg small{font-size:10.5px;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.tg .ctl{display:flex;align-items:center;gap:6px}
+.tg .ctl button{width:34px;height:34px;border-radius:10px;background:var(--card2);font-size:20px;font-weight:700}
+.tg .ctl span{font-family:var(--head);font-size:22px;min-width:56px;text-align:center}
+.modes{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.modes button{background:var(--card2);border-radius:10px;padding:7px 0;font-size:12.5px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
+.modes button.heat{background:rgba(255,159,67,.16);color:var(--warm);box-shadow:inset 0 0 0 1.5px var(--warm)}
+.modes button.night{background:var(--pla-bg);color:var(--pla);box-shadow:inset 0 0 0 1.5px var(--pla)}
+.cost .big{font-family:var(--head);font-size:40px;font-weight:500;line-height:1}
+.cost .big small{font-size:16px;color:var(--muted);margin-left:4px}
+.cost .k{font-size:12px;color:var(--muted);margin-top:4px}
+.cost table{width:100%;margin-top:10px;border-collapse:collapse;font-size:14px}
+.cost td{padding:4px 0}.cost td:nth-child(2){text-align:right;font-family:var(--head);font-weight:600}
+.cost td:nth-child(3){text-align:right;font-family:var(--head);font-weight:600;width:62px}
+.cost td:nth-child(4){text-align:right;color:var(--muted);font-size:11.5px;width:60px}
+.cost td:nth-child(2){color:var(--muted);font-size:12px;font-family:inherit!important;font-weight:500!important;width:42px}
+.cost tr.tot td{border-top:1px solid var(--line);font-weight:700}
+.cost td:first-child{position:relative;white-space:nowrap}
+.cost .pbar{display:block;height:3px;border-radius:2px;background:var(--cli);opacity:.55;margin-top:3px;max-width:100%}
+.bars{grid-column:2/3}
+.mb{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;align-items:end;height:calc(100% - 30px);margin-top:6px}
+.mb div{display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;font-size:11px;color:var(--muted)}
+.mb i{display:block;width:70%;border-radius:6px;background:var(--cli)}
+.mb .cur i{background:var(--warm)}
+.mb .cur{color:var(--ink);font-weight:700}
+.price .strip{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;height:34px;margin-top:4px}
+.price .strip i{border-radius:3px}
+.price .strip i.now{outline:2px solid var(--ink);outline-offset:1px}
+.price .hh{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px}
+.price .pi{display:flex;flex-direction:column;gap:4px;margin-top:10px;font-size:13px;color:var(--soft)}
+.price .pi b{color:var(--ink)}
+
+/* ---------- Planning ---------- */
+.t-pla{grid-template-columns:1.25fr 1fr;grid-template-rows:auto 1fr;gap:14px}
+.cal{grid-row:1/3;display:flex;flex-direction:column}
+.cal .mon{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cal .mon b{font-family:var(--head);font-size:20px;font-weight:600}
+.cal .mon button{width:32px;height:32px;border-radius:10px;background:var(--card2)}
+.grid7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:auto repeat(5,1fr);gap:4px;flex:1;min-height:0}
+.grid7 .wd{font-size:11px;font-weight:700;color:var(--muted);text-align:center;padding-bottom:4px}
+.grid7 .d{border-radius:10px;padding:6px 7px;font-size:13px;font-weight:600;background:var(--card2);display:flex;flex-direction:column;gap:3px;min-height:0;overflow:hidden}
+.grid7 .d.out{opacity:.3}
+.grid7 .d.today{box-shadow:inset 0 0 0 2px var(--pla);background:var(--pla-bg)}
+.grid7 .ev{font-size:10.5px;font-weight:600;padding:1px 5px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.s{background:rgba(255,122,107,.22);color:#ffb3a4}
+.ev.r{background:rgba(89,160,255,.22);color:#a9cdff}
+.ev.c{background:rgba(76,211,138,.18);color:#9ce8bd}
+.agenda .it{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.agenda .it:last-child{border:0}
+.agenda .h{font-family:var(--head);font-weight:600;width:48px;color:var(--soft)}
+.agenda .it b{display:block;font-size:14.5px}
+.agenda .it span{font-size:12px;color:var(--muted)}
+.agenda .dot{width:4px;border-radius:2px;flex:none}
+.lower{display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0}
+.notes .n{background:#ece8ff;border-radius:12px;padding:9px 11px;font-size:13.5px;margin-bottom:8px;color:#2d2660}
+.notes .n small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.shop .chips{display:flex;flex-wrap:wrap;gap:7px}
+.shop .chips span{background:rgba(76,211,138,.14);color:#bff0d3;padding:7px 12px;border-radius:999px;font-weight:600;font-size:14px}
+.shop .add{margin-top:10px;display:flex;gap:6px}
+.shop .add div{flex:1;background:var(--card2);border-radius:10px;padding:9px 12px;color:var(--muted);font-size:13.5px}
+.shop .add button{background:var(--good);color:#fff;border-radius:10px;padding:0 14px;font-weight:700}
+
+/* ---------- añadidos del panel funcional ---------- */
+[hidden]{display:none!important}
+a{color:inherit;text-decoration:none}
+.msg{font-size:14px;color:var(--muted);line-height:1.5}
+.msg a{color:var(--pla)}
+.hr.past{opacity:.45}
+.hr svg.hw{width:22px;height:22px;display:block;margin:1px auto}
+.screen video,.screen iframe,.ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;object-fit:contain}
+.screen .bigplay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;color:#fff}
+.screen .bigplay svg{width:34px;height:34px}
+.screen .ttl{bottom:18px}
+.ypanel{position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;padding:14px;background:#0f1320;overflow:hidden}
+.ysearch{display:flex;gap:8px}
+.ysearch input,.ykey input{flex:1;min-width:0;background:#fff;border:0;border-radius:999px;padding:11px 16px;font:inherit;font-size:15px;color:#1f2433}
+.ysearch button,.ykey button{background:#ff3b3b;color:#fff;border-radius:999px;padding:0 18px;font-weight:700}
+.ykey{color:#e9ebf3;font-size:14px;line-height:1.5;padding:6px 4px}
+.ykey p{margin:6px 0;color:#c5cbe0}.ykey form{display:flex;gap:8px;margin:8px 0}
+.ykey .link{color:#ffb3a4;text-decoration:underline;font-weight:700}
+.ymsg{color:#c5cbe0}
+.ygrid{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-content:start}
+.yv{text-align:left;color:#fff;display:flex;flex-direction:column;gap:4px}
+.yv .th{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:16/9;background:#222}
+.yv .th img{width:100%;height:100%;object-fit:cover;display:block}
+.yv .lv{position:absolute;left:6px;bottom:6px;background:#e5383b;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px}
+.yv b{font-size:13px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.yv span{font-size:11.5px;color:#9aa3bd}
+.yback{position:absolute;top:10px;left:10px;z-index:3;background:rgba(0,0,0,.6);color:#fff;border-radius:999px;padding:7px 12px;font-weight:700;font-size:13px}
+.xclose{position:absolute;top:10px;right:10px;z-index:3;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-weight:700}
+.screen .live{z-index:2}
+.ytwrap{flex:1;position:relative;border-radius:14px;overflow:hidden;min-height:118px}
+.ytbox{width:100%;height:100%;min-height:118px;border-radius:14px;background:linear-gradient(135deg,#2a1414,#3b1d1d);display:flex;align-items:center;gap:14px;padding:0 16px;text-align:left}
+.ytbox .pl{width:52px;height:36px;border-radius:10px;background:#ff3b3b;display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+.ytbox b{display:block;font-size:15px}.ytbox span span{font-size:12.5px;color:var(--soft)}
+.appb{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--card2);font-weight:700;font-size:14px}
+.rad{cursor:pointer}
+.rad .eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px;margin-right:5px}
+.rad .eq i{width:3px;height:4px;background:var(--ent);border-radius:1px;animation:eq 1s ease-in-out infinite}
+.rad .eq i:nth-child(2){animation-delay:.2s}.rad .eq i:nth-child(3){animation-delay:.4s}
+@keyframes eq{50%{height:12px}}
+.radios{gap:7px}
+.rad{padding:8px 12px}
+.ac{position:relative}
+.ac .st .m-heat{color:var(--warm)}.ac .st .m-cool{color:var(--cool)}.ac .st .m-dry{color:var(--cli)}
+.tg.dim,.modes button.dim{opacity:.35;pointer-events:none}
+.modes{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}
+.modes button svg{width:18px;height:18px}
+.modes button.on.cool{background:rgba(78,168,255,.16);color:var(--cool);box-shadow:inset 0 0 0 1.5px var(--cool)}
+.modes button.on.heat{background:rgba(255,159,67,.16);color:var(--warm);box-shadow:inset 0 0 0 1.5px var(--warm)}
+.modes button.on.dry{background:var(--cli-bg);color:var(--cli);box-shadow:inset 0 0 0 1.5px var(--cli)}
+.modes button.on.offm{background:rgba(255,107,107,.14);color:var(--off);box-shadow:inset 0 0 0 1.5px var(--off)}
+.modes button.on.night{background:var(--pla-bg);color:var(--pla);box-shadow:inset 0 0 0 1.5px var(--pla)}
+.mb .mv{font-size:11px;font-weight:700;color:var(--soft);white-space:nowrap}
+.bars .mb{height:calc(100% - 34px)}
+.grid7 .ev{background:color-mix(in srgb,var(--c) 20%,transparent);color:color-mix(in srgb,var(--c) 70%,#000)}
+.grid7 .more{font-size:10px;color:var(--muted)}
+.cal{min-height:0}
+.agenda{overflow:auto}
+.agenda .h{font-size:13px;line-height:1.2}
+.scroll{overflow:auto;max-height:100%}
+.notes,.shop{display:flex;flex-direction:column;min-height:0}
+.notes .n{display:block;width:100%;text-align:left}
+.wday{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 4px}
+.wday:first-child{margin-top:0}
+.wev{display:flex;gap:10px;align-items:baseline;padding:6px 0 6px 10px;border-left:3px solid var(--c);margin-bottom:4px;font-size:14px}
+.wev .wt{font-size:12px;color:var(--muted);min-width:44px}
+.rem .wev{justify-content:space-between}.rem .wev .wt{min-width:0;text-align:right;white-space:nowrap}.rem .wev.late .wt{color:#d64545;font-weight:700}.wev .ws{font-weight:600;color:var(--ink)}
+.shop .chips{align-content:flex-start;flex:1}
+.chip{background:#e4f0e2;color:#24603a;padding:7px 12px;border-radius:999px;font-weight:600;font-size:14px}
+.shop .add input{flex:1;min-width:0;background:var(--card2);border:0;border-radius:10px;padding:9px 12px;color:var(--ink);font:inherit;font-size:14px}
+.shop .add input::placeholder{color:var(--muted)}
+.sheet{position:fixed;inset:0;background:rgba(20,18,30,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+.panel{background:var(--card);border-radius:20px;width:min(560px,100%);max-height:90%;overflow:auto;padding:22px}
+.panel h2{font-family:var(--head);margin:0 0 8px;font-size:20px}
+.panel p{color:var(--soft);font-size:14px;line-height:1.5;margin:0 0 10px}
+.panel a{color:var(--pla);font-weight:700}
+.pactions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.pactions button{padding:10px 16px;border-radius:12px;font-weight:700;background:var(--card2)}
+.pactions .primary{background:var(--pla);color:#fff}
+.cfgrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.cfgrow select{background:var(--card2);color:var(--ink);border:0;border-radius:10px;padding:8px 10px;font:inherit}
+button.pill{cursor:pointer}
+/* ---------- Barra lateral compacta (iPad e iMac): solo iconos y cifras ---------- */
+@media (min-width:901px){
+  .app{grid-template-columns:92px 1fr}
+  .side{padding:14px 8px 16px;align-items:center}
+  .brand,.date{display:none}
+  .clock{font-size:25px;padding:4px 0 12px;text-align:center}
+  .stemps{padding:0 0 14px;width:100%;gap:8px}
+  .stemp{flex-direction:column;gap:3px;padding:8px 2px;justify-content:center}
+  .stemp div{justify-content:center;flex:none}.stemp div span{display:none}
+  .stemp b{font-size:17px}
+  .nav{width:100%;align-items:center;gap:8px}
+  .nav button{font-size:0;gap:0;justify-content:center;width:62px;height:56px;padding:0}
+  .nav button svg{width:26px;height:26px;margin:0}
+  .morning{width:62px;height:56px;padding:0;justify-content:center;margin-top:12px}
+  .morning span{display:none}.morning svg{width:28px;height:28px}
+  .users{width:100%;padding:12px 0 0}.users .lab,.av .nm{display:none}
+  .avs{flex-direction:column;align-items:center;gap:10px;padding:0}
+  .av{width:44px;height:44px;font-size:20px}
+}
+@media (max-width:900px){   /* móvil (iPhone): todo en una columna, se desplaza hacia abajo, pestañas abajo */
+  html,body{height:auto;min-height:100%}
+  .app{display:block;height:auto;min-height:100vh}
+  .side{position:sticky;top:0;z-index:5;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 8px) 14px 10px;border-right:0;border-bottom:1px solid var(--line)}
+  .brand{font-size:18px;margin:0}.brand small{display:none}
+  .clock,.date{display:none}
+  .stemps{flex-direction:row;gap:6px;margin:0 0 0 auto}
+  .stemp{padding:6px 10px}.stemp b,.stemp .v{font-size:16px}
+  .morning{order:5;flex:1 1 100%;margin:2px 0 0;padding:8px 12px}
+  .morning small{display:inline;margin:0 0 0 6px}
+  .users{display:none}
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:6;flex-direction:row;justify-content:space-around;gap:0;background:var(--side);border-top:1px solid var(--line);padding:6px 6px calc(env(safe-area-inset-bottom) + 6px)}
+  .nav button{flex:1;flex-direction:column;gap:3px;padding:6px 4px;font-size:11.5px;justify-content:center;align-items:center;text-align:center}
+  .main{overflow:visible;padding:14px 12px 90px;gap:12px}
+  .top{flex-direction:column;gap:2px}.top h1{font-size:24px}
+  .tab.on{display:flex;flex-direction:column;gap:12px;height:auto}
+  .tab.on>*{flex:none;grid-column:auto!important;grid-row:auto!important;width:auto}
+  .wx{flex-direction:column;align-items:stretch;gap:12px}
+  .hrs{display:flex;overflow-x:auto;gap:6px;scrollbar-width:none}.hrs::-webkit-scrollbar{display:none}
+  .hrs .hr{flex:0 0 58px}
+  .t-cli .bars{height:230px}
+  .h24{height:auto}
+  #h24{flex-direction:column!important}
+  #h24 .pn{height:170px;flex:none}
+  .t-ent .tv{display:flex!important;flex-direction:column}
+  .t-ent .tv .chs{flex-direction:row!important;flex-wrap:wrap;margin-bottom:10px!important}
+  .t-ent .tv .chs .sep{width:1px!important;height:30px!important}
+  .t-ent .tv .screen,.tactil .t-ent .tv .screen{width:100%!important}
+  .t-ent .news{height:300px}
+  .ni{flex-basis:220px}
+  .cal{min-height:380px}
+  .lower{grid-template-columns:1fr}
+  .notes,.shop{min-height:220px}
+}
+</style>
+<style id="hv-style">
+/* ===== Estilo HomeView: cristal claro, letra del sistema, mosaicos grandes ===== */
+:root{
+  --head:-apple-system,"SF Pro Display","Helvetica Neue",system-ui,sans-serif;
+  --font:-apple-system,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;
+  --card:rgba(255,255,255,.64); --card2:rgba(255,255,255,.58); --line:rgba(70,55,40,.10); --side:transparent;
+}
+html,body{background:#efe6da}
+body{background:
+  radial-gradient(900px 700px at 0% 0%, #f8d6bf 0%, rgba(248,214,191,0) 60%),
+  radial-gradient(900px 650px at 100% 0%, #ddd3f4 0%, rgba(221,211,244,0) 58%),
+  radial-gradient(1000px 800px at 55% 100%, #cde5ec 0%, rgba(205,229,236,0) 62%), #efe6da}
+.side{background:rgba(255,255,255,.30);border-right:0}
+.card{border-radius:26px;border:1px solid rgba(255,255,255,.6);box-shadow:0 10px 30px rgba(70,50,30,.07)}
+.stemp{background:rgba(255,255,255,.62);border-radius:16px}
+.nav button{border-radius:16px}
+.top h1{font-weight:700;letter-spacing:-.02em}
+.clock{font-weight:300;letter-spacing:-.02em}
+.nav button.hom.on{background:rgba(255,255,255,.75)}.nav button.hom.on svg{color:#e0802f}
+
+/* ---------- Inicio ---------- */
+.tab.t-hom.on{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,1fr) minmax(0,1fr) auto auto;gap:14px}
+.hw{background:var(--card);border:1px solid rgba(255,255,255,.6);border-radius:26px;padding:16px 18px;min-width:0;min-height:0;box-shadow:0 10px 30px rgba(70,50,30,.07);position:relative;overflow:hidden}
+.hw .lb{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.w-now{grid-column:1/3;grid-row:1/3;display:flex;flex-direction:column;justify-content:space-between;
+  background:linear-gradient(160deg,rgba(255,255,255,.75),rgba(255,255,255,.45))}
+.w-now .hi{font-size:22px;font-weight:600;color:var(--soft)}
+.w-now .t{font-size:104px;font-weight:200;letter-spacing:-.05em;line-height:.9;margin-top:6px;font-variant-numeric:tabular-nums}
+.w-now .dt{font-size:18px;color:var(--muted);font-weight:500;margin-top:6px}
+.w-now .wxr{display:flex;align-items:center;gap:12px}
+.w-now .wxr svg{width:58px;height:58px}
+.w-now .wxr b{font-size:40px;font-weight:300;letter-spacing:-.03em}
+.w-now .wxr span{font-size:13.5px;color:var(--muted);line-height:1.35}
+.w-room{display:flex;flex-direction:column;cursor:pointer}
+.w-room .v{font-size:42px;font-weight:300;letter-spacing:-.04em;line-height:1;margin-top:8px;font-variant-numeric:tabular-nums}
+.w-room .h{font-size:14px;color:#3b7fc4;font-weight:600;margin-top:4px}
+.w-room .ch{margin-top:auto;display:flex;flex-direction:column;gap:4px}
+.w-room .ch span{font-size:12px;font-weight:600;color:var(--soft);display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w-room .ch i{width:8px;height:8px;border-radius:50%;flex:none;background:#c9c1b4}
+.w-room .ch i.heat{background:#e8822f}.w-room .ch i.cool{background:#3b7fc4}.w-room .ch i.dry{background:#1f9e91}.w-room .ch i.lk{background:#d64545}.w-room .ch i.nt{background:#7a63d8}
+.w-cost{display:flex;flex-direction:column;cursor:pointer}
+.w-cost .v{font-size:38px;font-weight:300;letter-spacing:-.04em;line-height:1;margin-top:8px}
+.w-cost .k{font-size:12.5px;color:var(--muted);margin-top:auto;line-height:1.4}
+.tiles{grid-column:1/5;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.tile{background:rgba(255,255,255,.38);border:1px solid rgba(255,255,255,.55);border-radius:22px;padding:12px 12px 11px;text-align:left;display:flex;flex-direction:column;gap:10px;min-height:104px;transition:transform .12s,background .2s}
+.tile:active{transform:scale(.96)}
+.tile .ic{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.07);color:var(--soft)}
+.tile .ic svg{width:20px;height:20px}
+.tile b{font-size:13.5px;font-weight:650;line-height:1.15;display:block}
+.tile small{font-size:12px;color:var(--muted);font-weight:500;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile.on{background:rgba(255,255,255,.95);box-shadow:0 8px 22px rgba(70,50,30,.10)}
+.tile.on .ic{color:#fff;background:var(--tc,#e8822f)}
+.tile.on small{color:var(--soft)}
+.tile.lk .ic{color:#fff;background:#d64545}
+.tile.busy{opacity:.55}
+.scenes{grid-column:1/3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.scene{display:flex;align-items:center;gap:10px;padding:14px;border-radius:20px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.6);font-weight:650;font-size:14px;text-align:left}
+.scene:active{transform:scale(.97)}
+.scene .ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;flex:none}
+.scene .ic svg{width:19px;height:19px}
+.w-ag{grid-column:3/5;padding:12px 16px}
+.w-ag .ev{display:flex;gap:10px;align-items:baseline;font-size:13.5px;padding:3px 0;white-space:nowrap;overflow:hidden}
+.w-ag .ev i{width:4px;align-self:stretch;border-radius:2px;flex:none}
+.w-ag .ev em{font-style:normal;color:var(--muted);font-size:12px;min-width:66px}
+.w-ag .ev span{overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- Pantalla en reposo ---------- */
+#amb{position:fixed;inset:0;z-index:60;display:none;overflow:hidden;color:#fff;
+  background:radial-gradient(800px 600px at 15% 10%,#3a2a5c 0%,rgba(58,42,92,0) 60%),radial-gradient(900px 700px at 90% 90%,#123a4a 0%,rgba(18,58,74,0) 60%),#0b0c14;
+  font-family:var(--font);-webkit-user-select:none;user-select:none}
+#amb.on{display:block}
+#amb.night{filter:brightness(.5)}
+#amb .faces{display:flex;height:100%;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+#amb .face{flex:0 0 100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5vh 5vw;text-align:center}
+#amb .bigt{font-size:min(26vw,40vh);font-weight:200;letter-spacing:-.05em;line-height:.95;font-variant-numeric:tabular-nums;
+  background:linear-gradient(180deg,#ffffff 0%,#cfd6ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+#amb .adate{font-size:min(3.6vw,4.4vh);font-weight:500;opacity:.78;margin-top:1vh}
+#amb .arow{display:flex;gap:min(5vw,60px);margin-top:6vh;flex-wrap:wrap;justify-content:center}
+#amb .arow div{display:flex;flex-direction:column;align-items:center;gap:4px}
+#amb .arow small{font-size:min(1.7vw,2.2vh);letter-spacing:.12em;text-transform:uppercase;opacity:.6;font-weight:600}
+#amb .arow b{font-size:min(5vw,6.5vh);font-weight:300;letter-spacing:-.03em}
+#amb .arow em{font-style:normal;font-size:min(1.8vw,2.3vh);color:#9cc4ff;font-weight:600}
+#amb .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2.4vw;width:min(92vw,1100px)}
+#amb .rc{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:28px;padding:3vh 2vw;text-align:left}
+#amb .rc small{font-size:min(1.7vw,2.2vh);letter-spacing:.1em;text-transform:uppercase;opacity:.6;font-weight:700}
+#amb .rc b{display:block;font-size:min(7vw,9vh);font-weight:200;letter-spacing:-.04em;line-height:1;margin:1.5vh 0 .6vh}
+#amb .rc em{font-style:normal;color:#9cc4ff;font-weight:600;font-size:min(2vw,2.6vh)}
+#amb .rc p{margin:2vh 0 0;font-size:min(1.7vw,2.2vh);opacity:.8;line-height:1.5}
+#amb .agt{font-size:min(6vw,8vh);font-weight:200;letter-spacing:-.03em;line-height:1}
+#amb .agl{margin-top:4vh;display:flex;flex-direction:column;gap:1.6vh;width:min(80vw,720px);text-align:left}
+#amb .agl div{display:flex;gap:2vw;align-items:baseline;font-size:min(2.6vw,3.3vh)}
+#amb .agl i{width:6px;align-self:stretch;border-radius:3px;flex:none}
+#amb .agl em{font-style:normal;opacity:.6;min-width:7em;font-size:.8em}
+#amb .dots{position:absolute;bottom:3vh;left:0;right:0;display:flex;justify-content:center;gap:10px}
+#amb .dots button{width:9px;height:9px;padding:0;border-radius:50%;background:rgba(255,255,255,.3)}
+#amb .dots button.on{background:#fff}
+#amb .hint{position:absolute;top:3vh;right:4vw;font-size:13px;opacity:.45}
+
+@media (max-width:900px){
+  .tab.t-hom.on{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;height:auto}
+  .w-now{grid-column:1/3;grid-row:auto}.w-now .t{font-size:72px}
+  .tiles{grid-column:1/3;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .scenes,.w-ag{grid-column:1/3}
+  #amb .grid{grid-template-columns:1fr}
+}
+
+/* ---------- V3: como un terminal de pared (sin menú lateral, apps, barra de inicio) ---------- */
+.side{display:none!important}
+.app{grid-template-columns:1fr!important}
+.main{padding:18px 26px 30px}
+.top{align-items:center;gap:14px;justify-content:flex-start}
+.top .sub{margin-left:auto}
+.top .back{padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.7);font-weight:650;font-size:15px;color:var(--ink)}
+body.at-home .top{display:none}
+.tab.t-hom.on{grid-template-rows:minmax(0,1fr) minmax(0,1fr) auto auto auto}
+.dock{grid-column:1/5;justify-self:center;display:flex;gap:26px;padding:12px 22px 10px;border-radius:32px;background:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.6);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.app-i{display:flex;flex-direction:column;align-items:center;gap:6px}
+.app-i .sq{width:62px;height:62px;border-radius:17px;display:grid;place-items:center;box-shadow:0 6px 16px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.35)}
+.app-i .sq svg{width:30px;height:30px}
+.app-i .nm{font-size:12px;font-weight:600;color:var(--soft)}
+.app-i:active .sq{transform:scale(.93)}
+#homebar{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:220px;height:26px;z-index:45;display:grid;place-items:center;padding:0}
+#homebar i{width:150px;height:5px;border-radius:3px;background:rgba(30,30,40,.38)}
+body.at-home #homebar{display:none}
+#ccgrab{position:fixed;top:0;right:30px;width:110px;height:22px;z-index:45;display:grid;place-items:center;padding:0}
+#ccgrab i{width:56px;height:5px;border-radius:3px;background:rgba(30,30,40,.22)}
+#cc{position:fixed;inset:0;z-index:55;background:rgba(20,20,30,.25);opacity:0;pointer-events:none;transition:opacity .25s}
+#cc.on{opacity:1;pointer-events:auto}
+#cc .ccp{position:absolute;top:14px;right:14px;width:min(560px,calc(100vw - 28px));padding:18px;border-radius:30px;background:rgba(245,242,238,.82);
+  -webkit-backdrop-filter:blur(30px) saturate(1.5);backdrop-filter:blur(30px) saturate(1.5);box-shadow:0 24px 60px rgba(0,0,0,.25);transform:translateY(-20px);transition:transform .3s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;gap:12px}
+#cc.on .ccp{transform:none}
+#cc .cch{display:flex;align-items:baseline;justify-content:space-between}#cc .cch b{font-size:30px;font-weight:300}#cc .cch span{font-size:13px;color:var(--muted);font-weight:600}
+#cc .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+#cc .scenes{grid-template-columns:repeat(3,minmax(0,1fr))}
+#cc .ccx{font-size:11.5px;color:var(--muted);text-align:center}
+@media (max-width:900px){ .dock{grid-column:1/3;gap:14px;padding:10px 12px} .app-i .sq{width:52px;height:52px;border-radius:14px} .nav{display:none} }
+
+.w-now .hrly{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;padding:12px 8px;border-radius:20px;background:rgba(255,255,255,.5);margin:10px 0}
+.w-now .hrly div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.w-now .hrly svg{width:30px;height:30px}.w-now .hrly b{font-size:16px;color:var(--ink);font-weight:500}
+.w-now .hrly div:first-child span{color:var(--ink)}
+.w-room .h{display:flex;align-items:center;gap:7px;color:var(--soft)!important;font-weight:600}
+.hring{width:16px;height:16px;border-radius:50%;background:conic-gradient(#3b7fc4 calc(var(--p)*1%),rgba(59,127,196,.18) 0);-webkit-mask:radial-gradient(circle 4.5px,transparent 98%,#000);mask:radial-gradient(circle 4.5px,transparent 98%,#000)}
+.w-room .spark{width:100%;height:46px;margin:10px 0 6px;display:block;flex:none}
+.w-room .ch{margin-top:auto}
+.cbars{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;align-items:end;height:60px;margin:12px 0 8px}
+.cbars div{display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;font-size:10px;color:var(--muted);font-weight:700}
+.cbars i{display:block;width:100%;border-radius:6px;background:linear-gradient(180deg,#ffc35a,#e08a1e);opacity:.45}
+.cbars .cur i{opacity:1}.cbars .cur{color:var(--ink)}
+.w-cost .k{margin-top:auto}
+.hw.w-room:active,.hw.w-cost:active,.hw.w-ag:active{transform:scale(.985)}
+.hw{transition:transform .15s}
+#amb .wxbig svg{width:min(26vw,32vh);height:min(26vw,32vh);filter:drop-shadow(0 20px 40px rgba(0,0,0,.4))}
+#amb .ahr{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:1.6vw;margin-top:5vh;padding:2.4vh 2.4vw;border-radius:28px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);width:min(90vw,980px)}
+#amb .ahr div{display:flex;flex-direction:column;align-items:center;gap:1vh;font-size:min(1.7vw,2.2vh);opacity:.9}
+#amb .ahr svg{width:min(4.5vw,6vh);height:min(4.5vw,6vh)}#amb .ahr b{font-size:min(2.6vw,3.4vh);font-weight:400}
+#amb .fx{display:flex;align-items:center;gap:.25em}#amb .fx svg{width:1em;height:1em}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">CASA<small>Salva y Ramón</small></div>
+    <div class="clock num" id="clock">--:--</div>
+    <div class="date" id="date"></div>
+    <div class="stemps">
+      <div class="stemp" title="Media de dentro de casa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><div><b class="num" id="tIn">—</b><span>Dentro</span></div></div>
+      <div class="stemp out" title="Fuera, en Vigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z"/><path d="M18 3l1.5 1.5M21 8h-2M18 13l1.5-1.5"/></svg><div><b class="num" id="tOut">—</b><span>Fuera</span></div></div>
+    </div>
+    <nav class="nav">
+      <button class="cli" data-t="cli" title="Clima" aria-label="Clima"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0zM18 6h3M18 10h3"/></svg>Clima</button>
+      <button class="ent" data-t="ent" title="Entretenimiento" aria-label="Entretenimiento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3zM8 21h8M10 9.5l4 2.5-4 2.5z"/></svg>Entretenimiento</button>
+      <button class="pla" data-t="pla" title="Planning" aria-label="Planning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 10h16M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>Planning</button>
+      <button class="cos" data-t="cos" title="Costes" aria-label="Costes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7a7 7 0 1 0 0 10M4 10h9M4 14h9"/></svg>Costes</button>
+      <button class="cfg" data-t="cfg" title="Ajustes" aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Ajustes</button>
+    </nav>
+    <button class="morning" id="morning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="4"/><path d="M12 3v3M4.2 6.2l2 2M19.8 6.2l-2 2M2 17h20M5 21h14"/></svg><span>Buenos días<small id="morningSub">La 1 · salón a 20°</small></span></button>
+    <div class="users">
+      <div class="lab">Quién eres</div>
+      <div class="avs">
+        <button class="av s" data-u="S">S<span class="nm">Salva</span></button>
+        <button class="av r" data-u="R">R<span class="nm">Ramón</span></button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="top"><h1 id="title">Entretenimiento</h1><span class="sub" id="sub"></span></div>
+
+    <!-- ENTRETENIMIENTO -->
+    <section class="tab t-ent" id="t-ent">
+      <div class="card tv">
+        <div class="lbl">Televisión <button class="pill" id="ytChange" hidden>Clave (opcional)</button></div>
+        <div class="chs" id="chs"></div>
+        <div class="screen" id="screen"></div>
+      </div>
+      <div class="card news"><div class="lbl">Noticias · El País y Faro de Vigo <span class="pill" id="newsTime"></span></div><div class="nwrap"><div class="ncar" id="news"><div class="msg">Cargando noticias…</div></div><button class="narr l" id="nPrev" aria-label="Noticia anterior">‹</button><button class="narr r" id="nNext" aria-label="Noticia siguiente">›</button></div></div>
+      <div class="card">
+        <div class="lbl">Radio en directo</div>
+        <div class="radios" id="radios"></div>
+        <div class="apps">
+          <a class="appb" href="music://"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="#fa2d48" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>Apple Music</a>
+          <a class="appb" href="spotify:"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="#1db954" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M7.5 9.5c3-1 6.5-.7 9.2.8M8 12.6c2.5-.7 5.3-.4 7.4.8M8.6 15.4c2-.5 4-.3 5.6.6"/></svg>Spotify</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLIMA -->
+    <section class="tab t-cli" id="t-cli">
+      <div class="card wx"><div class="now" id="wxnow"><div class="d">Cargando el tiempo de Vigo…</div></div><div class="hrs" id="hrs"></div></div>
+      <div class="card ac" id="ac0"><div class="msg">Conectando con Home Assistant…</div></div>
+      <div class="card ac" id="ac1"></div>
+      <div class="card h24"><div class="lbl">Últimas 24 h <span class="leg"><span><i style="background:#d64545"></i>Temp.</span><span><i style="background:#3b7fc4"></i>Humedad</span><span><i style="background:rgba(59,127,196,.3);height:8px"></i>Deshum.</span></span></div><div id="h24"></div></div>
+      <div class="card ac bath" id="bath"></div>
+    </section>
+
+    <!-- PLANNING -->
+    <section class="tab t-pla" id="t-pla">
+      <div class="card cal">
+        <div class="mon"><button id="mPrev" aria-label="Mes anterior">‹</button><b id="mTitle"></b><button id="mNext" aria-label="Mes siguiente">›</button></div>
+        <div class="grid7" id="cal"></div>
+      </div>
+      <div class="card agenda">
+        <div class="lbl">Hoy <span><button class="pill" id="calCfg" aria-label="Elegir calendarios">⚙</button> <span class="pill" id="who"></span></span></div>
+        <div id="agenda"></div>
+      </div>
+      <div class="lower">
+        <div class="card notes"><div class="lbl" style="white-space:nowrap">Próximos 7 días <span class="pill" id="weekWho"></span></div><div id="week" class="scroll"></div></div>
+        <div class="card notes rem"><div class="lbl" style="white-space:nowrap">Recordatorios <span class="pill" id="remAt"></span></div><div id="rems" class="scroll"></div></div>
+
+      </div>
+    </section>
+
+    <!-- INICIO (V3) -->
+    <section class="tab t-hom" id="t-hom"><div id="home" style="display:contents"></div></section>
+
+    <!-- COSTES -->
+    <section class="tab t-cos" id="t-cos">
+      <div class="card cost"><div class="lbl">Reparto del mes <span id="pfix" style="white-space:nowrap"></span></div><div id="cost"></div></div>
+      <div class="card hoy"><div class="lbl">Hoy y ayer</div><div id="hoy"></div></div>
+      <div class="card bars"><div class="lbl">Gasto por meses <span class="pill" id="half"></span></div><div class="mleg" id="mleg"></div><div class="mb" id="months"></div><div class="mtable" id="mtable"></div></div>
+    </section>
+
+    <!-- AJUSTES -->
+    <section class="tab t-cfg" id="t-cfg"><div class="cols" id="cfg"><div class="card"><div class="msg">Conectando con Home Assistant…</div></div></div></section>
+  </main>
+</div>
+
+<div class="sheet" id="sheet" hidden><div class="panel" role="dialog" aria-labelledby="sheetTitle"><h2 id="sheetTitle"></h2><div id="sheetBody"></div></div></div>
+<script>
+/* ===== CASA · Panel 2 =====
+   Se sirve desde Home Assistant (carpeta www → /local/panel2.html) y comparte el inicio de sesión con el panel 1. */
+const LAT = 42.2406, LON = -8.7207, PLACE = "Vigo";
+const HA_LAN = "http://192.168.1.131";
+const RTVE = "https://rtvelivestream.rtve.es/rtvesec/";
+const LOGOS = {"l7": "data:image/jpeg;base64,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", "yt": "data:image/jpeg;base64,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", "24h": "data:image/jpeg;base64,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", "la1": "data:image/jpeg;base64,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", "la2": "data:image/jpeg;base64,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", "tvg": "data:image/jpeg;base64,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"};   // logotipos de las cadenas
+const CHANNELS = [
+  {k:"24h", t:"24h",  n:"Canal 24 horas", u: RTVE + "24h/24h_main_dvr.m3u8"},
+  {k:"la1", t:"La 1", n:"La 1",          u: RTVE + "la1/la1_main_dvr.m3u8"},
+  {k:"la2", t:"La 2", n:"La 2",          u: RTVE + "la2/la2_main_dvr.m3u8"},
+  {k:"l7",  t:"La 7", n:"La Séptima",    y:"ErraEILevPE"},
+  {k:"tvg", t:"TVG",  n:"TVG (Televisión de Galicia)", u: "https://crtvg-europa.flumotion.cloud/playlist.m3u8", sep:true},
+  {k:"yt",  t:"YouTube", n:"YouTube", sep:true}
+];
+const RADIOS = [
+  {k:"r1", t:"Radio Nacional", s:"Información",    lg:"R1", bg:"#fff",    fg:"#c62828", u: RTVE + "rne/rne_r1_main.m3u8"},
+  {k:"rg", t:"Radio Galega",   s:"Galicia",        lg:"RG", bg:"#0a64b4", fg:"#fff",    u: "https://crtvg-radiogalega-hls.flumotion.cloud/playlist.m3u8"},
+  {k:"r5", t:"Radio 5",        s:"Todo noticias",  lg:"R5", bg:"#ffe08a", fg:"#7a4b00", u: RTVE + "rne/rne_r5_madrid_main.m3u8"},
+  {k:"r3", t:"Radio 3",        s:"Música",         lg:"R3", bg:"#1f1f1f", fg:"#fff",    u: RTVE + "rne/rne_r3_main.m3u8"},
+  {k:"rc", t:"Radio Clásica",  s:"Música clásica", lg:"RC", bg:"#c9b8ff", fg:"#2d1a6b", u: RTVE + "rne/rne_r2_main.m3u8"}
+];
+// Modo Noche: interruptores de Home Assistant (los mismos que usa el panel 1)
+// Corrección de la temperatura que mide cada aire (el sensor está arriba, en el aparato).
+// Diferencia con un termómetro a la altura de una persona: solo cambia lo que se ve.
+const TEMP_OFFSET = {"climate.aire_dormitorio": -2.0, "climate.aire_salon": -0.7};
+const roomSensors = (e, dc) => {   // sensores de la habitación (p. ej. Tapo T310), no los del propio aire
+  if (!e || !(window.__states || []).length) return null;
+  const n = acName(e).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const cand = window.__states.filter(x => x.entity_id.startsWith("sensor.") && !/^sensor\.aire_acondicionado_/.test(x.entity_id) &&
+    x.attributes.device_class === dc && !isNaN(parseFloat(x.state)) &&
+    (x.entity_id + " " + (x.attributes.friendly_name||"")).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(n));
+  const s = cand.find(x => /tapo|t31|^sensor /i.test((x.attributes.friendly_name||"") + " " + (x.attributes.model||""))) || cand[0];
+  return s ? parseFloat(s.state) : null;
+};
+const roomH = e => roomSensors(e, "humidity");
+const roomT = e => { const s = roomSensors(e, "temperature"); if (s != null) return s;   // si hay sensor, manda el sensor
+  const v = e && e.attributes.current_temperature; return typeof v === "number" ? v + (TEMP_OFFSET[e.entity_id] || 0) : null; };
+const NIGHT = {
+  "climate.aire_salon":      {helper:"input_boolean.noche_salon",      txt:"se apaga a las 00:00"},
+  "climate.aire_dormitorio": {helper:"input_boolean.noche_dormitorio", txt:"se apaga a la 01:00 · vuelve de 7 a 10 h"}
+};
+const USERS = {S:{n:"Salva", re:/salva/i, c:"#ff7a6b"}, R:{n:"Ramón", re:/ram[oó]n/i, c:"#59a0ff"}};
+const SHARED_C = "#4cd38a";
+const TAX = 1.0511 * 1.21;   // impuesto eléctrico e IVA sobre el precio PVPC
+/* Tarifa real (factura Naturgy «Tarifa Por Uso Luz», 24/08–23/09/2026): mismo precio a todas horas */
+const TARIFA = {kwh: 0.144972, iee: 0.05112696, iva: 0.21, potP1: 0.110283, potP2: 0.033469, kw: 3.3, bono: 0.024688, contador: 0.02663,
+  factura: {total: 63.62, kwh: 257, desde: "24 ago", hasta: "23 sep"}};
+const KWH_FINAL = TARIFA.kwh * (1 + TARIFA.iee) * (1 + TARIFA.iva);                       // ≈ 0,184 €/kWh con impuestos
+const FIJO_DIA = (((TARIFA.potP1 + TARIFA.potP2) * TARIFA.kw + TARIFA.bono) * (1 + TARIFA.iee) + TARIFA.contador) * (1 + TARIFA.iva);  // ≈ 0,67 €/día
+
+/* ---------- utilidades ---------- */
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt1 = n => (Math.round(n*10)/10).toFixed(1).replace(".", ",");
+const eur = v => v.toLocaleString("es-ES", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
+const pad = n => String(n).padStart(2, "0");
+const IC = {
+  play:'<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',
+  stop:'<path d="M7 7h10v10H7z" fill="currentColor" stroke="none"/>',
+  snow:'<path d="M12 2v20M4.9 6l14.2 12M19.1 6 4.9 18M9 4l3 2 3-2M9 20l3-2 3 2"/>',
+  flame:'<path d="M12 22c4 0 7-3 7-7 0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-2 2-5 5-5 8 0 4 3 7 7 7z"/>',
+  drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+  power:'<path d="M12 3v9M6.3 7a8 8 0 1 0 11.4 0"/>',
+  moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'
+};
+const svg = n => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
+
+/* ---------- reloj, pestañas y usuario ---------- */
+const fmtTime = new Intl.DateTimeFormat("es-ES",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"});
+const fmtDate = new Intl.DateTimeFormat("es-ES",{weekday:"long",day:"numeric",month:"long",timeZone:"Europe/Madrid"});
+function tick(){
+  const d = new Date(); $("clock").textContent = fmtTime.format(d);
+  const s = fmtDate.format(d); $("date").textContent = s[0].toUpperCase() + s.slice(1);
+}
+tick(); setInterval(tick, 5000);
+const TT = {ent:["Entretenimiento","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario y próximos días"], hom:["Inicio",""], cos:["Costes","Luz de los aires y deshumidificadores · compartido"], cfg:["Ajustes","Deshumidificadores, aires y modo Noche · se guarda en Home Assistant"]};
+let tab = "hom";   // V3: al abrir, la pantalla de Inicio
+function show(t){
+  tab = t;
+  document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  document.querySelectorAll(".tab").forEach(s => s.classList.toggle("on", s.id === "t-" + t));
+  $("title").textContent = TT[t][0]; $("sub").textContent = TT[t][1];
+  if (t === "pla") loadCalendar();
+  if (t !== "ent" && typeof stopAll === "function") stopAll("radio");   // libera el vídeo al cambiar de pestaña; la radio sigue sonando
+  if (t === "cli" && typeof renderH24 === "function") renderH24();
+  if (t === "cfg" && typeof renderCfg === "function") renderCfg(true);
+}
+document.querySelectorAll(".nav button").forEach(b => b.onclick = () => show(b.dataset.t));
+let user = store.get("p2_user", "S");
+function setUser(u){
+  user = u; store.set("p2_user", u);
+  document.querySelectorAll(".av").forEach(x => x.classList.toggle("on", x.dataset.u === u));
+  $("who").textContent = "Agenda de " + USERS[u].n;
+  calCache = {}; renderPlanning(); loadCalendar(); refreshNotes();
+}
+document.querySelectorAll(".av").forEach(b => b.onclick = () => setUser(b.dataset.u));
+
+/* ---------- Home Assistant: sesión y API ---------- */
+const HA = location.origin, CLIENT_ID = HA + "/", REDIRECT = HA + location.pathname;
+const onHA = !/github\.io$/i.test(location.hostname);   // servido desde Home Assistant (en casa o desde fuera, http o https)
+let auth = store.get("ha_auth", null);
+async function tokenRequest(params){
+  const r = await fetch(HA + "/auth/token", {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body: new URLSearchParams({...params, client_id: CLIENT_ID})});
+  if (!r.ok) throw new Error("auth " + r.status);
+  return r.json();
+}
+async function getToken(){
+  auth = store.get("ha_auth", auth);
+  if (!auth) throw new Error("login");
+  if (auth.llat) return auth.llat;
+  if (auth.access && auth.expires > Date.now() + 60000) return auth.access;
+  if (!auth.refresh) throw new Error("login");
+  const t = await tokenRequest({grant_type:"refresh_token", refresh_token: auth.refresh});
+  auth.access = t.access_token; auth.expires = Date.now() + t.expires_in*1000; store.set("ha_auth", auth);
+  return auth.access;
+}
+async function api(path, body, method){
+  for (let i = 0; i < 2; i++){
+    const tok = await getToken();
+    const r = await fetch(HA + path, {method: method || (body ? "POST" : "GET"),
+      headers:{"Authorization":"Bearer " + tok, "Content-Type":"application/json"}, body: body ? JSON.stringify(body) : undefined, cache:"no-store"});
+    if (r.status === 401){ if (auth && auth.llat) throw new Error("login"); if (auth) auth.expires = 0; continue; }
+    if (!r.ok) throw new Error("HA " + r.status);
+    const tx = await r.text(); return tx ? JSON.parse(tx) : null;
+  }
+  throw new Error("login");
+}
+const service = (dom, srv, data) => api(`/api/services/${dom}/${srv}`, data);
+async function serviceResp(dom, srv, data){
+  const r = await api(`/api/services/${dom}/${srv}?return_response`, data);
+  return (r && (r.service_response || r)) || {};
+}
+let wsSeq = 1;
+async function wsCall(msg){
+  const tok = await getToken();
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(HA.replace(/^http/, "ws") + "/api/websocket"), id = wsSeq++;
+    const done = (fn, v) => { try{ ws.close(); }catch(e){} fn(v); };
+    const timer = setTimeout(() => done(reject, new Error("timeout")), 20000);
+    ws.onmessage = ev => { const m = JSON.parse(ev.data);
+      if (m.type === "auth_required") ws.send(JSON.stringify({type:"auth", access_token: tok}));
+      else if (m.type === "auth_ok") ws.send(JSON.stringify({...msg, id}));
+      else if (m.type === "auth_invalid"){ clearTimeout(timer); done(reject, new Error("login")); }
+      else if (m.id === id){ clearTimeout(timer); m.success ? done(resolve, m.result) : done(reject, new Error("ws")); } };
+    ws.onerror = () => { clearTimeout(timer); done(reject, new Error("ws")); };
+  });
+}
+function login(){
+  location.href = HA + "/auth/authorize?response_type=code&client_id=" + encodeURIComponent(CLIENT_ID) +
+    "&redirect_uri=" + encodeURIComponent(REDIRECT) + "&state=panel2";
+}
+async function finishLogin(){
+  const code = new URLSearchParams(location.search).get("code"); if (!code) return;
+  try{ history.replaceState(null, "", location.pathname); }catch(e){}
+  try{ const t = await tokenRequest({grant_type:"authorization_code", code});
+    auth = {access:t.access_token, expires:Date.now()+t.expires_in*1000, refresh:t.refresh_token}; store.set("ha_auth", auth);
+  }catch(e){ auth = null; }
+}
+function sheet(title, html){ $("sheetTitle").textContent = title; $("sheetBody").innerHTML = html; $("sheet").hidden = false; }
+function closeSheet(){ $("sheet").hidden = true; }
+$("sheet").addEventListener("click", e => { if (e.target === $("sheet") || e.target.closest("[data-close]")) closeSheet(); });
+let loginShown = false;
+function showLogin(){
+  if (!onHA){
+    sheet("Abre el panel desde casa", `<p>Este panel funciona desde Home Assistant, con el wifi de casa:</p>
+      <p><a href="${HA_LAN}/local/panel2.html">${HA_LAN}/local/panel2.html</a></p><div class="pactions"><button data-close>Cerrar</button></div>`);
+    return;
+  }
+  sheet("Conectar con Home Assistant", `<p>Para manejar la casa, el panel necesita entrar en Home Assistant una vez. El panel no guarda tu contraseña.</p>
+    <div class="pactions"><button data-close>Ahora no</button><button class="primary" id="goLogin">Iniciar sesión en Home Assistant</button></div>`);
+  $("goLogin").onclick = login;
+}
+function handleErr(err){
+  if (String(err && err.message) === "login"){ if (!loginShown){ loginShown = true; showLogin(); } }
+}
+
+/* ---------- Tiempo (Open-Meteo) ---------- */
+function wx(code, day=1){
+  const sun = '<circle cx="12" cy="11" r="4.5" fill="#f5b83d"/><g stroke="#f5b83d" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2M12 17.5v2M3.5 11h2M18.5 11h2M6 5l1.4 1.4M16.6 15.6 18 17M6 17l1.4-1.4M16.6 6.4 18 5"/></g>';
+  const moon = '<path d="M17 14.5A6.5 6.5 0 1 1 10.5 5a5 5 0 0 0 6.5 9.5z" fill="#c9cbe6"/>';
+  const cl = (x=0,y=0,c="#dfe3ee") => `<path transform="translate(${x} ${y})" d="M7 20h10.5a3.8 3.8 0 0 0 .4-7.6A5.5 5.5 0 0 0 7.3 12 4 4 0 0 0 7 20z" fill="${c}"/>`;
+  const small = day ? '<g transform="translate(-4 -4) scale(.75)">'+sun+'</g>' : '<g transform="translate(-3 -3) scale(.8)">'+moon+'</g>';
+  const rain = '<g stroke="#5b8fd0" stroke-width="2" stroke-linecap="round"><path d="M9 21.5l-1 2M13 21.5l-1 2M17 21.5l-1 2"/></g>';
+  let b;
+  if (code===0) b = day ? sun : moon; else if (code<=2) b = small + cl(1,-1); else if (code===3) b = cl(-2,-4,"#aeb6c8") + cl(1,-1);
+  else if (code===45||code===48) b = cl(0,-4) + '<g stroke="#9aa3ba" stroke-width="2" stroke-linecap="round"><path d="M4 19.5h16M6 22.5h12"/></g>';
+  else if (code>=71&&code<=77||code===85||code===86) b = cl(0,-3) + '<g fill="#8fb3e0"><circle cx="9" cy="21" r="1.3"/><circle cx="13" cy="22.5" r="1.3"/><circle cx="17" cy="21" r="1.3"/></g>';
+  else if (code>=95) b = cl(0,-4,"#b9bfd0") + '<path d="M12 16l-2.5 4h3l-2 4" stroke="#f5b83d" stroke-width="2" fill="none"/>';
+  else if (code>=80) b = small + cl(1,-3) + rain; else b = cl(0,-3) + rain;
+  return `<svg viewBox="0 0 24 25" aria-hidden="true">${b}</svg>`;
+}
+function wxText(c){
+  if (c===0) return "Despejado"; if (c===1) return "Casi despejado"; if (c===2) return "Intervalos de nubes"; if (c===3) return "Nublado";
+  if (c===45||c===48) return "Niebla"; if (c>=51&&c<=57) return "Llovizna"; if (c>=61&&c<=67) return "Lluvia";
+  if (c>=71&&c<=77) return "Nieve"; if (c>=80&&c<=82) return "Chubascos"; if (c>=95) return "Tormenta"; return "—";
+}
+const WX_URL = "https://api.open-meteo.com/v1/forecast?latitude="+LAT+"&longitude="+LON+
+  "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day"+
+  "&hourly=temperature_2m,precipitation_probability,weather_code,is_day"+
+  "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Europe%2FMadrid&forecast_days=2";
+function renderWeather(w){
+  const c = w.current, d = w.daily, h = w.hourly;
+  $("tOut").textContent = fmt1(c.temperature_2m) + "°";
+  $("wxnow").innerHTML = `${wx(c.weather_code, c.is_day).replace('<svg','<svg width="48" height="48"')}
+    <div class="t num">${Math.round(c.temperature_2m)}°</div>
+    <div class="d"><b>${wxText(c.weather_code)}</b><br>${PLACE} · máx ${Math.round(d.temperature_2m_max[0])}° · mín ${Math.round(d.temperature_2m_min[0])}°<br>
+      Sensación ${Math.round(c.apparent_temperature)}° · viento ${Math.round(c.wind_speed_10m)} km/h · humedad ${c.relative_humidity_2m}%</div>`;
+  const today = d.time ? d.time[0] : c.time.slice(0,10), nowH = parseInt(c.time.slice(11,13), 10);
+  let s = "";
+  for (let hh = 8; hh <= 22; hh += 2){
+    const i = h.time.indexOf(today + "T" + pad(hh) + ":00"); if (i < 0) continue;
+    const p = h.precipitation_probability[i] ?? 0;
+    s += `<div class="hr ${nowH>=hh && nowH<hh+2 ? "cur":""} ${hh+2<=nowH ? "past":""}">${hh}h${wx(h.weather_code[i], h.is_day[i]).replace('<svg','<svg class="hw"')}<b class="num">${Math.round(h.temperature_2m[i])}°</b><div class="rb"><i style="height:${p}%"></i></div>${p}%</div>`;
+  }
+  $("hrs").innerHTML = s;
+  if (typeof renderHome === "function") renderHome();
+}
+async function loadWeather(){
+  try{ const r = await fetch(WX_URL, {cache:"no-store"}); if (!r.ok) throw 0; const w = await r.json(); store.set("p2_wx", w); renderWeather(w); }
+  catch(e){ const o = store.get("p2_wx", null); if (o) renderWeather(o); }
+}
+loadWeather(); setInterval(loadWeather, 15*60*1000);
+
+/* ---------- Entretenimiento: tele, radio y YouTube (solo suena una cosa a la vez) ---------- */
+const player = new Audio(); player.preload = "none";
+let radioOn = null, radioErr = null, tvOn = false, ytOn = false;
+let ch = store.get("p2_ch", "24h"); if (!CHANNELS.some(c => c.k === ch)) ch = "24h";
+function stopAll(except){
+  if (except !== "radio" && radioOn){ player.pause(); player.removeAttribute("src"); player.load(); radioOn = null; renderRadios(); }
+  if (except !== "tv" && tvOn){ tvOn = false; renderTV(); }
+}
+// YouTube: buscador con la API de YouTube (clave gratuita de Google, se pega una vez en cada aparato)
+let ytResults = store.get("p2_ytres", []), ytQuery = store.get("p2_ytq", ""), ytPlay = null, ytMsg = "";
+// Búsqueda: con clave de Google si la hay; si no, servicios públicos (Piped / Invidious), probando varios
+const PIPED = ["https://pipedapi.kavin.rocks", "https://pipedapi.adminforge.de", "https://api.piped.private.coffee", "https://pipedapi.leptons.xyz"];
+const INVID = ["https://inv.nadeko.net", "https://invidious.nerdvpn.de", "https://yewtu.be", "https://invidious.privacyredirect.com"];
+async function getJSON(url, ms = 7000){
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), ms);
+  try{ const r = await fetch(url, {signal: ctl.signal}); if (!r.ok) throw new Error(r.status); return await r.json(); }
+  finally{ clearTimeout(tm); }
+}
+async function searchGoogle(q, key){
+  const j = await getJSON("https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=15&regionCode=ES&relevanceLanguage=es&q=" + encodeURIComponent(q) + "&key=" + encodeURIComponent(key));
+  if (j.error) throw new Error("google");
+  return (j.items || []).map(x => ({id: x.id.videoId, t: x.snippet.title, c: x.snippet.channelTitle, img: (x.snippet.thumbnails.medium || x.snippet.thumbnails.default).url, live: x.snippet.liveBroadcastContent === "live"}));
+}
+async function searchPiped(base, q){
+  const j = await getJSON(base + "/search?q=" + encodeURIComponent(q) + "&filter=videos");
+  return (j.items || []).filter(x => x.url && /watch\?v=/.test(x.url) && !x.isShort).map(x => ({id: x.url.split("v=")[1].slice(0,11), t: x.title, c: x.uploaderName || "", img: x.thumbnail, live: x.duration === -1}));
+}
+async function searchInvidious(base, q){
+  const j = await getJSON(base + "/api/v1/search?type=video&region=ES&q=" + encodeURIComponent(q));
+  return (Array.isArray(j) ? j : []).filter(x => x.videoId).map(x => ({id: x.videoId, t: x.title, c: x.author || "", img: "https://i.ytimg.com/vi/" + x.videoId + "/mqdefault.jpg", live: !!x.liveNow}));
+}
+async function ytSearch(q){
+  ytQuery = q; store.set("p2_ytq", q); ytMsg = "Buscando…"; ytResults = []; renderTV();
+  const key = store.get("yt_key", "");
+  const tries = [];
+  if (key) tries.push(() => searchGoogle(q, key));
+  const ok = store.get("p2_ytsrc", null);   // el último servicio que funcionó va primero
+  const srcs = [...PIPED.map(b => ["p", b]), ...INVID.map(b => ["i", b])].sort((a,b) => (b[1] === ok) - (a[1] === ok));
+  srcs.forEach(([k, b]) => tries.push(async () => { const r = k === "p" ? await searchPiped(b, q) : await searchInvidious(b, q); if (r.length) store.set("p2_ytsrc", b); return r; }));
+  for (const f of tries){
+    try{ const r = await f(); if (r && r.length){ ytResults = r.slice(0, 15); ytMsg = ""; store.set("p2_ytres", ytResults); renderTV(); return; } }catch(err){}
+  }
+  ytMsg = "No he podido buscar ahora mismo. Inténtalo en un rato.";
+  renderTV();
+}
+const unesc = s => { const d = document.createElement("textarea"); d.innerHTML = s; return d.value; };
+function ytPanel(){
+  const bar = `<form class="ysearch" id="ysearch"><input id="yq" placeholder="Buscar en YouTube, por ejemplo «Acontece que no es poco»" value="${esc(ytQuery)}" autocomplete="off" aria-label="Buscar en YouTube"><button type="submit">Buscar</button></form>`;
+  const empty = !ytResults.length && !ytMsg ? `<div class="msg ymsg">Escribe arriba lo que quieras ver y pulsa Buscar.</div>` : "";
+  return `<div class="ypanel">${bar}${ytMsg ? `<div class="msg ymsg">${esc(ytMsg)}</div>` : ""}${empty}
+    <div class="ygrid">${ytResults.map(v => `<button class="yv" data-yv="${v.id}"><span class="th"><img src="${esc(v.img)}" alt="" loading="lazy">${v.live ? '<span class="lv">EN DIRECTO</span>' : ""}</span><b>${esc(unesc(v.t))}</b><span>${esc(unesc(v.c))}</span></button>`).join("")}</div></div>`;
+}
+function renderTV(msg){
+  const c = CHANNELS.find(x => x.k === ch);
+  $("chs").innerHTML = CHANNELS.map(x => `${x.sep ? '<span class="sep"></span>' : ""}<button class="${x.k===c.k?"on":""} ${LOGOS[x.k]?"logo":""}" data-ch="${x.k}" aria-label="${x.n}">${LOGOS[x.k] ? `<img src="${LOGOS[x.k]}" alt="${x.t}">` : x.t}</button>`).join("");
+  $("ytChange").hidden = c.k !== "yt";
+  const sc = $("screen");
+  if (c.k === "yt"){
+    if (tvOn && ytPlay){
+      sc.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${ytPlay}?autoplay=1&playsinline=1&rel=0&origin=${encodeURIComponent(location.origin)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" title="YouTube"></iframe>
+        <button class="yback" data-yback>‹ Resultados</button><button class="xclose" data-stop aria-label="Parar">✕</button>`;
+    } else { sc.innerHTML = ytPanel(); }
+    return;
+  }
+  if (!tvOn){
+    sc.innerHTML = `<span class="live">EN DIRECTO</span><button class="bigplay" data-play aria-label="Ver ${c.n}">${svg("play")}</button>
+      <div class="ttl">${c.n}<small>${msg || "Toca para verlo aquí"}</small></div>`;
+    return;
+  }
+  if (c.y){
+    sc.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${c.y}?autoplay=1&playsinline=1&rel=0&origin=${encodeURIComponent(location.origin)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" title="${c.n}"></iframe><span class="live">EN DIRECTO</span><button class="xclose" data-stop aria-label="Parar">✕</button>`;
+    return;
+  }
+  sc.innerHTML = `<video src="${c.u}" playsinline controls autoplay></video><span class="live">EN DIRECTO</span><button class="xclose" data-stop aria-label="Parar">✕</button>`;
+  const v = sc.querySelector("video"); v.play().catch(() => {});
+  v.addEventListener("error", () => { tvOn = false; renderTV("Sin señal ahora mismo. Toca para reintentar"); });
+}
+$("chs").addEventListener("click", e => { const b = e.target.closest("[data-ch]"); if (!b) return;
+  if (tvOn){ tvOn = false; ytPlay = null; }
+  ch = b.dataset.ch; store.set("p2_ch", ch); renderTV(); });
+$("screen").addEventListener("click", e => {
+  if (e.target.closest("[data-stop]")){ tvOn = false; ytPlay = null; renderTV(); return; }
+  if (e.target.closest("[data-yback]")){ tvOn = false; ytPlay = null; renderTV(); return; }
+  const yv = e.target.closest("[data-yv]") || e.target.closest("[data-ytsaved]");
+  if (yv){ ytPlay = yv.dataset.yv || ytId(store.get("tele_yt", "")); stopAll("tv"); tvOn = true; renderTV(); return; }
+  if (!e.target.closest("[data-play]")) return;
+  stopAll("tv"); tvOn = true; renderTV();
+});
+$("screen").addEventListener("submit", e => {
+  e.preventDefault();
+  if (e.target.id === "ysearch"){ const q = $("yq").value.trim(); if (q){ $("yq").blur(); ytSearch(q); } }
+});
+function renderRadios(){
+  $("radios").innerHTML = RADIOS.map(r => {
+    const on = radioOn === r.k;
+    return `<div class="rad ${on?"playing":""}" data-r="${r.k}"><div class="lg" style="background:${r.bg};color:${r.fg}">${r.lg}</div>
+      <div class="tx"><b>${r.t}</b><span>${on ? '<span class="eq"><i></i><i></i><i></i></span>Sonando' : (radioErr === r.k ? "Sin señal, reintenta" : r.s)}</span></div>
+      <button class="pb" aria-label="${on?"Parar":"Escuchar"} ${r.t}">${svg(on?"stop":"play")}</button></div>`;
+  }).join("");
+}
+$("radios").addEventListener("click", async e => {
+  const row = e.target.closest("[data-r]"); if (!row) return;
+  const r = RADIOS.find(x => x.k === row.dataset.r);
+  if (radioOn === r.k){ stopAll(); return; }
+  stopAll("radio"); radioErr = null; radioOn = r.k; player.src = r.u; renderRadios();
+  try{ await player.play(); }catch(err){ radioErr = r.k; radioOn = null; renderRadios(); }
+});
+player.addEventListener("error", () => { if (radioOn){ radioErr = radioOn; radioOn = null; renderRadios(); } });
+function ytId(s){
+  const m = String(s||"").match(/(?:youtu\.be\/|v=|\/live\/|\/shorts\/|\/embed\/)([A-Za-z0-9_-]{11})/) || String(s||"").match(/^([A-Za-z0-9_-]{11})$/);
+  return m ? m[1] : null;
+}
+function askYouTube(){
+  const v = prompt("Pega el enlace de un vídeo o directo de YouTube:", store.get("tele_yt", ""));
+  if (v == null) return false;
+  if (!ytId(v)){ alert("No reconozco ese enlace de YouTube."); return false; }
+  store.set("tele_yt", v.trim()); return true;
+}
+$("ytChange").onclick = () => { const v = prompt("Clave de la API de YouTube (déjala vacía para quitarla):", store.get("yt_key","")); if (v == null) return; store.set("yt_key", v.trim()); renderTV(); };
+renderTV(); renderRadios();
+
+/* ---------- Clima: aires ---------- */
+let climates = [], helpers = {}, states = [];
+const acName = e => (e.attributes.friendly_name || e.entity_id).replace(/^aire( acondicionado)?\s*/i, "").replace(/^./, c => c.toUpperCase()) || "Aire";
+const MODE_TXT = {cool:"Frío", heat:"Calor", dry:"Secar", fan_only:"Ventilador", auto:"Automático", off:"Apagado", unavailable:"Sin conexión"};
+const MODES = [{m:"cool",t:"Frío",i:"snow",c:"cool"},{m:"heat",t:"Calor",i:"flame",c:"heat"},{m:"dry",t:"Secar",i:"drop",c:"dry"},{m:"off",t:"Apagar",i:"power",c:"offm"}];
+
+/* Termostato con los sensores Tapo: el ± elige la temperatura REAL que quieres (ayudante input_number);
+   una automatización de Home Assistant ajusta el objetivo del aire para conseguirla. */
+const TERMO = {"climate.aire_salon": "input_number.temp_deseada_salon", "climate.aire_dormitorio": "input_number.temp_deseada_dormitorio"};
+const termoOf = e => {
+  const id = e && TERMO[e.entity_id], h = id && (window.__states || []).find(x => x.entity_id === id);
+  if (!h || isNaN(parseFloat(h.state))) return null;
+  return {id, v: parseFloat(h.state), min: +h.attributes.min || 16, max: +h.attributes.max || 28, step: +h.attributes.step || 0.5};
+};
+
+/* Deshumidificador (enchufe Tapo con «deshumid» en el nombre), en la tarjeta del dormitorio */
+const dehumOf = e => {
+  if (!e || !/dormitorio/i.test(acName(e))) return null;
+  const S = window.__states || [];
+  // el interruptor principal del enchufe (no sus ajustes: «LED», «Apagado automático»…)
+  const sw = S.find(x => x.entity_id === "switch.deshumidificador") ||
+             S.find(x => /^switch\./.test(x.entity_id) && /^deshumidificador$/i.test((x.attributes.friendly_name || "").trim()));
+  if (!sw) return null;
+  const nm = (sw.attributes.friendly_name || "").toLowerCase();
+  const pw = S.find(x => x.entity_id === "sensor.deshumidificador_consumo_actual") ||
+    S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === "power" && !/ba[ñn]o/i.test(x.entity_id + " " + (x.attributes.friendly_name || "")) &&
+    ((x.attributes.friendly_name || "").toLowerCase().startsWith(nm) || /deshumid/i.test(x.entity_id)));
+  return {id: sw.entity_id, on: sw.state === "on", w: pw ? parseFloat(pw.state) : null};
+};
+const DEHUM_LOCK = "input_boolean.deshumidificador_bloqueado";
+const hst = id => (window.__states || []).find(x => x.entity_id === id);
+const hv = (id, d) => { const x = hst(id); return x && x.state !== "unknown" && x.state !== "unavailable" ? x.state : d; };
+const hhmm = id => String(hv(id, "")).slice(0, 5);
+const pctv = id => Math.round(parseFloat(hv(id, 60)));
+const enFranja = r => {   // ¿estamos en el horario de noche del deshumidificador de esa estancia?
+  if (hv(`input_boolean.deshum_${r}_horario_noche`, "on") !== "on") return false;
+  const a = hhmm(`input_datetime.deshum_${r}_noche_desde`) || "23:00", b = hhmm(`input_datetime.deshum_${r}_noche_hasta`) || "10:00";
+  const d = new Date(), n = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  return a !== b && (a > b ? (n >= a || n < b) : (n >= a && n < b));
+};
+const DEHUM_BATH = "switch.deshumidificador_bano", DEHUM_BATH_LOCK = "input_boolean.deshumidificador_bano_bloqueado";
+/* Baño: tarjeta propia (sensor Tapo + deshumidificador con botón rojo de bloqueo) */
+function bathCard(){
+  const S = window.__states || [];
+  const fs = dc => S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === dc && /sensor ba[ñn]o/i.test(x.attributes.friendly_name || ""));
+  const tS = fs("temperature"), hS = fs("humidity"), sw = hst(DEHUM_BATH), lkS = hst(DEHUM_BATH_LOCK);
+  const t = tS ? parseFloat(tS.state) : NaN, h = hS ? parseFloat(hS.state) : NaN;
+  const pw = S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === "power" && /deshumidificador_ba[ñn]o/i.test(x.entity_id));
+  const w = pw ? parseFloat(pw.state) : null, on = sw && sw.state === "on", lk = lkS && lkS.state === "on";
+  const onAt = pctv("input_number.deshum_bano_enciende"), offAt = pctv("input_number.deshum_bano_apaga");
+  const dtxt = lk ? "bloqueado · no se enciende aunque haya humedad"
+    : !sw || sw.state === "unavailable" ? "enchufe aún sin conectar a Home Assistant"
+    : !on ? (enFranja("bano") ? `apagado de noche · vuelve a las ${hhmm("input_datetime.deshum_bano_noche_hasta") || "10:00"}` : `apagado · se enciende por encima del ${onAt} %`)
+    : (w != null && w > 5 ? `secando · ${Math.round(w)} W · se apaga al ${offAt} %` : "con corriente pero parado · ¿depósito lleno?");
+  const btn = lkS ? `<button class="dlock ${lk ? "lk" : ""}" data-dlock="${lk ? 1 : 0}" data-lockid="${DEHUM_BATH_LOCK}" aria-label="${lk ? "Desbloquear" : "Bloquear"} el deshumidificador del baño" title="${lk ? "Bloqueado: toca para que vuelva a funcionar solo" : "Toca para apagarlo y que no se encienda"}">${svg("power")}</button>` : "";
+  const X = v => Math.max(0, Math.min(100, (v - 30) / 60 * 100));   // escala 30–90 %
+  const gauge = isNaN(h) ? "" : `<div class="gauge"><i style="width:${X(h)}%"></i>
+    <span class="mk" style="left:${X(onAt)}%"></span><span class="mt" style="left:${X(onAt)}%">enciende ${onAt}%</span>
+    ${offAt !== onAt ? `<span class="mk" style="left:${X(offAt)}%"></span><span class="ml" style="left:${X(offAt)}%">apaga ${offAt}%</span>` : `<span class="ml" style="left:${X(offAt)}%">apaga ${offAt}%</span>`}</div>`;
+  let foot = "";
+  if (h24Data && h24Data.s.db){ const t0 = new Date().setHours(0,0,0,0), end = Date.now(), L = (h24Data.by[h24Data.s.db.entity_id] || []).concat([{t: end, v: h24Data.s.db.state}]); let ms = 0;
+    for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on"){ const a = Math.max(t0, L[i].t), b = L[i+1].t; if (b > a) ms += b - a; }
+    foot = `Hoy ha secado ${Math.floor(ms/3600e3)} h ${String(Math.round(ms%3600e3/60e3)).padStart(2,"0")} min`; }
+  return `<div class="row"><div><div class="room">Baño</div><div class="cur num">${!isNaN(t) ? fmt1(t) + "°" : "—"}</div>
+      <div class="st">${!isNaN(h) ? humTxt(h).replace(/ · $/, "") : "sin sensor"}</div></div></div>
+    ${gauge}
+    <div class="dehum ${lk ? "lk" : on ? "on" : ""}"><span class="dx"><span class="dn">Deshumidificador</span><span class="dt">${dtxt}</span></span>${btn}</div>
+    <div class="bfoot">${foot}</div>`;
+}
+const dehumHTML = e => {
+  const d = dehumOf(e); if (!d) return "";
+  const franja = enFranja("dormitorio"), modoN = hv("input_boolean.deshum_dormitorio_con_modo_noche", "on") === "on" && hv("input_boolean.noche_dormitorio") === "on";
+  const lkS = hst(DEHUM_LOCK), lk = lkS && lkS.state === "on";
+  const txt = lk ? "bloqueado · no se enciende aunque haya humedad"
+    : !d.on ? (franja ? `apagado de noche · vuelve a las ${hhmm("input_datetime.deshum_dormitorio_noche_hasta") || "10:00"}` : modoN ? "apagado por el modo Noche"
+      : `apagado · se enciende por encima del ${pctv("input_number.deshum_dormitorio_enciende")} %`)
+    : (d.w != null && d.w > 5 ? `secando · ${Math.round(d.w)} W · se apaga al ${pctv("input_number.deshum_dormitorio_apaga")} %` : "con corriente pero parado · ¿depósito lleno?");
+  const btn = lkS
+    ? `<button class="dlock ${lk ? "lk" : ""}" data-dlock="${lk ? 1 : 0}" aria-label="${lk ? "Desbloquear el deshumidificador" : "Bloquear el deshumidificador"}" title="${lk ? "Bloqueado: toca para que vuelva a funcionar solo" : "Toca para apagarlo y que no se encienda"}">${svg("power")}</button>`
+    : `<button data-dehum="${esc(d.id)}" data-on="${d.on ? 1 : 0}">${d.on ? "Apagar" : "Encender"}</button>`;
+  return `<div class="dehum ${lk ? "lk" : d.on ? "on" : ""}"><span class="dx"><span class="dn">Deshumidificador</span><span class="dt">${txt}</span></span>${btn}</div>`;
+};
+const termoTxt = e => {   // qué está haciendo el aire para llegar a tu temperatura
+  const st = e.state, t = e.attributes.temperature;
+  if ((st === "heat" && t <= 17) || (st === "cool" && t >= 28)) return "en reposo · ya está a tu gusto";
+  return (st === "heat" ? "calentando" : st === "cool" ? "enfriando" : "aire") + ` · aire a ${fmt1(t)}°`;
+};
+const humTxt = h => h == null ? "" : `<span class="${h >= 70 ? "hwarn" : ""}">💧 ${Math.round(h)}%${h >= 70 ? " ventilar" : ""}</span> · `;
+const pendingT = {}, timers = {};
+function acHTML(e){
+  const a = e.attributes, st = e.state, off = st === "off" || st === "unavailable";
+  const cfg = NIGHT[e.entity_id] && helpers[NIGHT[e.entity_id].helper] ? NIGHT[e.entity_id] : null;
+  const sleep = (a.preset_modes||[]).find(p => /sleep/i.test(p));
+  const night = cfg ? (!off && helpers[cfg.helper] === "on") : false;
+  const tm = termoOf(e);
+  const tgt = pendingT[e.entity_id] ?? (tm ? tm.v : a.temperature);
+  return `<div class="row"><div><div class="room">${esc(acName(e))}</div><div class="cur num">${roomT(e)!=null ? fmt1(roomT(e))+"°" : "—"}</div>
+      <div class="st">${humTxt(roomH(e))}${off ? (MODE_TXT[st]||st) : `<b class="m-${st}">${MODE_TXT[st]||st}</b>${night ? " · Noche, " + cfg.txt : ""}`}</div></div>
+    <div class="tg ${off?"dim":""}"><small>OBJETIVO</small><div class="ctl"><button data-act="minus" aria-label="Bajar">−</button><span class="num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span><button data-act="plus" aria-label="Subir">+</button></div>${tm && !off && a.temperature != null ? `<div class="tgts">${termoTxt(e)}</div>` : ""}</div></div>
+    <div class="modes">${MODES.filter(x => (a.hvac_modes||[]).includes(x.m)).map(x => `<button class="${st===x.m?"on "+x.c:""}" data-mode="${x.m}">${svg(x.i)}<span>${x.t}</span></button>`).join("")}
+      ${(cfg || sleep) ? `<button class="${night?"on night":""} ${off?"dim":""}" data-night="1">${svg("moon")}<span>Noche</span></button>` : ""}</div>${dehumHTML(e)}`;
+}
+function renderACs(){
+  const list = [...climates].sort((x,y) => (/sal[oó]n/i.test(acName(y))) - (/sal[oó]n/i.test(acName(x))));
+  ["ac0","ac1"].forEach((id, i) => {
+    const e = list[i], box = $(id);
+    if (!e){ box.innerHTML = i === 0 ? '<div class="msg">No encuentro aires en Home Assistant.</div>' : ""; box.dataset.e = ""; return; }
+    box.dataset.e = e.entity_id; box.innerHTML = acHTML(e);
+  });
+  if ($("bath")) $("bath").innerHTML = bathCard();
+}
+document.querySelectorAll(".t-cli .ac").forEach(card => card.addEventListener("click", async ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  if (b.dataset.dlock){
+    b.style.opacity = .5;
+    try{ await service("input_boolean", b.dataset.dlock === "1" ? "turn_off" : "turn_on", {entity_id: b.dataset.lockid || DEHUM_LOCK}); setTimeout(refreshHA, 1500); }
+    catch(err){ b.style.opacity = 1; handleErr(err); }
+    return;
+  }
+  if (b.dataset.dehum){
+    b.style.opacity = .5;
+    try{ await service("switch", b.dataset.on === "1" ? "turn_off" : "turn_on", {entity_id: b.dataset.dehum}); setTimeout(refreshHA, 1500); }
+    catch(err){ b.style.opacity = 1; handleErr(err); }
+    return;
+  }
+  const id = card.dataset.e, e = climates.find(c => c.entity_id === id); if (!e) return;
+  const a = e.attributes;
+  if (b.dataset.act){
+    const tm = termoOf(e);
+    const step = 0.5;   // de medio en medio grado
+    let t = Math.round(((pendingT[id] ?? (tm ? tm.v : a.temperature) ?? 22) + (b.dataset.act === "plus" ? step : -step)) * 2) / 2;
+    t = tm ? Math.min(tm.max, Math.max(tm.min, t)) : Math.min(a.max_temp ?? 30, Math.max(a.min_temp ?? 16, t));
+    pendingT[id] = t; card.querySelector(".ctl span").textContent = fmt1(t) + "°";
+    clearTimeout(timers[id]);
+    timers[id] = setTimeout(async () => {
+      try{ if (tm) await service("input_number", "set_value", {entity_id: tm.id, value: t});
+           else await service("climate", "set_temperature", {entity_id:id, temperature:t}); }catch(err){ handleErr(err); }
+      delete pendingT[id]; setTimeout(refreshHA, 1200);
+    }, 800);
+    return;
+  }
+  b.style.opacity = .5;
+  try{
+    if (b.dataset.mode){ await service("climate", "set_hvac_mode", {entity_id:id, hvac_mode:b.dataset.mode}); e.state = b.dataset.mode; }
+    else if (b.dataset.night){
+      const cfg = NIGHT[id] && helpers[NIGHT[id].helper] ? NIGHT[id] : null;
+      const on = b.classList.contains("on");
+      if (cfg){ await service("input_boolean", on ? "turn_off" : "turn_on", {entity_id: cfg.helper}); helpers[cfg.helper] = on ? "off" : "on"; }
+      const sleep = (a.preset_modes||[]).find(p => /sleep/i.test(p));
+      if (sleep && e.state !== "off"){ try{ await service("climate", "set_preset_mode", {entity_id:id, preset_mode: on ? "none" : sleep}); }catch(x){} }
+    }
+    renderACs(); setTimeout(refreshHA, 1200);
+  }catch(err){ b.style.opacity = 1; handleErr(err); }
+}));
+
+/* ---------- Clima: precio de la luz (PVPC) ---------- */
+let pvpcId = null, curPrice = KWH_FINAL;
+function renderPrice(){
+  // Tarifa de precio fijo (Naturgy): el precio se muestra en la tarjeta de costes
+  pvpcId = null; curPrice = KWH_FINAL;
+}
+
+/* ---------- Clima: coste de los aires (sensores estimados de Home Assistant) ---------- */
+let ayer = null, todayKWh = null, todayEUR = null, todayAt = 0, year = {}, yearAt = 0, yearLive = {}, half = null;
+const num = s => { const v = parseFloat(s.state); return isNaN(v) ? null : v; };
+const unit = s => s.attributes.unit_of_measurement || "";
+const isBath = s => /ba[ñn]o/i.test(s.entity_id + " " + (s.attributes.friendly_name||""));
+function energySensors(){
+  const names = climates.map(c => acName(c).toLowerCase());
+  const isAC = s => /aire|climate|midea/i.test(s.entity_id) || names.some(n => (s.attributes.friendly_name||"").toLowerCase().includes(n));
+  const sensors = states.filter(s => s.entity_id.startsWith("sensor.") && isAC(s) && num(s) != null);
+  let power = sensors.filter(s => /^sensor\.(?!aire_acondicionado_).*potencia/i.test(s.entity_id));
+  if (!power.length) power = sensors.filter(s => /potencia_en_tiempo_real/i.test(s.entity_id));
+  let energy = sensors.filter(s => /^sensor\.(?!aire_acondicionado_).*energia/i.test(s.entity_id) && /k?Wh/.test(unit(s)));
+  if (!energy.length) energy = sensors.filter(s => /consumo_total_de_energia/i.test(s.entity_id));
+  // Deshumidificador (enchufe Tapo P110): su consumo también cuenta en los costes
+  const dh = states.filter(s => s.entity_id.startsWith("sensor.") && /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && num(s) != null);
+  power = power.concat(dh.filter(s => s.attributes.device_class === "power" || /^k?W$/.test(unit(s))));
+  const dhE = dh.filter(s => /k?Wh/.test(unit(s)) && /hoy|today|_dia|diario/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")));
+  energy = energy.concat([dhE.find(s => !isBath(s)), dhE.find(isBath)].filter(Boolean));
+  return {power, energy};
+}
+async function loadToday(energy){
+  if (!energy.length || Date.now() - todayAt < 5*60*1000) return; todayAt = Date.now();
+  try{
+    const d = new Date(); d.setHours(0,0,0,0);
+    const ids = energy.map(s => s.entity_id).concat(pvpcId ? [pvpcId] : []);
+    const h = await api(`/api/history/period/${encodeURIComponent(d.toISOString())}?filter_entity_id=${ids.join(",")}&minimal_response&no_attributes`);
+    const idOf = l => (l[0] && l[0].entity_id) || "";
+    const ser = (h||[]).map(l => l.map(x => ({v: parseFloat(x.state), at: Date.parse(x.last_changed || x.last_updated || d)})).filter(x => !isNaN(x.v)));
+    let prices = []; (h||[]).forEach((l,i) => { if (pvpcId && idOf(l) === pvpcId) prices = ser[i]; });
+    const priceAt = ts => { let p = null; for (const x of prices){ if (x.at <= ts) p = x.v; else break; } return p != null ? p*TAX : curPrice; };
+    let k = 0, e = 0;
+    (h||[]).forEach((l,i) => { if (pvpcId && idOf(l) === pvpcId) return; const s = ser[i];
+      for (let j = 1; j < s.length; j++){ const dk = Math.max(0, s[j].v - s[j-1].v); k += dk; e += dk * priceAt(s[j].at); } });
+    todayKWh = k; todayEUR = e;
+  }catch(err){}
+}
+async function loadYear(energy){
+  if (!energy.length || Date.now() - yearAt < 30*60*1000) return; yearAt = Date.now();
+  try{
+    const y0 = new Date(new Date().getFullYear(), 0, 1), ids = energy.map(s => s.entity_id);
+    const r = await wsCall({type:"recorder/statistics_during_period", start_time: y0.toISOString(), period:"hour",
+      statistic_ids: ids.concat(pvpcId ? [pvpcId] : []), types:["change","mean"], units:{energy:"kWh"}});
+    const ts = x => typeof x.start === "number" ? x.start : Date.parse(x.start);
+    const prices = new Map(); ((pvpcId && r[pvpcId]) || []).forEach(x => { if (x.mean != null) prices.set(ts(x), x.mean*TAX); });
+    const out = {}, hoy0 = new Date().setHours(0,0,0,0), ayer0 = hoy0 - 864e5; let ak = 0;
+    ids.forEach(id => { const m = [...Array(12)].map(() => ({kwh:0, eur:0}));
+      (r[id]||[]).forEach(x => { const c = Math.max(0, x.change||0); if (!c) return; const t0 = ts(x), mo = new Date(t0).getMonth();
+        if (t0 >= ayer0 && t0 < hoy0) ak += c;
+        m[mo].kwh += c; m[mo].eur += c * (prices.get(t0) ?? curPrice); });
+      out[id] = m; });
+    year = out; ayer = {kwh: ak, eur: ak * curPrice}; renderCost(); if (h24Data) renderH24();
+  }catch(err){ yearAt = Date.now() - 25*60*1000; }
+}
+function renderCost(){
+  const {power, energy} = energySensors();
+  loadToday(energy); loadYear(energy);
+  if (!power.length && !energy.length){ $("cost").innerHTML = '<div class="msg">No hay datos de consumo de los aires.</div>'; return; }
+  const W = s => num(s) * (unit(s) === "kW" ? 1000 : 1), totalW = power.reduce((a,s) => a + W(s), 0);
+  const mo = new Date().getMonth(); yearLive = {};
+  energy.forEach(s => { const base = (year[s.entity_id] || [...Array(12)].map(() => ({kwh:0, eur:0}))).map(m => ({...m}));
+    const inStats = base.reduce((a,m) => a + m.kwh, 0);
+    const extra = /^sensor\.(?!aire_acondicionado_).*energia/i.test(s.entity_id) ? Math.max(0, num(s)/(unit(s)==="Wh"?1000:1) - inStats) : 0;
+    base[mo].kwh += extra; base[mo].eur += extra * curPrice; yearLive[s.entity_id] = base; });
+  // reparto del mes actual: qué % del coste se lleva cada aparato
+  const monthOf = ids => { let k = 0, e = 0; ids.forEach(id => { const m = (yearLive[id]||[])[mo]; if (m){ k += m.kwh; e += m.eur; } }); return {k, e}; };
+  const kwh = v => (v >= 100 ? Math.round(v) : fmt1(v)) + " kWh";
+  const parts = [...climates].sort((x,y) => (/sal[oó]n/i.test(acName(y))) - (/sal[oó]n/i.test(acName(x)))).map(c => {
+      const n = acName(c).toLowerCase(), ids = energy.filter(s => (s.attributes.friendly_name||"").toLowerCase().includes(n) && !/deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||""))).map(s => s.entity_id);
+      return {n: "Aire " + acName(c).toLowerCase(), ids, ...monthOf(ids)}; })
+    .concat(energy.filter(s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||""))).map(s => ({n: isBath(s) ? "Deshumid. baño" : "Deshumid. dormitorio", ids: [s.entity_id], ...monthOf([s.entity_id])})));
+  parts.forEach((p, i) => p.c = DEV_COL[i % DEV_COL.length]);
+  const all = monthOf(energy.map(s => s.entity_id));
+  const pct = e => all.e > 0 ? Math.round(e / all.e * 100) : 0;
+  const rows = parts.map(p => `<tr><td><span class="dot" style="background:${p.c}"></span>${esc(p.n)}<i class="pbar" style="width:${pct(p.e)}%;background:${p.c}"></i></td><td>${all.e > 0 ? pct(p.e) + " %" : "—"}</td><td>${eur(p.e)}</td><td>${kwh(p.k)}</td></tr>`).join("");
+  window.__cost = {mes: all.e, eurH: totalW/1000*curPrice, w: totalW};
+  const mname = new Date().toLocaleDateString("es-ES", {month: "long"});
+  const today = todayKWh != null ? eur(todayEUR ?? todayKWh*curPrice) : "—";
+  $("cost").innerHTML = `<div class="big num">${eur(totalW/1000*curPrice).replace(" €","")}<small>€/h</small></div>
+    <div class="k">ahora ${Math.round(totalW)} W · hoy ${today}</div>
+    <table>${rows}<tr class="tot"><td>Total ${mname}</td><td></td><td>${eur(all.e)}</td><td>${kwh(all.k)}</td></tr></table>`;
+  $("pfix").innerHTML = `<span class="pill">${KWH_FINAL.toLocaleString("es-ES",{minimumFractionDigits:3, maximumFractionDigits:3})} €/kWh</span>`;
+  renderMonths(energy.map(s => s.entity_id), parts); renderHoy();
+}
+/* ---------- Clima: últimas 24 h (sensores Tapo + deshumidificador) ---------- */
+let h24At = 0, h24Data = null, h24Sig = "";
+const noAcc = t => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+function h24Sensors(){
+  const f = (dc, re) => states.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === dc && re.test(noAcc(x.attributes.friendly_name)));
+  return {ts: f("temperature", /sensor salon/i), td: f("temperature", /sensor dormitorio/i),
+          hs: f("humidity", /sensor salon/i), hd: f("humidity", /sensor dormitorio/i),
+          hb: f("humidity", /sensor bano/i), tb: f("temperature", /sensor bano/i),
+          dh: states.find(x => x.entity_id === "switch.deshumidificador"),
+          db: states.find(x => x.entity_id === DEHUM_BATH)};
+}
+async function loadH24(){
+  if (h24Data && Date.now() - h24At < 10*60*1000){ renderH24(); return; }
+  const s = h24Sensors(), ids = Object.values(s).filter(Boolean).map(x => x.entity_id);
+  if (!ids.length){ $("h24").innerHTML = '<div class="msg">Aún no hay sensores de temperatura y humedad.</div>'; return; }
+  h24At = Date.now();
+  const start = Date.now() - 24*3600e3;
+  try{
+    const h = await api(`/api/history/period/${encodeURIComponent(new Date(start).toISOString())}?filter_entity_id=${ids.join(",")}&minimal_response&no_attributes`);
+    const by = {};
+    (h || []).forEach(l => { if (!l.length) return; by[l[0].entity_id] = l.map(x => ({t: Math.max(start, Date.parse(x.last_changed || x.last_updated)), v: x.state})); });
+    const SLOT = 10*60*1000;   // una muestra cada 10 min (como mucho 145 puntos por línea)
+    Object.keys(by).forEach(id => { const m = new Map(); by[id].forEach(p => m.set(Math.floor(p.t / SLOT), p)); by[id] = [...m.values()]; });
+    h24Data = {s, by, start}; h24Sig = ""; renderH24(); renderHoy(); if (typeof renderHome === "function") renderHome();
+  }catch(err){ h24At = 0; }
+}
+function renderH24(){
+  if (!h24Data || tab !== "cli") return;
+  const sig = h24At + "|" + Math.floor(Date.now() / 60000) + "|" + Object.values(h24Data.s).map(e => e ? e.entity_id && (states.find(x => x.entity_id === e.entity_id) || e).state : "").join(",");
+  if (sig === h24Sig) return; h24Sig = sig;
+  const {s, by, start} = h24Data, end = Date.now(), W = 600, H = 100, X = t => (t - start) / (end - start) * W;
+  const ser = e => e ? (by[e.entity_id] || []).map(p => ({t: p.t, v: parseFloat(p.v)})).filter(p => !isNaN(p.v)).concat(!isNaN(parseFloat(e.state)) ? [{t: end, v: parseFloat(e.state)}] : []) : [];
+  const TC = "#d64545", HC = "#3b7fc4";   // temperatura en rojo, humedad en azul
+  const scale = (P, fixed, minSpan) => { const v = P.map(p => p.v).concat(fixed || []); if (!v.length) return null;
+    let lo = Math.min(...v), hi = Math.max(...v); if (hi - lo < minSpan){ const m = (hi + lo) / 2; lo = m - minSpan/2; hi = m + minSpan/2; }
+    const pad = (hi - lo) * .12; lo -= pad; hi += pad; return v2 => H - (v2 - lo) / (hi - lo) * H; };
+  const path = (P, Y) => P.length ? "M" + P.map((p, i) => (i ? "L" + X(p.t).toFixed(1) + "," + Y(P[i-1].v).toFixed(1) + " " : "") + X(p.t).toFixed(1) + "," + Y(p.v).toFixed(1)).join(" ") : "";
+  const grid = [6, 12, 18].map(hh => { const t = end - hh*3600e3; return `<line x1="${X(t)}" x2="${X(t)}" y1="0" y2="${H}" stroke="var(--line)" stroke-width="1"/>`; }).join("");
+  const mm = P => P.length ? [Math.min(...P.map(p => p.v)), Math.max(...P.map(p => p.v))] : null;
+  // una gráfica por estancia: temperatura (eje izquierdo) y humedad (eje derecho)
+  const room = (title, te, he, band) => {
+    const T = ser(te), Hm = ser(he); if (!T.length && !Hm.length) return "";
+    const YT = scale(T, [], 2), YH = scale(Hm, [60], 10), tm = mm(T), hmm = mm(Hm);
+    const yl = (Y, v, txt, side, col) => `<span class="yl ${side}" style="top:${(Y(v) / H * 100).toFixed(1)}%;color:${col}">${txt}</span>`;
+    let labs = "";
+    if (tm){ labs += yl(YT, tm[1], fmt1(tm[1]) + "°", "l", TC); if (tm[1] - tm[0] >= .2) labs += yl(YT, tm[0], fmt1(tm[0]) + "°", "l", TC); }
+    if (hmm){ labs += yl(YH, hmm[1], Math.round(hmm[1]) + "%", "r", HC); if (hmm[1] - hmm[0] >= 1) labs += yl(YH, hmm[0], Math.round(hmm[0]) + "%", "r", HC); }
+    let extra = "";
+    if (band){ const L = (by[band.entity_id] || []).concat([{t: end, v: band.state}]);
+      for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on") extra += `<rect x="${X(L[i].t)}" width="${Math.max(1, X(L[i+1].t) - X(L[i].t))}" y="0" height="${H}" fill="rgba(59,127,196,.13)"/>`; }
+    if (YH) extra += `<line x1="0" x2="${W}" y1="${YH(60)}" y2="${YH(60)}" stroke="${HC}" stroke-width="1" stroke-dasharray="5 4" opacity=".6" vector-effect="non-scaling-stroke"/>`;
+    const cur = e => e && !isNaN(parseFloat(e.state)) ? parseFloat(e.state) : null, ct = cur(te), ch = cur(he);
+    return `<div class="pn"><div class="pt"><span>${title}</span><span><b style="color:${TC}">${ct != null ? fmt1(ct) + "°" : "—"}</b> · <b style="color:${HC}">${ch != null ? Math.round(ch) + " %" : "—"}</b></span></div>
+      <div class="plot">${labs}<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${extra}
+        ${YT ? `<path d="${path(T, YT)}" fill="none" stroke="${TC}" stroke-width="2.2" vector-effect="non-scaling-stroke"/>` : ""}
+        ${YH ? `<path d="${path(Hm, YH)}" fill="none" stroke="${HC}" stroke-width="2.2" vector-effect="non-scaling-stroke"/>` : ""}</svg></div>
+      <div class="ax"><span>−24 h</span><span>−12 h</span><span>ahora</span></div></div>`;
+  };
+  $("h24").innerHTML = room("Salón", s.ts, s.hs, null) + room("Dormitorio", s.td, s.hd, s.dh) + room("Baño", s.tb, s.hb, s.db);
+}
+
+function renderHoy(){
+  const box = $("hoy"); if (!box) return;
+  const t0 = new Date().setHours(0,0,0,0), end = Date.now();
+  const onOf = sw => { let ms = 0; if (!sw || !h24Data) return null; const L = (h24Data.by[sw.entity_id] || []).concat([{t: end, v: sw.state}]);
+    for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on"){ const a = Math.max(t0, L[i].t), b = L[i+1].t; if (b > a) ms += b - a; } return ms; };
+  const hm = ms => ms == null ? "—" : `${Math.floor(ms/3600e3)} h ${String(Math.round(ms%3600e3/60e3)).padStart(2,"0")} min`;
+  const s = h24Data ? h24Data.s : {};
+  box.innerHTML = `
+    <div class="r"><span>Gasto de hoy</span><span><b>${todayKWh != null ? eur(todayEUR ?? todayKWh*curPrice) : "—"}</b><small>${todayKWh != null ? fmt1(todayKWh) + " kWh" : ""}</small></span></div>
+    <div class="r"><span>Gasto de ayer</span><span><b>${ayer ? eur(ayer.eur) : "—"}</b><small>${ayer ? fmt1(ayer.kwh) + " kWh" : ""}</small></span></div>
+    ${s.dh ? `<div class="r"><span>Deshumidificador dormitorio hoy</span><span><b>${hm(onOf(s.dh))}</b></span></div>` : ""}
+    ${s.db ? `<div class="r"><span>Deshumidificador baño hoy</span><span><b>${hm(onOf(s.db))}</b></span></div>` : ""}`;
+}
+
+/* ---------- Entretenimiento: noticias de El País (RSS) en carrusel ---------- */
+const NEWS_FEEDS = [{n: "El País", c: "#1b1b1b", u: "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada"},
+                    {n: "Faro de Vigo", c: "#0a5ca8", u: "https://www.farodevigo.es/rss/"}];
+let newsItems = [], newsAt = 0, newsTimer = null, newsHold = 0;
+const xTxt = (el, tag) => { const n = el.getElementsByTagName(tag)[0]; return n ? n.textContent.trim() : ""; };
+const stripHtml = h => { const d = document.createElement("div"); d.innerHTML = h; return (d.textContent || "").trim(); };
+async function loadNews(){
+  if (newsItems.length && Date.now() - newsAt < 15*60*1000) return;
+  newsAt = Date.now();
+  const parse = (txt, f) => [...new DOMParser().parseFromString(txt, "text/xml").getElementsByTagName("item")].slice(0, 8).map(it => {
+    // la imagen más pequeña que traiga la noticia (ahorra memoria en el iPad)
+    const ims = [...it.getElementsByTagNameNS("*", "thumbnail"), ...it.getElementsByTagNameNS("*", "content"), ...it.getElementsByTagName("enclosure")].filter(m => m.getAttribute("url"));
+    ims.sort((a, b) => (+a.getAttribute("width") || 9999) - (+b.getAttribute("width") || 9999));
+    const m = ims[0];
+    return {t: xTxt(it, "title"), d: stripHtml(xTxt(it, "description")).slice(0, 600), img: m ? m.getAttribute("url") : "", date: Date.parse(xTxt(it, "pubDate")), src: f.n, sc: f.c};
+  }).filter(n => n.t);
+  try{
+    const lists = await Promise.all(NEWS_FEEDS.map(f => fetch(f.u).then(r => r.text()).then(t => parse(t, f)).catch(() => [])));
+    newsItems = [];   // intercaladas: una de cada periódico
+    for (let k = 0; k < Math.max(...lists.map(l => l.length)); k++) lists.forEach(l => { if (l[k]) newsItems.push(l[k]); });
+    if (!newsItems.length) throw new Error("sin noticias");
+    renderNews();
+  }catch(err){ newsAt = 0; $("news").innerHTML = '<div class="msg">No se han podido cargar las noticias. Lo vuelvo a intentar en un rato.</div>'; }
+}
+function renderNews(){
+  if (!newsItems.length) return;
+  const hace = t => { if (isNaN(t)) return ""; const m = Math.round((Date.now() - t) / 60000); return m < 60 ? `hace ${Math.max(1, m)} min` : `hace ${Math.round(m/60)} h`; };
+  $("news").innerHTML = newsItems.map((n, i) => `<button class="ni" data-ni="${i}"><span class="im">${n.img ? `<img src="${esc(n.img)}" alt="" loading="lazy" decoding="async">` : ""}</span><span class="tx"><b>${esc(n.t)}</b><small><span class="nsrc" style="background:${n.sc}">${esc(n.src)}</span> ${hace(n.date)}</small></span></button>`).join("");
+  $("newsTime").textContent = new Date(newsAt).toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"});
+  clearInterval(newsTimer);
+  newsTimer = setInterval(() => {   // avanza solo cada 7 s; vuelve al principio al llegar al final
+    const c = $("news"); if (!c || Date.now() < newsHold || document.hidden || tab !== "ent") return;
+    c.scrollLeft + c.clientWidth >= c.scrollWidth - 5 ? c.scrollTo({left: 0}) : c.scrollBy({left: 262});
+  }, 7000);
+}
+const newsMove = dir => {   // flechas: mueve una noticia y pausa el avance automático 15 s
+  const c = $("news"); newsHold = Date.now() + 15000;
+  if (dir > 0 && c.scrollLeft + c.clientWidth >= c.scrollWidth - 5) c.scrollTo({left: 0});
+  else if (dir < 0 && c.scrollLeft <= 5) c.scrollTo({left: c.scrollWidth});
+  else c.scrollBy({left: dir * 262});
+};
+$("nPrev").onclick = () => newsMove(-1); $("nNext").onclick = () => newsMove(1);
+$("news").addEventListener("touchstart", () => { newsHold = Date.now() + 15000; }, {passive: true});
+$("news").addEventListener("click", e => {
+  const b = e.target.closest("[data-ni]"); if (!b) return; const n = newsItems[+b.dataset.ni];
+  sheet(n.t, `<div class="nsheet"><p><span class="nsrc" style="background:${n.sc}">${esc(n.src)}</span></p>${n.img ? `<img src="${esc(n.img)}" alt="">` : ""}<p>${esc(n.d || "Sin resumen.")}</p></div><div class="pactions"><button data-close>Cerrar</button></div>`);
+});
+loadNews(); setInterval(loadNews, 15*60*1000);
+
+/* ---------- Se adapta a cualquier pantalla: el panel se diseña para 1000×820 y se escala para ocupar justo la ventana ---------- */
+document.documentElement.classList.toggle("tactil", matchMedia("(pointer: coarse)").matches);
+function fitScreen(){
+  const app = document.querySelector(".app"), w = window.innerWidth, h = window.innerHeight;
+  if (w < 900){ app.style.zoom = ""; app.style.width = ""; app.style.height = ""; return; }   // móvil: diseño en columna
+  const z = Math.min(w / 1000, h / 820);
+  app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px";
+  // alto máximo de la tele para que siempre quepan las noticias debajo (sea cual sea el iPad o la ventana)
+  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 440) + "px");
+}
+window.addEventListener("resize", fitScreen); window.addEventListener("orientationchange", () => setTimeout(fitScreen, 300)); fitScreen();
+
+const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const DEV_COL = ["#1f9e91", "#3b7fc4", "#8a6fd1", "#d68c28", "#c2507a"];
+function renderMonths(ids, parts){
+  const cur = new Date().getMonth(), yr = new Date().getFullYear();
+  parts = parts || [{n: "Total", ids, c: DEV_COL[0]}];
+  const cell = (id, i, k) => (yearLive[id] && yearLive[id][i] && yearLive[id][i][k]) || 0;
+  const per = MESES.map((_, i) => parts.map(p => ({e: p.ids.reduce((a, id) => a + cell(id, i, "eur"), 0), k: p.ids.reduce((a, id) => a + cell(id, i, "kwh"), 0)})));
+  const tot = per.map(m => m.reduce((a, d) => a + d.e, 0)), totK = per.map(m => m.reduce((a, d) => a + d.k, 0));
+  const mx = Math.max(...tot, 0.01), e2 = v => v > 0 ? (v >= 100 ? Math.round(v) : v.toFixed(2)).toString().replace(".", ",") + " €" : "—";
+  $("months").innerHTML = tot.map((v, i) => `<div class="${i === cur ? "cur" : ""}"><span class="mv">${v > 0 ? (v >= 10 ? Math.round(v) : v.toFixed(v < 1 ? 2 : 1).replace(".", ",")) + " €" : "—"}</span>
+      <span class="stk" style="height:${Math.max(2, Math.round(v / mx * 100))}%">${v > 0 ? per[i].map((d, j) => d.e > 0 ? `<b style="flex:${d.e};background:${parts[j].c}" title="${esc(parts[j].n)}: ${e2(d.e)}"></b>` : "").join("") : ""}</span>${MESES[i]}</div>`).join("");
+  $("half").textContent = yr + " · " + e2(tot.reduce((a, b) => a + b, 0));
+  const leg = $("mleg"); if (leg) leg.innerHTML = parts.map(p => `<span><i style="background:${p.c}"></i>${esc(p.n)}</span>`).join("");
+  const tb = $("mtable"); if (!tb) return;
+  const first = Math.min(cur, ...tot.map((v, i) => v > 0 ? i : 99)), show = MESES.map((_, i) => i).filter(i => (i >= first && i <= cur) || tot[i] > 0);
+  const sumP = parts.map((_, j) => show.reduce((a, i) => a + per[i][j].e, 0)), sumK = show.reduce((a, i) => a + totK[i], 0);
+  tb.innerHTML = `<table><thead><tr><th>Mes</th>${parts.map(p => `<th><i style="background:${p.c}"></i>${esc(p.n)}</th>`).join("")}<th>Total</th><th>kWh</th></tr></thead><tbody>
+    ${show.map(i => `<tr class="${i === cur ? "cur" : ""}"><td>${MESES[i]}${i === cur ? " <small>(en curso)</small>" : ""}</td>${per[i].map(d => `<td>${e2(d.e)}</td>`).join("")}<td><b>${e2(tot[i])}</b></td><td class="k">${totK[i] > 0 ? fmt1(totK[i]) : "—"}</td></tr>`).join("")}</tbody>
+    <tfoot><tr><td>${yr}</td>${sumP.map(v => `<td>${e2(v)}</td>`).join("")}<td><b>${e2(sumP.reduce((a, b) => a + b, 0))}</b></td><td class="k">${sumK > 0 ? fmt1(sumK) : "—"}</td></tr></tfoot></table>`;
+}
+
+document.querySelector(".cost").addEventListener("click", e => {
+  if (!e.target.closest("#priceBtn")) return;
+  const v = prompt("Precio de la luz en €/kWh (con impuestos):", String(store.get("kwh_price", 0.15)).replace(".", ","));
+  if (v == null) return; const n = parseFloat(v.replace(",", ".")); if (!isNaN(n) && n > 0 && n < 2){ store.set("kwh_price", n); renderPrice(); renderCost(); }
+});
+
+/* ---------- Planning: calendario de cada uno ---------- */
+// Cada calendario de Home Assistant se asigna a Salvador (S), a Ramón (R) o a los dos (C).
+// Si no está elegido, se adivina por el nombre; se puede cambiar con ⚙.
+let calMonth = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+let calCache = {};
+function calendars(){ return states.filter(s => s.entity_id.startsWith("calendar.")); }
+function calOwner(id){
+  const cfg = store.get("p2_cals", {});
+  if (cfg[id]) return cfg[id];
+  const s = states.find(x => x.entity_id === id), n = (s && s.attributes.friendly_name || "") + " " + id;
+  if (USERS.S.re.test(n)) return "S"; if (USERS.R.re.test(n)) return "R";
+  if (/casa|compart|familia|hogar/i.test(n)) return "C";
+  return "S";   // de momento todos los calendarios de iCloud son de Salva
+}
+const myCals = () => calendars().map(s => s.entity_id).filter(id => { const o = calOwner(id); return o === user || o === "C"; });
+async function loadCalendar(){
+  const ids = myCals(), key = user + calMonth.toISOString();
+  if (!ids.length){ renderPlanning(); return; }
+  if (calCache[key] && Date.now() - calCache[key].at < 5*60*1000){ renderPlanning(); return; }
+  const start = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1), end = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 1);
+  const t0 = new Date(); t0.setHours(0,0,0,0); const t1 = new Date(t0.getTime() + 86400000);
+  const from = new Date(Math.min(start, t0)), to = new Date(Math.max(end, t1));
+  const evs = [];
+  await Promise.all(ids.map(async id => {
+    try{ const list = await api(`/api/calendars/${id}?start=${encodeURIComponent(from.toISOString())}&end=${encodeURIComponent(to.toISOString())}`);
+      (list||[]).forEach(ev => evs.push({...ev, own: calOwner(id)})); }catch(err){ handleErr(err); }
+  }));
+  calCache[key] = {at: Date.now(), evs}; renderPlanning();
+}
+const evStart = ev => ev.start.dateTime ? new Date(ev.start.dateTime) : new Date(ev.start.date + "T00:00:00");
+const evEnd = ev => ev.end.dateTime ? new Date(ev.end.dateTime) : new Date(ev.end.date + "T00:00:00");
+const allDay = ev => !ev.start.dateTime;
+const evColor = ev => ev.own === "C" ? SHARED_C : USERS[ev.own] ? USERS[ev.own].c : USERS[user].c;
+function renderPlanning(){
+  const mname = calMonth.toLocaleDateString("es-ES", {month:"long", year:"numeric"});
+  $("mTitle").textContent = mname[0].toUpperCase() + mname.slice(1);
+  const key = user + calMonth.toISOString(), evs = (calCache[key] && calCache[key].evs) || [];
+  const first = (calMonth.getDay() + 6) % 7, days = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  let h = ["L","M","X","J","V","S","D"].map(d => `<div class="wd">${d}</div>`).join("");
+  const cells = Math.ceil((first + days) / 7) * 7;
+  for (let c = 0; c < cells; c++){
+    const d = new Date(calMonth.getFullYear(), calMonth.getMonth(), c - first + 1), out = d.getMonth() !== calMonth.getMonth();
+    const d1 = new Date(d.getTime() + 86400000);
+    const dayEv = out ? [] : evs.filter(ev => evStart(ev) < d1 && evEnd(ev) > d).sort((a,b) => evStart(a) - evStart(b));
+    h += `<div class="d ${out?"out":""} ${+d === +today ? "today":""}">${d.getDate()}${dayEv.slice(0,3).map(ev => `<span class="ev" style="--c:${evColor(ev)}">${esc(ev.summary||"")}</span>`).join("")}${dayEv.length > 3 ? `<span class="more">+${dayEv.length-3}</span>` : ""}</div>`;
+  }
+  $("cal").innerHTML = h;
+  $("cal").style.gridTemplateRows = `auto repeat(${cells/7}, 1fr)`;
+  // Hoy
+  const tKey = user + new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
+  const tev = ((calCache[tKey] && calCache[tKey].evs) || evs).filter(ev => evStart(ev) < new Date(today.getTime()+86400000) && evEnd(ev) > today).sort((a,b) => evStart(a) - evStart(b));
+  const cals = calendars();
+  $("agenda").innerHTML = !cals.length ? `<div class="msg">Todavía no hay calendarios en Home Assistant. Cuando los conectemos, aquí saldrá la agenda de cada uno.</div>`
+    : !myCals().length ? `<div class="msg">No hay ningún calendario asignado a ${USERS[user].n}. Pulsa ⚙ para elegirlo.</div>`
+    : !tev.length ? `<div class="msg">Nada para hoy.</div>`
+    : tev.map(ev => `<div class="it"><span class="dot" style="background:${evColor(ev)}"></span><span class="h">${allDay(ev) ? "Todo<br>el día" : fmtTime.format(evStart(ev))}</span><div><b>${esc(ev.summary||"")}</b><span>${esc(ev.location || (ev.own === "C" ? "Los dos" : ""))}</span></div></div>`).join("");
+}
+$("mPrev").onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1); renderPlanning(); loadCalendar(); };
+$("mNext").onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 1); renderPlanning(); loadCalendar(); };
+$("calCfg").onclick = () => {
+  const cals = calendars(), todos = states.filter(s => s.entity_id.startsWith("todo."));
+  const notes = store.get("p2_notes", {});
+  const opt = (id, v, t) => `<option value="${v}" ${calOwner(id) === v ? "selected":""}>${t}</option>`;
+  sheet("Calendarios y notas", `<p>Elige de quién es cada calendario. Los de «Los dos» salen a ambos.</p>
+    ${cals.length ? cals.map(s => `<div class="cfgrow"><span>${esc(s.attributes.friendly_name || s.entity_id)}</span><select data-cal="${s.entity_id}">${opt(s.entity_id,"-","No mostrar")}${opt(s.entity_id,"S","Salva")}${opt(s.entity_id,"R","Ramón")}${opt(s.entity_id,"C","Los dos")}</select></div>`).join("") : "<p><i>No hay calendarios en Home Assistant todavía.</i></p>"}
+    <p style="margin-top:14px">Lista de notas de cada uno:</p>
+    ${["S","R"].map(u => `<div class="cfgrow"><span>${USERS[u].n}</span><select data-notes="${u}"><option value="">Automático</option>${todos.map(t => `<option value="${t.entity_id}" ${notes[u] === t.entity_id ? "selected":""}>${esc(t.attributes.friendly_name || t.entity_id)}</option>`).join("")}</select></div>`).join("")}
+    <div class="pactions"><button data-close>Cancelar</button><button class="primary" id="cfgSave">Guardar</button></div>`);
+  $("cfgSave").onclick = () => {
+    const c = {}; document.querySelectorAll("[data-cal]").forEach(s => c[s.dataset.cal] = s.value); store.set("p2_cals", c);
+    const n = {}; document.querySelectorAll("[data-notes]").forEach(s => { if (s.value) n[s.dataset.notes] = s.value; }); store.set("p2_notes", n);
+    closeSheet(); calCache = {}; loadCalendar(); refreshNotes();
+  };
+};
+
+/* ---------- Planning: notas de cada uno y compra compartida (listas de Home Assistant) ---------- */
+function notesId(u){
+  const cfg = store.get("p2_notes", {}); if (cfg[u]) return cfg[u];
+  const t = states.find(s => s.entity_id.startsWith("todo.") && /nota/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && USERS[u].re.test(s.entity_id + " " + (s.attributes.friendly_name||"")));
+  return t ? t.entity_id : null;
+}
+const shopId = () => { const t = states.find(s => s.entity_id.startsWith("todo.") && /compra|shopping/i.test(s.entity_id + " " + (s.attributes.friendly_name||""))); return t ? t.entity_id : null; };
+let notes = [], items = [];
+async function getItems(id){ const r = await serviceResp("todo", "get_items", {entity_id:id, status:"needs_action"}); return (r[id] && r[id].items) || []; }
+/* ---------- Planning: próximos 7 días (sustituye a las notas) ---------- */
+let weekCache = null;
+/* Recordatorios de Apple: los manda un Atajo del iPhone a la lista «Recordatorios» de Home Assistant (solo lectura aquí) */
+let remAt = 0;
+async function refreshRems(){
+  const box = $("rems"); if (!box) return;
+  const ent = states.find(x => x.entity_id === "todo.recordatorios");
+  if (!ent){ box.innerHTML = '<div class="msg">Aún no hay recordatorios.</div>'; return; }
+  if (Date.now() - remAt < 60*1000 && box.dataset.done) return; remAt = Date.now();
+  let items = []; try{ items = await getItems("todo.recordatorios"); }catch(err){ return; }
+  box.dataset.done = 1;
+  $("remAt").textContent = ent.last_changed ? "act. " + new Date(ent.last_changed).toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"}) : "";
+  if (!items.length){ box.innerHTML = '<div class="msg">Sin recordatorios pendientes.</div>'; return; }
+  const due = i => i.due ? new Date(i.due.length <= 10 ? i.due + "T23:59:00" : i.due) : null, now = new Date();
+  items.sort((a, b) => (due(a) || 9e15) - (due(b) || 9e15));
+  box.innerHTML = items.map(i => { const d = due(i), late = d && d < now;
+    const when = !d ? "" : d.toDateString() === now.toDateString() ? "hoy " + (i.due.length > 10 ? d.toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"}) : "")
+      : d.toLocaleDateString("es-ES", {weekday:"short", day:"numeric", month:"short"}) + (i.due.length > 10 ? " " + d.toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"}) : "");
+    return `<div class="wev ${late ? "late" : ""}" style="--c:${late ? "#d64545" : "#9aa0b4"}"><span class="ws">${esc(i.summary)}</span>${when ? `<span class="wt">${esc(when.trim())}</span>` : ""}</div>`; }).join("");
+}
+async function refreshNotes(){   // se mantiene el nombre: lo llaman el refresco y el cambio de usuario
+  refreshRems();
+  const box = $("week"); if (!box) return;
+  const ids = myCals();
+  $("weekWho").textContent = USERS[user].n;
+  if (!ids.length){ box.innerHTML = '<div class="msg">No hay calendarios conectados.</div>'; return; }
+  const key = user + ids.join(",");
+  if (!weekCache || weekCache.key !== key || Date.now() - weekCache.at > 5*60*1000){
+    const from = new Date(); from.setHours(0,0,0,0); from.setDate(from.getDate() + 1);
+    const to = new Date(from.getTime() + 7*86400000), evs = [];
+    await Promise.all(ids.map(async id => {
+      try{ const list = await api(`/api/calendars/${id}?start=${encodeURIComponent(from.toISOString())}&end=${encodeURIComponent(to.toISOString())}`);
+        (list||[]).forEach(ev => evs.push({...ev, own: calOwner(id)})); }catch(err){}
+    }));
+    weekCache = {key, at: Date.now(), evs: evs.sort((a,b) => evStart(a) - evStart(b))};
+  }
+  const evs = weekCache.evs;
+  if (!evs.length){ box.innerHTML = '<div class="msg">Nada en el calendario los próximos 7 días.</div>'; return; }
+  let h = "", last = "";
+  evs.forEach(ev => {
+    const d = evStart(ev), dk = d.toDateString();
+    if (dk !== last){ last = dk; const t = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"short"}); h += `<div class="wday">${t[0].toUpperCase() + t.slice(1)}</div>`; }
+    h += `<div class="wev" style="--c:${evColor(ev)}"><span class="wt">${allDay(ev) ? "Todo el día" : d.toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"})}</span><span class="ws">${esc(ev.summary || "")}</span></div>`;
+  });
+  box.innerHTML = h;
+}
+async function refreshShop(){}   // Planning ya no tiene lista de la compra
+
+
+/* ---------- ciclo de actualización ---------- */
+
+/* ===== Ajustes: todo se guarda en ayudantes de Home Assistant, que usan las automatizaciones ===== */
+const FAN_T = {silent:"Silencio", low:"Bajo", medium:"Medio", high:"Alto", full:"Máx.", auto:"Auto"};
+const SWING_T = {off:"Fija", vertical:"Vertical", horizontal:"Horizontal", both:"Ambas"};
+const PRESET_T = {none:"Normal", eco:"Eco", comfort:"Confort", boost:"Turbo", sleep:"Sueño", away:"Fuera"};
+const AIRES_CFG = [
+  {id:"climate.aire_salon", n:"Aire del salón", sw:{pantalla:"switch.aire_acondicionado_pantalla_2", tono:"switch.aire_acondicionado_tono_de_aviso_2", ext:"switch.aire_acondicionado_modo_silencioso_exterior_2"}},
+  {id:"climate.aire_dormitorio", n:"Aire del dormitorio", sw:{pantalla:"switch.aire_acondicionado_pantalla", tono:"switch.aire_acondicionado_tono_de_aviso", ext:"switch.aire_acondicionado_modo_silencioso_exterior"}}];
+const cfgPend = {};   // lo que acabas de tocar, hasta que Home Assistant lo confirme
+const cv = (id, d) => cfgPend[id] ?? hv(id, d);
+const cNum = (id, label, unit, step, dec) => { const v = parseFloat(cv(id, 0));
+  return `<div class="cf-r"><span>${label}</span><div class="ctl"><button data-n="${id}" data-d="${-step}" aria-label="Bajar">−</button><b>${dec ? fmt1(v) : Math.round(v)}${unit}</b><button data-n="${id}" data-d="${step}" aria-label="Subir">+</button></div></div>`; };
+const cTog = (id, label, onVal) => { const on = onVal != null ? onVal : cv(id, "off") === "on";
+  return `<div class="cf-r"><span>${label}</span><button class="sw ${on ? "on" : ""}" data-b="${id}" data-on="${on ? 1 : 0}" role="switch" aria-checked="${on}" aria-label="${label}"></button></div>`; };
+const cTime = (id, label, dis) => `<div class="cf-r"><span>${label}</span><input type="time" data-time="${id}" value="${String(cv(id, "")).slice(0,5)}" ${dis ? "disabled" : ""}></div>`;
+const cSeg = (label, cur, opts, attrs) => `<div class="cf-r col"><span>${label}</span><div class="seg">${opts.map(([v, t]) => `<button class="${cur === v ? "on" : ""}" ${attrs(v)}>${t}</button>`).join("")}</div></div>`;
+function renderCfg(force){
+  const box = $("cfg"); if (!box || tab !== "cfg") return;
+  if (!force && box.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;   // no pisar una hora que estás escribiendo
+  if (!hst("input_number.deshum_dormitorio_enciende")){ box.innerHTML = '<div class="card"><div class="msg">Conectando con Home Assistant…</div></div>'; return; }
+  const dh = (r, n, dorm) => `<div class="card"><h3>💧 Deshumidificador · ${n}</h3>
+    ${cNum(`input_number.deshum_${r}_enciende`, "Se enciende por encima de", " %", 1)}
+    ${cNum(`input_number.deshum_${r}_apaga`, "Se apaga al bajar a", " %", 1)}
+    <h4>Horario de noche (apagado)</h4>
+    ${cTog(`input_boolean.deshum_${r}_horario_noche`, "Apagarlo por la noche")}
+    ${cTime(`input_datetime.deshum_${r}_noche_desde`, "Desde las", cv(`input_boolean.deshum_${r}_horario_noche`) !== "on")}
+    ${cTime(`input_datetime.deshum_${r}_noche_hasta`, "Hasta las", cv(`input_boolean.deshum_${r}_horario_noche`) !== "on")}
+    ${dorm ? cTog("input_boolean.deshum_dormitorio_con_modo_noche", "Apagado también con el modo Noche") : ""}
+    ${cTog(r === "bano" ? DEHUM_BATH_LOCK : DEHUM_LOCK, "Bloqueado (botón rojo)")}</div>`;
+  const aire = a => { const e = hst(a.id); if (!e) return "";
+    const at = e.attributes, off = e.state === "off" || e.state === "unavailable";
+    const swT = (k, label) => { const x = hst(a.sw[k]); return x ? cTog(a.sw[k], label, (cfgPend[a.sw[k]] ?? x.state) === "on") : ""; };
+    return `<div class="card"><h3>❄️ ${a.n} <span class="pill">${off ? "apagado" : (MODE_TXT[e.state] || e.state)}</span></h3>
+      ${off ? '<div class="cf-note">Está apagado: el ventilador, la oscilación y el modo se pueden cambiar cuando esté encendido.</div>' : ""}
+      <div class="${off ? "dim" : ""}">
+      ${cSeg("Ventilador", cfgPend[a.id + ":fan"] ?? at.fan_mode, (at.fan_modes || []).map(v => [v, FAN_T[v] || v]), v => `data-fan="${a.id}" data-v="${v}"`)}
+      ${(at.swing_modes || []).length ? cSeg("Oscilación de las lamas", cfgPend[a.id + ":swing"] ?? at.swing_mode, at.swing_modes.map(v => [v, SWING_T[v] || v]), v => `data-swing="${a.id}" data-v="${v}"`) : ""}
+      ${(at.preset_modes || []).length ? cSeg("Modo especial", cfgPend[a.id + ":preset"] ?? at.preset_mode, at.preset_modes.filter(v => v !== "away").map(v => [v, PRESET_T[v] || v]), v => `data-preset="${a.id}" data-v="${v}"`) : ""}
+      </div>
+      ${swT("pantalla", "Pantalla encendida")}${swT("tono", "Pitido al recibir órdenes")}${swT("ext", "Máquina exterior en silencio")}
+      ${a.id === "climate.aire_salon" ? `<h4>Por la noche</h4>
+        ${cTog("input_boolean.salon_apagado_activo", "Apagarlo siempre por la noche")}
+        ${cTime("input_datetime.salon_apagado_hora", "A las", cv("input_boolean.salon_apagado_activo") !== "on")}` : `<h4>Horario del modo Noche</h4>
+        ${cTime("input_datetime.dormitorio_noche_apaga", "Se apaga a las")}
+        ${cTog("input_boolean.dormitorio_noche_vuelve_activo", "Vuelve a encenderse por la mañana")}
+        ${cTime("input_datetime.dormitorio_noche_vuelve", "A las", cv("input_boolean.dormitorio_noche_vuelve_activo") !== "on")}
+        ${cTime("input_datetime.dormitorio_noche_fin", "Se apaga y termina el modo Noche a las")}`}</div>`; };
+  const fanOpts = id => { const x = hst(id); return (x && x.attributes.options || []).map(v => [v, FAN_T[v] || v]); };
+  box.innerHTML = dh("dormitorio", "Dormitorio", true) + dh("bano", "Baño", false) + AIRES_CFG.map(aire).join("") +
+    `<div class="card"><h3>🌙 Modo Noche (los dos aires)</h3>
+      ${cTog("input_boolean.noche_pantalla_apagada", "Apagar la pantalla del aire")}
+      ${cTog("input_boolean.noche_sin_pitido", "Sin pitidos")}
+      ${cTog("input_boolean.noche_silencio_exterior", "Máquina exterior en silencio")}
+      ${cSeg("Ventilador de noche", cv("input_select.noche_ventilador"), fanOpts("input_select.noche_ventilador"), v => `data-sel="input_select.noche_ventilador" data-v="${v}"`)}
+      ${cSeg("Ventilador al quitar la Noche", cv("input_select.aires_ventilador_normal"), fanOpts("input_select.aires_ventilador_normal"), v => `data-sel="input_select.aires_ventilador_normal" data-v="${v}"`)}</div>
+    <div class="card"><h3>🌡️ Termostato y avisos</h3>
+      ${cTog("input_boolean.aires_eco_al_encender", "Modo Eco al encender en Frío o Calor")}
+      <h4>Termostato con los sensores</h4>
+      ${cNum("input_number.termostato_para", "Para al pasar el objetivo en", "°", 0.1, true)}
+      ${cNum("input_number.termostato_vuelve", "Vuelve al bajar del objetivo", "°", 0.1, true)}
+      <h4>Aviso de humedad alta</h4>
+      ${cTog("input_boolean.aviso_humedad_activo", "Avisarme en el iPad")}
+      ${cNum("input_number.aviso_humedad", "Cuando pase de", " %", 1)}</div>` + (typeof ambCfgCard === "function" ? ambCfgCard() : "");
+}
+$("cfg").addEventListener("click", async ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  const done = () => setTimeout(async () => { await refreshHA(); Object.keys(cfgPend).forEach(k => delete cfgPend[k]); renderCfg(true); }, 1500);
+  try{
+    if (b.dataset.n){ const x = hst(b.dataset.n); if (!x) return; const a = x.attributes, st = parseFloat(b.dataset.d);
+      const v = Math.round(Math.min(a.max, Math.max(a.min, parseFloat(cv(b.dataset.n, x.state)) + st)) * 10) / 10;
+      cfgPend[b.dataset.n] = String(v); renderCfg(true); clearTimeout(timers[b.dataset.n]);
+      timers[b.dataset.n] = setTimeout(async () => { await service("input_number", "set_value", {entity_id: b.dataset.n, value: v}); done(); }, 700); return; }
+    if (b.dataset.b){ const id = b.dataset.b, on = b.dataset.on === "1", dom = id.split(".")[0];
+      cfgPend[id] = on ? "off" : "on"; renderCfg(true); await service(dom, on ? "turn_off" : "turn_on", {entity_id: id}); return done(); }
+    if (b.dataset.sel){ cfgPend[b.dataset.sel] = b.dataset.v; renderCfg(true); await service("input_select", "select_option", {entity_id: b.dataset.sel, option: b.dataset.v}); return done(); }
+    if (b.dataset.fan){ cfgPend[b.dataset.fan + ":fan"] = b.dataset.v; renderCfg(true); await service("climate", "set_fan_mode", {entity_id: b.dataset.fan, fan_mode: b.dataset.v}); return done(); }
+    if (b.dataset.swing){ cfgPend[b.dataset.swing + ":swing"] = b.dataset.v; renderCfg(true); await service("climate", "set_swing_mode", {entity_id: b.dataset.swing, swing_mode: b.dataset.v}); return done(); }
+    if (b.dataset.preset){ cfgPend[b.dataset.preset + ":preset"] = b.dataset.v; renderCfg(true); await service("climate", "set_preset_mode", {entity_id: b.dataset.preset, preset_mode: b.dataset.v}); return done(); }
+  }catch(err){ Object.keys(cfgPend).forEach(k => delete cfgPend[k]); renderCfg(true); handleErr(err); }
+});
+$("cfg").addEventListener("change", async ev => {
+  const i = ev.target.closest("input[data-time]"); if (!i || !i.value) return;
+  cfgPend[i.dataset.time] = i.value + ":00";
+  try{ await service("input_datetime", "set_datetime", {entity_id: i.dataset.time, time: i.value + ":00"}); i.blur(); setTimeout(async () => { await refreshHA(); delete cfgPend[i.dataset.time]; renderCfg(true); }, 1500); }
+  catch(err){ delete cfgPend[i.dataset.time]; handleErr(err); }
+});
+async function refreshHA(){
+  if (document.hidden) return;   // en segundo plano no se gasta nada
+  try{
+    states = await api("/api/states"); window.__states = states; if (typeof renderMorning === "function") renderMorning();
+    helpers = Object.fromEntries(states.filter(s => s.entity_id.startsWith("input_boolean.")).map(s => [s.entity_id, s.state]));
+    climates = states.filter(s => s.entity_id.startsWith("climate."));
+    const ins = climates.map(roomT).filter(v => v != null);
+    $("tIn").textContent = ins.length ? fmt1(ins.reduce((a,v) => a+v, 0) / ins.length) + "°" : "—";
+    if (!Object.keys(pendingT).length) renderACs();
+    renderPrice(); renderCost(); loadH24();
+    refreshShop(); refreshNotes();
+    if (tab === "pla") loadCalendar();
+    if (tab === "cfg") renderCfg();
+    renderHoy(); if (typeof renderHome === "function"){ renderHome(); renderCC(); }
+  }catch(err){ handleErr(err); }
+}
+(async () => {
+  show(tab); setUser(user);
+  if (!onHA){ showLogin(); return; }
+  await finishLogin();
+  refreshHA(); setInterval(refreshHA, 15000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden){ tick(); refreshHA(); loadWeather(); } });
+})();
+
+/* ===== Buenos días / Adiós: según si el Apple TV está encendido ===== */
+const ATV = "switch.tele",   // el enchufe de la tele decide: encendida → Adiós, apagada → Buenos días
+     ATV_MP = "media_player.apple_tv", ATV_REMOTE = "remote.apple_tv", AIRE_BD = "climate.aire_salon";
+const SUN_SVG = '<circle cx="12" cy="13" r="4"/><path d="M12 3v3M4.2 6.2l2 2M19.8 6.2l-2 2M2 17h20M5 21h14"/>';
+const MOON_SVG = '<path d="M14 3h6v18h-6"/><circle cx="8" cy="4.5" r="1.6"/><path d="M8.5 7.5 6.5 13l3 2.5V21M8.5 7.5l3 3.5 2.5-.5M6.5 13 4 17.5"/>';
+let bdOverride = null;
+function atvAwake(){
+  if (bdOverride && Date.now() < bdOverride.until) return bdOverride.on;
+  const e = (window.__states || []).find(x => x.entity_id === ATV) || (window.__states || []).find(x => x.entity_id === "media_player.apple_tv");
+  return !!e && !["off", "standby", "unavailable", "unknown"].includes(e.state);
+}
+function renderMorning(msg){
+  const b = $("morning"); if (!b) return;
+  const on = atvAwake();
+  b.classList.toggle("bye", on);
+  b.title = on ? "Adiós · apaga aire y tele" : "Buenos días · La 1 y salón a 20°"; b.setAttribute("aria-label", b.title);
+  b.querySelector("svg").innerHTML = on ? MOON_SVG : SUN_SVG;
+  b.querySelector("span").innerHTML = (on ? "Adiós" : "Buenos días") +
+    `<small id="morningSub">${msg || (on ? "Apaga aire y tele" : "La 1 · salón a 20°")}</small>`;
+}
+$("morning").onclick = async () => {
+  const b = $("morning"); if (b.classList.contains("busy")) return;
+  const wasOn = atvAwake();
+  b.classList.add("busy"); renderMorning(wasOn ? "Apagando…" : "Encendiendo…");
+  try{
+    if (wasOn){
+      await api("/api/services/script/turn_on", {entity_id: "script.adios"});
+      
+      bdOverride = {on: false, until: Date.now() + 60000};
+    } else {
+      await api("/api/services/script/turn_on", {entity_id: "script.buenos_dias"});
+      bdOverride = {on: true, until: Date.now() + 90000};
+    }
+    renderMorning();
+    setTimeout(() => { if (typeof refreshHA === "function") refreshHA(); }, 3000);
+  }catch(err){ renderMorning(); handleErr(err); }
+  b.classList.remove("busy");
+};
+renderMorning();
+</script>
+<script>
+/* ===== Inicio (estilo HomeView) y pantalla en reposo ===== */
+const HIC = {
+  home:'<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  door:'<path d="M14 3H6v18h8"/><path d="M10 12h11M18 9l3 3-3 3"/>',
+  fan:'<path d="M12 12c0-3 1-7 4-7s3 4 0 6l-4 1zM12 12c3 0 7 1 7 4s-4 3-6 0l-1-4zM12 12c0 3-1 7-4 7s-3-4 0-6l4-1zM12 12c-3 0-7-1-7-4s4-3 6 0l1 4z"/>',
+  ...IC
+};
+const hsvg = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${HIC[n]}</svg>`;
+const HOME_ROOMS = [
+  {k:"salon", n:"Salón", re:/sensor salon/i, ac:"climate.aire_salon", nt:"input_boolean.noche_salon"},
+  {k:"dormitorio", n:"Dormitorio", re:/sensor dormitorio/i, ac:"climate.aire_dormitorio", nt:"input_boolean.noche_dormitorio", dh:"switch.deshumidificador", lk:"input_boolean.deshumidificador_bloqueado"},
+  {k:"bano", n:"Baño", re:/sensor bano/i, dh:"switch.deshumidificador_bano", lk:"input_boolean.deshumidificador_bano_bloqueado"}];
+const MODE_C = {heat:"#e8822f", cool:"#3b7fc4", dry:"#1f9e91", fan_only:"#7a8aa0", auto:"#6b5be0"};
+const roomTH = re => { const S = window.__states || [];
+  const f = dc => S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === dc && re.test(noAcc(x.attributes.friendly_name || "")));
+  const t = f("temperature"), h = f("humidity"); return {t: t ? parseFloat(t.state) : NaN, h: h ? parseFloat(h.state) : NaN}; };
+const greet = () => { const h = new Date().getHours(); return h < 6 ? "Buenas noches" : h < 13 ? "Buenos días" : h < 21 ? "Buenas tardes" : "Buenas noches"; };
+const hPend = {};   // estado que acabas de pedir, hasta que llegue de Home Assistant
+const hs = id => hPend[id] ?? hv(id);
+
+function roomChips(r){
+  const c = [], ac = r.ac && hst(r.ac);
+  if (ac){ const st = hPend[r.ac] ?? ac.state;
+    c.push(st === "off" || st === "unavailable" ? `<span><i></i>Aire apagado</span>` : `<span><i class="${st === "heat" ? "heat" : st === "cool" ? "cool" : "dry"}"></i>Aire · ${MODE_TXT[st] || st}${ac.attributes.temperature ? " " + fmt1(ac.attributes.temperature) + "°" : ""}</span>`); }
+  if (r.nt && hs(r.nt) === "on") c.push(`<span><i class="nt"></i>Modo Noche</span>`);
+  if (r.dh){ const sw = hst(r.dh), lk = hs(r.lk) === "on";
+    c.push(lk ? `<span><i class="lk"></i>Deshum. bloqueado</span>` : sw && sw.state === "on" ? `<span><i class="dry"></i>Deshum. secando</span>` : `<span><i></i>Deshum. en espera</span>`); }
+  return c.join("");
+}
+function tilesHTML(){
+  const t = [];
+  HOME_ROOMS.forEach(r => { if (!r.ac) return; const e = hst(r.ac); if (!e) return; const st = hPend[r.ac] ?? e.state, on = st !== "off" && st !== "unavailable";
+    t.push(`<button class="tile ${on ? "on" : ""}" style="--tc:${MODE_C[st] || "#e8822f"}" data-hac="${r.ac}" data-on="${on ? 1 : 0}"><span class="ic">${hsvg(st === "cool" ? "snow" : st === "dry" ? "drop" : "flame")}</span><span><b>Aire ${r.n.toLowerCase()}</b><small>${on ? (MODE_TXT[st] || st) + (e.attributes.temperature ? " · " + fmt1(e.attributes.temperature) + "°" : "") : "Apagado"}</small></span></button>`); });
+  HOME_ROOMS.forEach(r => { if (!r.nt || !hst(r.nt)) return; const on = hs(r.nt) === "on";
+    t.push(`<button class="tile ${on ? "on" : ""}" style="--tc:#7a63d8" data-hnt="${r.nt}" data-on="${on ? 1 : 0}"><span class="ic">${hsvg("moon")}</span><span><b>Noche ${r.n.toLowerCase()}</b><small>${on ? "Activado" : "Desactivado"}</small></span></button>`); });
+  HOME_ROOMS.forEach(r => { if (!r.dh || !hst(r.lk)) return; const lk = hs(r.lk) === "on", sw = hst(r.dh), run = sw && sw.state === "on";
+    t.push(`<button class="tile ${lk ? "lk" : run ? "on" : ""}" style="--tc:#1f9e91" data-hlk="${r.lk}" data-on="${lk ? 1 : 0}"><span class="ic">${hsvg(lk ? "power" : "drop")}</span><span><b>Deshum. ${r.n.toLowerCase()}</b><small>${lk ? "Bloqueado" : run ? "Secando" : "Automático"}</small></span></button>`); });
+  return t.join("");
+}
+let homeEv = {at: 0, evs: []};
+async function loadHomeEvents(){
+  if (Date.now() - homeEv.at < 5*60*1000 || typeof myCals !== "function") return;
+  homeEv.at = Date.now();
+  const from = new Date(), to = new Date(); to.setHours(0,0,0,0); to.setDate(to.getDate() + 3); const evs = [];
+  await Promise.all(myCals().map(async id => { try{ const l = await api(`/api/calendars/${id}?start=${encodeURIComponent(from.toISOString())}&end=${encodeURIComponent(to.toISOString())}`);
+    (l || []).forEach(ev => evs.push({...ev, own: calOwner(id)})); }catch(e){} }));
+  homeEv.evs = evs.sort((a, b) => evStart(a) - evStart(b)); renderHome(); renderAmb();
+}
+const evWhen = ev => { const d = evStart(ev), t = new Date(), tm = new Date(); tm.setDate(t.getDate() + 1);
+  const day = d.toDateString() === t.toDateString() ? "Hoy" : d.toDateString() === tm.toDateString() ? "Mañana" : d.toLocaleDateString("es-ES", {weekday:"short"});
+  return allDay(ev) ? day : day + " " + d.toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"}); };
+
+function sparkSVG(key, color, grad){
+  if (!h24Data || !h24Data.s[key]) return "";
+  const e = h24Data.s[key], end = Date.now(), start = h24Data.start;
+  const P = (h24Data.by[e.entity_id] || []).map(p => ({t: p.t, v: parseFloat(p.v)})).filter(p => !isNaN(p.v));
+  const cur = hst(e.entity_id); if (cur && !isNaN(parseFloat(cur.state))) P.push({t: end, v: parseFloat(cur.state)});
+  if (P.length < 2) return "";
+  let lo = Math.min(...P.map(p => p.v)), hi = Math.max(...P.map(p => p.v)); if (hi - lo < 1){ const m = (hi + lo) / 2; lo = m - .5; hi = m + .5; }
+  const W = 200, H = 46, X = t => (t - start) / (end - start) * W, Y = v => H - 4 - (v - lo) / (hi - lo) * (H - 10);
+  const pts = P.map(p => [X(p.t), Y(p.v)]); let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++){ const [x0, y0] = pts[i-1], [x1, y1] = pts[i], mx = (x0 + x1) / 2; d += ` C${mx.toFixed(1)} ${y0.toFixed(1)} ${mx.toFixed(1)} ${y1.toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)}`; }
+  const last = pts[pts.length - 1];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="g${key}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${grad}" stop-opacity=".32"/><stop offset="1" stop-color="${grad}" stop-opacity="0"/></linearGradient></defs>
+    <path d="${d} L${W} ${H} L0 ${H} Z" fill="url(#g${key})"/><path d="${d}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="3.2" fill="${color}" stroke="#fff" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`;
+}
+function hourlyHTML(n){
+  const w = store.get("p2_wx", null); if (!w || !w.hourly) return "";
+  const now = Date.now(), H = w.hourly; let out = "", c = 0;
+  for (let i = 0; i < H.time.length && c < n; i++){ const t = Date.parse(H.time[i]); if (t < now - 3600e3) continue;
+    out += `<div><span>${c === 0 ? "Ahora" : H.time[i].slice(11, 13) + " h"}</span>${wx(H.weather_code[i], H.is_day[i])}<b>${Math.round(H.temperature_2m[i])}°</b></div>`; c++; }
+  return out;
+}
+function costBars(){
+  if (typeof yearLive !== "object") return "";
+  const ids = Object.keys(yearLive); if (!ids.length) return "";
+  const cur = new Date().getMonth(), ms = [...Array(6)].map((_, k) => (cur - 5 + k + 12) % 12);
+  const v = ms.map(i => ids.reduce((a, id) => a + ((yearLive[id] && yearLive[id][i] && yearLive[id][i].eur) || 0), 0)), mx = Math.max(...v, .01);
+  return `<div class="cbars">${ms.map((m, k) => `<div class="${m === cur ? "cur" : ""}"><i style="height:${Math.max(4, v[k] / mx * 100)}%"></i><span>${MESES[m][0]}</span></div>`).join("")}</div>`;
+}
+const SPK = {salon: ["ts", "#e8822f"], dormitorio: ["td", "#e8822f"], bano: ["tb", "#e8822f"]};
+function renderHome(){
+  const box = $("home"); if (!box || tab !== "hom") return;
+  const d = new Date(), w = store.get("p2_wx", null);
+  const ds = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"});
+  const wxh = w && w.current ? `<div class="wxr">${wx(w.current.weather_code, w.current.is_day)}<b>${Math.round(w.current.temperature_2m)}°</b><span>${wxText(w.current.weather_code)} en ${PLACE}<br>máx ${Math.round(w.daily.temperature_2m_max[0])}° · mín ${Math.round(w.daily.temperature_2m_min[0])}°</span></div>` : "";
+  const rooms = HOME_ROOMS.map(r => { const v = roomTH(r.re);
+    const sp = SPK[r.k] ? sparkSVG(SPK[r.k][0], SPK[r.k][1], SPK[r.k][1]) : "";
+    return `<div class="hw w-room" data-go="cli"><div class="lb">${r.n}</div><div class="v">${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</div>
+      <div class="h">${!isNaN(v.h) ? `<span class="hring" style="--p:${Math.round(v.h)}"></span>${Math.round(v.h)} % humedad` : ""}</div>${sp}<div class="ch">${roomChips(r)}</div></div>`; }).join("");
+  const c = window.__cost || {};
+  const evs = homeEv.evs.slice(0, 3);
+  box.innerHTML = `
+    <div class="hw w-now"><div><div class="hi">${greet()}, ${USERS[user] ? USERS[user].n : ""}</div>
+      <div class="t">${pad(d.getHours())}:${pad(d.getMinutes())}</div><div class="dt">${ds[0].toUpperCase() + ds.slice(1)}</div></div><div class="hrly">${hourlyHTML(7)}</div>${wxh}</div>
+    ${rooms}
+    <div class="hw w-cost" data-go="cos"><div class="lb">Luz este mes</div><div class="v">${c.mes != null ? eur(c.mes) : "—"}</div>
+      ${costBars()}<div class="k">${c.eurH != null ? "Ahora " + eur(c.eurH).replace(" €", "") + " €/h" : ""}${c.w != null ? " · " + Math.round(c.w) + " W" : ""}</div></div>
+    <div class="tiles">${tilesHTML()}</div>
+    <div class="scenes">
+      <button class="scene" data-scr="script.buenos_dias"><span class="ic" style="background:#f0a12e">${hsvg("sun")}</span>Buenos días</button>
+      <button class="scene" data-scr="script.adios"><span class="ic" style="background:#5b6b8a">${hsvg("door")}</span>Adiós</button>
+      <button class="scene" data-scr="aires_off"><span class="ic" style="background:#c4473d">${hsvg("power")}</span>Aires apagados</button></div>
+    <div class="hw w-ag" data-go="pla"><div class="lb">Agenda</div>${evs.length ? evs.map(ev => `<div class="ev"><i style="background:${evColor(ev)}"></i><em>${evWhen(ev)}</em><span>${esc(ev.summary || "")}</span></div>`).join("") : '<div class="ev"><span style="color:var(--muted)">Nada hoy ni mañana</span></div>'}</div>
+    <div class="dock">${APPS.map(a => `<button class="app-i" data-app="${a.t}"><span class="sq" style="background:${a.bg}">${a.ic}</span><span class="nm">${a.n}</span></button>`).join("")}</div>`;
+}
+async function homeAction(ev){
+  const g = ev.target.closest("[data-go]"); const b = ev.target.closest("button");
+  if (!b && g){ closeCC(); show(g.dataset.go); return; }
+  if (b && b.dataset.app){ closeCC(); show(b.dataset.app); return; }
+  if (!b) return;
+  const done = () => setTimeout(async () => { await refreshHA(); Object.keys(hPend).forEach(k => delete hPend[k]); renderHome(); renderCC(); }, 1500);
+  b.classList.add("busy");
+  try{
+    if (b.dataset.hac){ const id = b.dataset.hac, on = b.dataset.on === "1", m = new Date().getMonth() + 1, mode = on ? "off" : (m >= 5 && m <= 9 ? "cool" : "heat");
+      hPend[id] = mode; renderHome(); renderCC(); await service("climate", "set_hvac_mode", {entity_id: id, hvac_mode: mode}); return done(); }
+    if (b.dataset.hnt || b.dataset.hlk){ const id = b.dataset.hnt || b.dataset.hlk, on = b.dataset.on === "1";
+      hPend[id] = on ? "off" : "on"; renderHome(); renderCC(); await service("input_boolean", on ? "turn_off" : "turn_on", {entity_id: id}); return done(); }
+    if (b.dataset.scr){
+      if (b.dataset.scr === "aires_off"){ for (const r of HOME_ROOMS) if (r.ac){ hPend[r.ac] = "off"; await service("climate", "set_hvac_mode", {entity_id: r.ac, hvac_mode: "off"}); } }
+      else await api("/api/services/script/turn_on", {entity_id: b.dataset.scr});
+      renderHome(); return done(); }
+  }catch(err){ Object.keys(hPend).forEach(k => delete hPend[k]); renderHome(); handleErr(err); }
+  finally{ b.classList.remove("busy"); }
+}
+$("home").addEventListener("click", homeAction);
+
+/* ---------- Pantalla en reposo (esferas) ---------- */
+const AMB_FACES = [["reloj", "Reloj"], ["tiempo", "Tiempo"], ["casa", "Casa"], ["agenda", "Agenda"]];
+const ambCfg = () => ({on: store.get("p2_amb_on", true), min: store.get("p2_amb_min", 2), face: store.get("p2_amb_face", "reloj")});
+let ambFace = 0, ambOpen = false, lastAct = Date.now();
+function ambHTML(){
+  const d = new Date(), ds = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"}), w = store.get("p2_wx", null);
+  const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
+  const reloj = `<div class="face"><div class="bigt">${pad(d.getHours())}:${pad(d.getMinutes())}</div><div class="adate">${ds[0].toUpperCase() + ds.slice(1)}</div>
+    <div class="arow">${w && w.current ? `<div><small>Fuera</small><b class="fx">${wx(w.current.weather_code, w.current.is_day)}${Math.round(w.current.temperature_2m)}°</b><em>${wxText(w.current.weather_code)}</em></div>` : ""}
+    ${R.map(x => `<div><small>${x.r.n}</small><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b><em>${!isNaN(x.v.h) ? "💧 " + Math.round(x.v.h) + " %" : ""}</em></div>`).join("")}</div></div>`;
+  const casa = `<div class="face"><div class="grid">${R.map(x => `<div class="rc"><small>${x.r.n}</small><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b><em>${!isNaN(x.v.h) ? "💧 " + Math.round(x.v.h) + " %" : ""}</em>
+    <p>${roomChips(x.r).replace(/<i[^>]*><\/i>/g, "").replace(/<span>/g, "").replace(/<\/span>/g, "<br>")}</p></div>`).join("")}</div></div>`;
+  const evs = homeEv.evs.slice(0, 6);
+  const agenda = `<div class="face"><div class="agt">${ds[0].toUpperCase() + ds.slice(1)}</div><div class="agl">${evs.length ? evs.map(ev => `<div><i style="background:${evColor(ev)}"></i><em>${evWhen(ev)}</em><span>${esc(ev.summary || "")}</span></div>`).join("") : "<div><span style='opacity:.6'>Nada hoy ni mañana</span></div>"}</div></div>`;
+  const tiempo = w && w.current ? `<div class="face"><div class="wxbig">${wx(w.current.weather_code, w.current.is_day)}</div><div class="agt">${Math.round(w.current.temperature_2m)}° · ${wxText(w.current.weather_code)}</div>
+    <div class="adate">${PLACE} · máx ${Math.round(w.daily.temperature_2m_max[0])}° · mín ${Math.round(w.daily.temperature_2m_min[0])}° · sensación ${Math.round(w.current.apparent_temperature)}°</div>
+    <div class="ahr">${hourlyHTML(8)}</div></div>` : `<div class="face"><div class="agt">Sin datos del tiempo</div></div>`;
+  return `<div class="faces" style="transform:translateX(${-ambFace * 100}%)">${reloj}${tiempo}${casa}${agenda}</div>
+    <div class="dots">${AMB_FACES.map((f, i) => `<button class="${i === ambFace ? "on" : ""}" data-face="${i}" aria-label="${f[1]}"></button>`).join("")}</div><div class="hint">Toca para volver</div>`;
+}
+function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return; const h = new Date().getHours(); a.classList.toggle("night", h >= 0 && h < 7); a.innerHTML = ambHTML(); }
+function openAmb(){ if (ambOpen) return; ambOpen = true; ambFace = Math.max(0, AMB_FACES.findIndex(f => f[0] === ambCfg().face)); $("amb").classList.add("on"); renderAmb(); }
+function closeAmb(){ ambOpen = false; $("amb").classList.remove("on"); lastAct = Date.now(); if (tab !== "ent" && tab !== "cfg") show("hom"); }
+(() => {
+  const a = document.createElement("div"); a.id = "amb"; a.setAttribute("role", "dialog"); a.setAttribute("aria-label", "Pantalla en reposo"); document.body.appendChild(a);
+  let x0 = null, y0 = null;
+  a.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
+  a.addEventListener("touchend", e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)){ ambFace = (ambFace + (dx < 0 ? 1 : -1) + AMB_FACES.length) % AMB_FACES.length; renderAmb(); e.preventDefault(); }
+    else if (!e.target.closest("[data-face]")){ e.preventDefault(); closeAmb(); } });
+  a.addEventListener("click", e => { const f = e.target.closest("[data-face]"); if (f){ ambFace = +f.dataset.face; renderAmb(); return; } closeAmb(); });
+  ["pointerdown", "keydown", "wheel"].forEach(t => document.addEventListener(t, ev => { if (!ambOpen) lastAct = Date.now(); }, {passive: true}));
+  setInterval(() => {
+    const c = ambCfg();
+    if (ambOpen){ renderAmb(); return; }
+    if (!c.on || document.hidden || tvOn || ytOn || $("sheet") && !$("sheet").hidden) return;
+    if (Date.now() - lastAct > c.min * 60000) openAmb();
+  }, 5000);
+})();
+
+/* ajustes de la pantalla en reposo (se guardan en este aparato) */
+function ambCfgCard(){
+  const c = ambCfg();
+  return `<div class="card"><h3>🖼️ Pantalla en reposo (este aparato)</h3>
+    <div class="cf-r"><span>Mostrarla cuando no se toca</span><button class="sw ${c.on ? "on" : ""}" data-amb="on" role="switch" aria-checked="${c.on}" aria-label="Pantalla en reposo"></button></div>
+    ${cSeg("Al cabo de", String(c.min), [["1", "1 min"], ["2", "2 min"], ["5", "5 min"], ["10", "10 min"]], v => `data-amb="min" data-v="${v}"`)}
+    ${cSeg("Empieza en", c.face, AMB_FACES, v => `data-amb="face" data-v="${v}"`)}
+    <div class="cf-r"><span>Verla ahora</span><button class="seg-one" data-amb="ver" style="padding:6px 12px;border-radius:9px;background:var(--ink);color:#fff;font-weight:600;font-size:12.5px">Ver</button></div>
+    <div class="cf-note">Desliza a los lados para cambiar de esfera y toca para volver. No aparece mientras ves la tele o YouTube. De 0 a 7 h se ve más tenue.</div></div>`;
+}
+$("cfg").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-amb]"); if (!b) return; ev.stopImmediatePropagation();
+  const k = b.dataset.amb;
+  if (k === "on") store.set("p2_amb_on", !ambCfg().on);
+  if (k === "min") store.set("p2_amb_min", +b.dataset.v);
+  if (k === "face") store.set("p2_amb_face", b.dataset.v);
+  if (k === "ver"){ openAmb(); return; }
+  renderCfg(true);
+}, true);
+
+
+/* ---------- V3: apps, barra de inicio y centro de control ---------- */
+const AIC = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const APPS = [
+  {t:"cli", n:"Clima", bg:"linear-gradient(160deg,#35c3b3,#14857a)", ic:AIC('<path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z"/>')},
+  {t:"ent", n:"Tele y radio", bg:"linear-gradient(160deg,#ff8a5c,#e2482c)", ic:AIC('<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/>')},
+  {t:"pla", n:"Agenda", bg:"linear-gradient(160deg,#9b8bff,#5a45d6)", ic:AIC('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>')},
+  {t:"cos", n:"Costes", bg:"linear-gradient(160deg,#ffc35a,#e08a1e)", ic:AIC('<path d="M18 7a7 7 0 1 0 0 10M4 10h9M4 14h9"/>')},
+  {t:"cfg", n:"Ajustes", bg:"linear-gradient(160deg,#a9b1bf,#6b7383)", ic:AIC('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/>')}];
+const _show = show;
+show = function(t){ _show(t); document.body.classList.toggle("at-home", t === "hom"); if (t === "hom") renderHome(); };
+(() => {
+  const top = document.querySelector(".top");
+  if (top && !$("goHome")){ const b = document.createElement("button"); b.id = "goHome"; b.className = "back"; b.innerHTML = "‹ Inicio"; b.onclick = () => show("hom"); top.prepend(b); }
+  const hb = document.createElement("button"); hb.id = "homebar"; hb.setAttribute("aria-label", "Ir al inicio"); hb.innerHTML = "<i></i>"; hb.onclick = () => show("hom"); document.body.appendChild(hb);
+  const cc = document.createElement("div"); cc.id = "cc"; cc.innerHTML = '<div class="ccp" id="ccp"></div>'; document.body.appendChild(cc);
+  const grab = document.createElement("button"); grab.id = "ccgrab"; grab.setAttribute("aria-label", "Centro de control"); grab.innerHTML = "<i></i>"; grab.onclick = () => openCC(); document.body.appendChild(grab);
+  cc.addEventListener("click", ev => { if (!ev.target.closest(".ccp")) closeCC(); else homeAction(ev); });
+  let y0 = null, x0 = null;
+  document.addEventListener("touchstart", e => { const t = e.touches[0]; y0 = t.clientY; x0 = t.clientX; }, {passive: true});
+  document.addEventListener("touchend", e => { if (y0 == null || ambOpen) return; const t = e.changedTouches[0], dy = t.clientY - y0, dx = t.clientX - x0;
+    if (!ccOpen && y0 < 44 && dy > 70 && Math.abs(dy) > Math.abs(dx)) openCC();
+    else if (ccOpen && dy < -70) closeCC();
+    else if (!ccOpen && tab !== "hom" && y0 > window.innerHeight - 40 && dy < -50) show("hom");
+    y0 = null; }, {passive: true});
+})();
+let ccOpen = false;
+function renderCC(){ if (!ccOpen) return; const p = $("ccp"); const d = new Date();
+  p.innerHTML = `<div class="cch"><b>${pad(d.getHours())}:${pad(d.getMinutes())}</b><span>Centro de control</span></div><div class="tiles">${tilesHTML()}</div>
+    <div class="scenes"><button class="scene" data-scr="script.buenos_dias"><span class="ic" style="background:#f0a12e">${hsvg("sun")}</span>Buenos días</button>
+    <button class="scene" data-scr="script.adios"><span class="ic" style="background:#5b6b8a">${hsvg("door")}</span>Adiós</button>
+    <button class="scene" data-scr="aires_off"><span class="ic" style="background:#c4473d">${hsvg("power")}</span>Aires apagados</button></div>
+    <div class="ccx">Desliza hacia arriba o toca fuera para cerrar</div>`; }
+function openCC(){ ccOpen = true; $("cc").classList.add("on"); renderCC(); }
+function closeCC(){ if (!ccOpen) return; ccOpen = false; $("cc").classList.remove("on"); }
+setInterval(renderCC, 5000);
+setInterval(() => { renderHome(); loadHomeEvents(); }, 5000);
+show("hom");
+</script>
+</body>
+</html>
