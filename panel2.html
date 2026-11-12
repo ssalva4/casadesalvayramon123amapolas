@@ -174,7 +174,35 @@ svg.i{width:20px;height:20px}
 .t-cli .ac,.t-cli .cost{grid-column:span 2}
 .t-cli .bars{grid-column:1/3;grid-row:3}
 .t-cli .h24{grid-column:3/5;grid-row:3}
-.t-cli .hoy{grid-column:5/7;grid-row:3}
+.t-cli .bath{grid-column:5/7;grid-row:3;display:flex;flex-direction:column}
+.bath .gauge{position:relative;height:10px;border-radius:6px;background:linear-gradient(90deg,#e9e2d6,#cfe0f1);margin:22px 0 22px}
+.bath .gauge i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:#3b7fc4}
+.bath .gauge .mk{position:absolute;top:-5px;width:2px;height:20px;background:var(--ink);opacity:.55}
+.bath .gauge .ml{position:absolute;top:16px;font-size:10.5px;color:var(--muted);transform:translateX(-50%);white-space:nowrap}
+.bath .gauge .mt{position:absolute;top:-19px;font-size:10.5px;color:var(--muted);transform:translateX(-50%);white-space:nowrap}
+.bath .bfoot{margin-top:auto;font-size:12px;color:var(--muted)}
+.nav button.cfg.on{background:rgba(31,36,51,.08)}
+.tab.t-cfg.on{display:block;overflow-y:auto;padding-bottom:10px}
+.t-cfg .cols{columns:3 300px;column-gap:14px}
+.t-cfg .card{break-inside:avoid;margin:0 0 14px;display:block}
+.t-cfg h3{font-size:15px;margin:0 0 8px;display:flex;align-items:center;gap:8px}
+.t-cfg h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
+.cf-r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--soft)}
+.cf-r:last-child{border-bottom:0}
+.cf-r.col{flex-direction:column;align-items:stretch;gap:6px}
+.cf-r .ctl{display:flex;align-items:center;gap:6px}
+.cf-r .ctl button{width:30px;height:30px;border-radius:9px;background:var(--card2);font-weight:700;font-size:16px}
+.cf-r .ctl b{min-width:52px;text-align:center;font-family:var(--head);font-size:16px;color:var(--ink)}
+.cf-r input[type=time]{font:inherit;font-size:15px;font-weight:600;color:var(--ink);background:var(--card2);border:0;border-radius:9px;padding:5px 8px}
+.cf-r input[type=time]:disabled{opacity:.4}
+.sw{width:44px;height:26px;border-radius:13px;background:#cfc7ba;position:relative;flex:none;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sw.on{background:var(--cli)}.sw.on::after{left:21px}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg button{padding:6px 10px;border-radius:9px;background:var(--card2);font-size:12.5px;font-weight:600;color:var(--soft)}
+.seg button.on{background:var(--ink);color:#fff}
+.cf-note{font-size:11.5px;color:var(--muted);margin:2px 0 4px}
+.t-cfg .dim{opacity:.45;pointer-events:none}
 .wx{grid-column:1/7;display:flex;gap:22px;align-items:center}
 .wx .now{display:flex;align-items:center;gap:12px;min-width:200px}
 .wx .now .t{font-family:var(--head);font-size:46px;font-weight:500}
@@ -400,6 +428,7 @@ button.pill{cursor:pointer}
       <button class="cli" data-t="cli" title="Clima" aria-label="Clima"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0zM18 6h3M18 10h3"/></svg>Clima</button>
       <button class="ent" data-t="ent" title="Entretenimiento" aria-label="Entretenimiento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3zM8 21h8M10 9.5l4 2.5-4 2.5z"/></svg>Entretenimiento</button>
       <button class="pla" data-t="pla" title="Planning" aria-label="Planning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 10h16M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>Planning</button>
+      <button class="cfg" data-t="cfg" title="Ajustes" aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Ajustes</button>
     </nav>
     <button class="morning" id="morning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="4"/><path d="M12 3v3M4.2 6.2l2 2M19.8 6.2l-2 2M2 17h20M5 21h14"/></svg><span>Buenos días<small id="morningSub">La 1 · salón a 20°</small></span></button>
     <div class="users">
@@ -439,7 +468,7 @@ button.pill{cursor:pointer}
       <div class="card ac" id="ac1"></div>
       <div class="card cost"><div class="lbl">Reparto del mes <span id="pfix" style="white-space:nowrap"></span></div><div id="cost"></div></div>
       <div class="card h24"><div class="lbl">Últimas 24 h <span class="leg"><span><i style="background:#d64545"></i>Temp.</span><span><i style="background:#3b7fc4"></i>Humedad</span><span><i style="background:rgba(59,127,196,.3);height:8px"></i>Deshum.</span></span></div><div id="h24"></div></div>
-      <div class="card hoy"><div class="lbl">Hoy en casa</div><div id="hoy"></div></div>
+      <div class="card ac bath" id="bath"></div>
       <div class="card bars"><div class="lbl">Por meses <button class="pill" id="half"></button></div><div class="mb" id="months"></div></div>
     </section>
 
@@ -459,6 +488,9 @@ button.pill{cursor:pointer}
 
       </div>
     </section>
+
+    <!-- AJUSTES -->
+    <section class="tab t-cfg" id="t-cfg"><div class="cols" id="cfg"><div class="card"><div class="msg">Conectando con Home Assistant…</div></div></div></section>
   </main>
 </div>
 
@@ -543,7 +575,7 @@ function tick(){
   const s = fmtDate.format(d); $("date").textContent = s[0].toUpperCase() + s.slice(1);
 }
 tick(); setInterval(tick, 5000);
-const TT = {ent:["Entretenimiento","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario y próximos días"]};
+const TT = {ent:["Entretenimiento","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario y próximos días"], cfg:["Ajustes","Deshumidificadores, aires y modo Noche · se guarda en Home Assistant"]};
 let tab = "cli";   // al abrir el panel, siempre en Clima
 function show(t){
   tab = t;
@@ -553,6 +585,7 @@ function show(t){
   if (t === "pla") loadCalendar();
   if (t !== "ent" && typeof stopAll === "function") stopAll("radio");   // libera el vídeo al cambiar de pestaña; la radio sigue sonando
   if (t === "cli" && typeof renderH24 === "function") renderH24();
+  if (t === "cfg" && typeof renderCfg === "function") renderCfg(true);
 }
 document.querySelectorAll(".nav button").forEach(b => b.onclick = () => show(b.dataset.t));
 let user = store.get("p2_user", "S");
@@ -840,33 +873,53 @@ const dehumOf = e => {
   return {id: sw.entity_id, on: sw.state === "on", w: pw ? parseFloat(pw.state) : null};
 };
 const DEHUM_LOCK = "input_boolean.deshumidificador_bloqueado";
+const hst = id => (window.__states || []).find(x => x.entity_id === id);
+const hv = (id, d) => { const x = hst(id); return x && x.state !== "unknown" && x.state !== "unavailable" ? x.state : d; };
+const hhmm = id => String(hv(id, "")).slice(0, 5);
+const pctv = id => Math.round(parseFloat(hv(id, 60)));
+const enFranja = r => {   // ¿estamos en el horario de noche del deshumidificador de esa estancia?
+  if (hv(`input_boolean.deshum_${r}_horario_noche`, "on") !== "on") return false;
+  const a = hhmm(`input_datetime.deshum_${r}_noche_desde`) || "23:00", b = hhmm(`input_datetime.deshum_${r}_noche_hasta`) || "10:00";
+  const d = new Date(), n = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  return a !== b && (a > b ? (n >= a || n < b) : (n >= a && n < b));
+};
 const DEHUM_BATH = "switch.deshumidificador_bano", DEHUM_BATH_LOCK = "input_boolean.deshumidificador_bano_bloqueado";
-/* Baño: sensor Tapo + deshumidificador propio; va en la tarjeta del salón */
-const bathHTML = e => {
-  if (!e || !/sal[oó]n/i.test(acName(e))) return "";
-  const S = window.__states || [], g = id => S.find(x => x.entity_id === id);
+/* Baño: tarjeta propia (sensor Tapo + deshumidificador con botón rojo de bloqueo) */
+function bathCard(){
+  const S = window.__states || [];
   const fs = dc => S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === dc && /sensor ba[ñn]o/i.test(x.attributes.friendly_name || ""));
-  const tS = fs("temperature"), hS = fs("humidity"), sw = g(DEHUM_BATH), lkS = g(DEHUM_BATH_LOCK);
-  if (!tS && !hS && !sw) return "";
-  const t = tS ? parseFloat(tS.state) : null, h = hS ? parseFloat(hS.state) : null;
+  const tS = fs("temperature"), hS = fs("humidity"), sw = hst(DEHUM_BATH), lkS = hst(DEHUM_BATH_LOCK);
+  const t = tS ? parseFloat(tS.state) : NaN, h = hS ? parseFloat(hS.state) : NaN;
   const pw = S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === "power" && /deshumidificador_ba[ñn]o/i.test(x.entity_id));
   const w = pw ? parseFloat(pw.state) : null, on = sw && sw.state === "on", lk = lkS && lkS.state === "on";
-  const hr = new Date().getHours(), noche = hr >= 23 || hr < 10;
-  const dtxt = !sw || sw.state === "unavailable" ? "deshumidificador sin conectar"
-    : lk ? "bloqueado · no se enciende aunque haya humedad"
-    : !on ? (noche ? "deshum. apagado de noche · vuelve a las 10:00" : "deshum. apagado · se enciende por encima del 60 %")
-    : (w != null && w > 5 ? `secando · ${Math.round(w)} W · se apaga al 60 %` : "con corriente pero parado · ¿depósito lleno?");
-  const btn = sw && lkS ? `<button class="dlock ${lk ? "lk" : ""}" data-dlock="${lk ? 1 : 0}" data-lockid="${DEHUM_BATH_LOCK}" aria-label="${lk ? "Desbloquear" : "Bloquear"} el deshumidificador del baño">${svg("power")}</button>` : "";
-  return `<div class="dehum ${lk ? "lk" : on ? "on" : ""}"><span class="dx"><span class="dn">Baño · ${t != null && !isNaN(t) ? fmt1(t) + "°" : "—"} · 💧${h != null && !isNaN(h) ? Math.round(h) + "%" : "—"}</span><span class="dt">${dtxt}</span></span>${btn}</div>`;
-};
+  const onAt = pctv("input_number.deshum_bano_enciende"), offAt = pctv("input_number.deshum_bano_apaga");
+  const dtxt = lk ? "bloqueado · no se enciende aunque haya humedad"
+    : !sw || sw.state === "unavailable" ? "enchufe aún sin conectar a Home Assistant"
+    : !on ? (enFranja("bano") ? `apagado de noche · vuelve a las ${hhmm("input_datetime.deshum_bano_noche_hasta") || "10:00"}` : `apagado · se enciende por encima del ${onAt} %`)
+    : (w != null && w > 5 ? `secando · ${Math.round(w)} W · se apaga al ${offAt} %` : "con corriente pero parado · ¿depósito lleno?");
+  const btn = lkS ? `<button class="dlock ${lk ? "lk" : ""}" data-dlock="${lk ? 1 : 0}" data-lockid="${DEHUM_BATH_LOCK}" aria-label="${lk ? "Desbloquear" : "Bloquear"} el deshumidificador del baño" title="${lk ? "Bloqueado: toca para que vuelva a funcionar solo" : "Toca para apagarlo y que no se encienda"}">${svg("power")}</button>` : "";
+  const X = v => Math.max(0, Math.min(100, (v - 30) / 60 * 100));   // escala 30–90 %
+  const gauge = isNaN(h) ? "" : `<div class="gauge"><i style="width:${X(h)}%"></i>
+    <span class="mk" style="left:${X(onAt)}%"></span><span class="mt" style="left:${X(onAt)}%">enciende ${onAt}%</span>
+    ${offAt !== onAt ? `<span class="mk" style="left:${X(offAt)}%"></span><span class="ml" style="left:${X(offAt)}%">apaga ${offAt}%</span>` : `<span class="ml" style="left:${X(offAt)}%">apaga ${offAt}%</span>`}</div>`;
+  let foot = "";
+  if (h24Data && h24Data.s.db){ const t0 = new Date().setHours(0,0,0,0), end = Date.now(), L = (h24Data.by[h24Data.s.db.entity_id] || []).concat([{t: end, v: h24Data.s.db.state}]); let ms = 0;
+    for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on"){ const a = Math.max(t0, L[i].t), b = L[i+1].t; if (b > a) ms += b - a; }
+    foot = `Hoy ha secado ${Math.floor(ms/3600e3)} h ${String(Math.round(ms%3600e3/60e3)).padStart(2,"0")} min`; }
+  return `<div class="row"><div><div class="room">Baño</div><div class="cur num">${!isNaN(t) ? fmt1(t) + "°" : "—"}</div>
+      <div class="st">${!isNaN(h) ? humTxt(h).replace(/ · $/, "") : "sin sensor"}</div></div></div>
+    ${gauge}
+    <div class="dehum ${lk ? "lk" : on ? "on" : ""}"><span class="dx"><span class="dn">Deshumidificador</span><span class="dt">${dtxt}</span></span>${btn}</div>
+    <div class="bfoot">${foot}</div>`;
+}
 const dehumHTML = e => {
   const d = dehumOf(e); if (!d) return "";
-  const hr = new Date().getHours();
-  const noche = hr >= 23 || hr < 10 || (window.__states || []).some(x => x.entity_id === "input_boolean.noche_dormitorio" && x.state === "on");
-  const lkS = (window.__states || []).find(x => x.entity_id === DEHUM_LOCK), lk = lkS && lkS.state === "on";
+  const franja = enFranja("dormitorio"), modoN = hv("input_boolean.deshum_dormitorio_con_modo_noche", "on") === "on" && hv("input_boolean.noche_dormitorio") === "on";
+  const lkS = hst(DEHUM_LOCK), lk = lkS && lkS.state === "on";
   const txt = lk ? "bloqueado · no se enciende aunque haya humedad"
-    : !d.on ? (noche ? "apagado de noche · vuelve a las 10:00" : "apagado · se enciende por encima del 60 %")
-    : (d.w != null && d.w > 5 ? `secando · ${Math.round(d.w)} W · se apaga al 60 %` : "con corriente pero parado · ¿depósito lleno?");
+    : !d.on ? (franja ? `apagado de noche · vuelve a las ${hhmm("input_datetime.deshum_dormitorio_noche_hasta") || "10:00"}` : modoN ? "apagado por el modo Noche"
+      : `apagado · se enciende por encima del ${pctv("input_number.deshum_dormitorio_enciende")} %`)
+    : (d.w != null && d.w > 5 ? `secando · ${Math.round(d.w)} W · se apaga al ${pctv("input_number.deshum_dormitorio_apaga")} %` : "con corriente pero parado · ¿depósito lleno?");
   const btn = lkS
     ? `<button class="dlock ${lk ? "lk" : ""}" data-dlock="${lk ? 1 : 0}" aria-label="${lk ? "Desbloquear el deshumidificador" : "Bloquear el deshumidificador"}" title="${lk ? "Bloqueado: toca para que vuelva a funcionar solo" : "Toca para apagarlo y que no se encienda"}">${svg("power")}</button>`
     : `<button data-dehum="${esc(d.id)}" data-on="${d.on ? 1 : 0}">${d.on ? "Apagar" : "Encender"}</button>`;
@@ -890,7 +943,7 @@ function acHTML(e){
       <div class="st">${humTxt(roomH(e))}${off ? (MODE_TXT[st]||st) : `<b class="m-${st}">${MODE_TXT[st]||st}</b>${night ? " · Noche, " + cfg.txt : ""}`}</div></div>
     <div class="tg ${off?"dim":""}"><small>OBJETIVO</small><div class="ctl"><button data-act="minus" aria-label="Bajar">−</button><span class="num">${tgt!=null ? fmt1(tgt)+"°" : "—"}</span><button data-act="plus" aria-label="Subir">+</button></div>${tm && !off && a.temperature != null ? `<div class="tgts">${termoTxt(e)}</div>` : ""}</div></div>
     <div class="modes">${MODES.filter(x => (a.hvac_modes||[]).includes(x.m)).map(x => `<button class="${st===x.m?"on "+x.c:""}" data-mode="${x.m}">${svg(x.i)}<span>${x.t}</span></button>`).join("")}
-      ${(cfg || sleep) ? `<button class="${night?"on night":""} ${off?"dim":""}" data-night="1">${svg("moon")}<span>Noche</span></button>` : ""}</div>${dehumHTML(e)}${bathHTML(e)}`;
+      ${(cfg || sleep) ? `<button class="${night?"on night":""} ${off?"dim":""}" data-night="1">${svg("moon")}<span>Noche</span></button>` : ""}</div>${dehumHTML(e)}`;
 }
 function renderACs(){
   const list = [...climates].sort((x,y) => (/sal[oó]n/i.test(acName(y))) - (/sal[oó]n/i.test(acName(x))));
@@ -899,6 +952,7 @@ function renderACs(){
     if (!e){ box.innerHTML = i === 0 ? '<div class="msg">No encuentro aires en Home Assistant.</div>' : ""; box.dataset.e = ""; return; }
     box.dataset.e = e.entity_id; box.innerHTML = acHTML(e);
   });
+  if ($("bath")) $("bath").innerHTML = bathCard();
 }
 document.querySelectorAll(".t-cli .ac").forEach(card => card.addEventListener("click", async ev => {
   const b = ev.target.closest("button"); if (!b) return;
@@ -1088,7 +1142,6 @@ function renderH24(){
         ${YT ? `<path d="${path(T, YT)}" fill="none" stroke="${TC}" stroke-width="2.2" vector-effect="non-scaling-stroke"/>` : ""}
         ${YH ? `<path d="${path(Hm, YH)}" fill="none" stroke="${HC}" stroke-width="2.2" vector-effect="non-scaling-stroke"/>` : ""}</svg></div></div>`;
   };
-  renderHoy(ser);
   $("h24").innerHTML = room("Salón", s.ts, s.hs, false) + room("Dormitorio", s.td, s.hd, true) +
     `<div class="pt" style="font-weight:500;font-size:11px;padding:0 34px"><span>hace 24 h</span><span>18 h</span><span>12 h</span><span>6 h</span><span>ahora</span></div>`;
 }
@@ -1322,6 +1375,92 @@ async function refreshShop(){}   // Planning ya no tiene lista de la compra
 
 
 /* ---------- ciclo de actualización ---------- */
+
+/* ===== Ajustes: todo se guarda en ayudantes de Home Assistant, que usan las automatizaciones ===== */
+const FAN_T = {silent:"Silencio", low:"Bajo", medium:"Medio", high:"Alto", full:"Máx.", auto:"Auto"};
+const SWING_T = {off:"Fija", vertical:"Vertical", horizontal:"Horizontal", both:"Ambas"};
+const PRESET_T = {none:"Normal", eco:"Eco", comfort:"Confort", boost:"Turbo", sleep:"Sueño", away:"Fuera"};
+const AIRES_CFG = [
+  {id:"climate.aire_salon", n:"Aire del salón", sw:{pantalla:"switch.aire_acondicionado_pantalla_2", tono:"switch.aire_acondicionado_tono_de_aviso_2", ext:"switch.aire_acondicionado_modo_silencioso_exterior_2"}},
+  {id:"climate.aire_dormitorio", n:"Aire del dormitorio", sw:{pantalla:"switch.aire_acondicionado_pantalla", tono:"switch.aire_acondicionado_tono_de_aviso", ext:"switch.aire_acondicionado_modo_silencioso_exterior"}}];
+const cfgPend = {};   // lo que acabas de tocar, hasta que Home Assistant lo confirme
+const cv = (id, d) => cfgPend[id] ?? hv(id, d);
+const cNum = (id, label, unit, step, dec) => { const v = parseFloat(cv(id, 0));
+  return `<div class="cf-r"><span>${label}</span><div class="ctl"><button data-n="${id}" data-d="${-step}" aria-label="Bajar">−</button><b>${dec ? fmt1(v) : Math.round(v)}${unit}</b><button data-n="${id}" data-d="${step}" aria-label="Subir">+</button></div></div>`; };
+const cTog = (id, label, onVal) => { const on = onVal != null ? onVal : cv(id, "off") === "on";
+  return `<div class="cf-r"><span>${label}</span><button class="sw ${on ? "on" : ""}" data-b="${id}" data-on="${on ? 1 : 0}" role="switch" aria-checked="${on}" aria-label="${label}"></button></div>`; };
+const cTime = (id, label, dis) => `<div class="cf-r"><span>${label}</span><input type="time" data-time="${id}" value="${String(cv(id, "")).slice(0,5)}" ${dis ? "disabled" : ""}></div>`;
+const cSeg = (label, cur, opts, attrs) => `<div class="cf-r col"><span>${label}</span><div class="seg">${opts.map(([v, t]) => `<button class="${cur === v ? "on" : ""}" ${attrs(v)}>${t}</button>`).join("")}</div></div>`;
+function renderCfg(force){
+  const box = $("cfg"); if (!box || tab !== "cfg") return;
+  if (!force && box.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;   // no pisar una hora que estás escribiendo
+  if (!hst("input_number.deshum_dormitorio_enciende")){ box.innerHTML = '<div class="card"><div class="msg">Conectando con Home Assistant…</div></div>'; return; }
+  const dh = (r, n, dorm) => `<div class="card"><h3>💧 Deshumidificador · ${n}</h3>
+    ${cNum(`input_number.deshum_${r}_enciende`, "Se enciende por encima de", " %", 1)}
+    ${cNum(`input_number.deshum_${r}_apaga`, "Se apaga al bajar a", " %", 1)}
+    <h4>Horario de noche (apagado)</h4>
+    ${cTog(`input_boolean.deshum_${r}_horario_noche`, "Apagarlo por la noche")}
+    ${cTime(`input_datetime.deshum_${r}_noche_desde`, "Desde las", cv(`input_boolean.deshum_${r}_horario_noche`) !== "on")}
+    ${cTime(`input_datetime.deshum_${r}_noche_hasta`, "Hasta las", cv(`input_boolean.deshum_${r}_horario_noche`) !== "on")}
+    ${dorm ? cTog("input_boolean.deshum_dormitorio_con_modo_noche", "Apagado también con el modo Noche") : ""}
+    ${cTog(r === "bano" ? DEHUM_BATH_LOCK : DEHUM_LOCK, "Bloqueado (botón rojo)")}</div>`;
+  const aire = a => { const e = hst(a.id); if (!e) return "";
+    const at = e.attributes, off = e.state === "off" || e.state === "unavailable";
+    const swT = (k, label) => { const x = hst(a.sw[k]); return x ? cTog(a.sw[k], label, (cfgPend[a.sw[k]] ?? x.state) === "on") : ""; };
+    return `<div class="card"><h3>❄️ ${a.n} <span class="pill">${off ? "apagado" : (MODE_TXT[e.state] || e.state)}</span></h3>
+      ${off ? '<div class="cf-note">Está apagado: el ventilador, la oscilación y el modo se pueden cambiar cuando esté encendido.</div>' : ""}
+      <div class="${off ? "dim" : ""}">
+      ${cSeg("Ventilador", cfgPend[a.id + ":fan"] ?? at.fan_mode, (at.fan_modes || []).map(v => [v, FAN_T[v] || v]), v => `data-fan="${a.id}" data-v="${v}"`)}
+      ${(at.swing_modes || []).length ? cSeg("Oscilación de las lamas", cfgPend[a.id + ":swing"] ?? at.swing_mode, at.swing_modes.map(v => [v, SWING_T[v] || v]), v => `data-swing="${a.id}" data-v="${v}"`) : ""}
+      ${(at.preset_modes || []).length ? cSeg("Modo especial", cfgPend[a.id + ":preset"] ?? at.preset_mode, at.preset_modes.filter(v => v !== "away").map(v => [v, PRESET_T[v] || v]), v => `data-preset="${a.id}" data-v="${v}"`) : ""}
+      </div>
+      ${swT("pantalla", "Pantalla encendida")}${swT("tono", "Pitido al recibir órdenes")}${swT("ext", "Máquina exterior en silencio")}
+      ${a.id === "climate.aire_salon" ? `<h4>Por la noche</h4>
+        ${cTog("input_boolean.salon_apagado_activo", "Apagarlo siempre por la noche")}
+        ${cTime("input_datetime.salon_apagado_hora", "A las", cv("input_boolean.salon_apagado_activo") !== "on")}` : `<h4>Horario del modo Noche</h4>
+        ${cTime("input_datetime.dormitorio_noche_apaga", "Se apaga a las")}
+        ${cTog("input_boolean.dormitorio_noche_vuelve_activo", "Vuelve a encenderse por la mañana")}
+        ${cTime("input_datetime.dormitorio_noche_vuelve", "A las", cv("input_boolean.dormitorio_noche_vuelve_activo") !== "on")}
+        ${cTime("input_datetime.dormitorio_noche_fin", "Se apaga y termina el modo Noche a las")}`}</div>`; };
+  const fanOpts = id => { const x = hst(id); return (x && x.attributes.options || []).map(v => [v, FAN_T[v] || v]); };
+  box.innerHTML = dh("dormitorio", "Dormitorio", true) + dh("bano", "Baño", false) + AIRES_CFG.map(aire).join("") +
+    `<div class="card"><h3>🌙 Modo Noche (los dos aires)</h3>
+      ${cTog("input_boolean.noche_pantalla_apagada", "Apagar la pantalla del aire")}
+      ${cTog("input_boolean.noche_sin_pitido", "Sin pitidos")}
+      ${cTog("input_boolean.noche_silencio_exterior", "Máquina exterior en silencio")}
+      ${cSeg("Ventilador de noche", cv("input_select.noche_ventilador"), fanOpts("input_select.noche_ventilador"), v => `data-sel="input_select.noche_ventilador" data-v="${v}"`)}
+      ${cSeg("Ventilador al quitar la Noche", cv("input_select.aires_ventilador_normal"), fanOpts("input_select.aires_ventilador_normal"), v => `data-sel="input_select.aires_ventilador_normal" data-v="${v}"`)}</div>
+    <div class="card"><h3>🌡️ Termostato y avisos</h3>
+      ${cTog("input_boolean.aires_eco_al_encender", "Modo Eco al encender en Frío o Calor")}
+      <h4>Termostato con los sensores</h4>
+      ${cNum("input_number.termostato_para", "Para al pasar el objetivo en", "°", 0.1, true)}
+      ${cNum("input_number.termostato_vuelve", "Vuelve al bajar del objetivo", "°", 0.1, true)}
+      <h4>Aviso de humedad alta</h4>
+      ${cTog("input_boolean.aviso_humedad_activo", "Avisarme en el iPad")}
+      ${cNum("input_number.aviso_humedad", "Cuando pase de", " %", 1)}</div>`;
+}
+$("cfg").addEventListener("click", async ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  const done = () => setTimeout(async () => { await refreshHA(); Object.keys(cfgPend).forEach(k => delete cfgPend[k]); renderCfg(true); }, 1500);
+  try{
+    if (b.dataset.n){ const x = hst(b.dataset.n); if (!x) return; const a = x.attributes, st = parseFloat(b.dataset.d);
+      const v = Math.round(Math.min(a.max, Math.max(a.min, parseFloat(cv(b.dataset.n, x.state)) + st)) * 10) / 10;
+      cfgPend[b.dataset.n] = String(v); renderCfg(true); clearTimeout(timers[b.dataset.n]);
+      timers[b.dataset.n] = setTimeout(async () => { await service("input_number", "set_value", {entity_id: b.dataset.n, value: v}); done(); }, 700); return; }
+    if (b.dataset.b){ const id = b.dataset.b, on = b.dataset.on === "1", dom = id.split(".")[0];
+      cfgPend[id] = on ? "off" : "on"; renderCfg(true); await service(dom, on ? "turn_off" : "turn_on", {entity_id: id}); return done(); }
+    if (b.dataset.sel){ cfgPend[b.dataset.sel] = b.dataset.v; renderCfg(true); await service("input_select", "select_option", {entity_id: b.dataset.sel, option: b.dataset.v}); return done(); }
+    if (b.dataset.fan){ cfgPend[b.dataset.fan + ":fan"] = b.dataset.v; renderCfg(true); await service("climate", "set_fan_mode", {entity_id: b.dataset.fan, fan_mode: b.dataset.v}); return done(); }
+    if (b.dataset.swing){ cfgPend[b.dataset.swing + ":swing"] = b.dataset.v; renderCfg(true); await service("climate", "set_swing_mode", {entity_id: b.dataset.swing, swing_mode: b.dataset.v}); return done(); }
+    if (b.dataset.preset){ cfgPend[b.dataset.preset + ":preset"] = b.dataset.v; renderCfg(true); await service("climate", "set_preset_mode", {entity_id: b.dataset.preset, preset_mode: b.dataset.v}); return done(); }
+  }catch(err){ Object.keys(cfgPend).forEach(k => delete cfgPend[k]); renderCfg(true); handleErr(err); }
+});
+$("cfg").addEventListener("change", async ev => {
+  const i = ev.target.closest("input[data-time]"); if (!i || !i.value) return;
+  cfgPend[i.dataset.time] = i.value + ":00";
+  try{ await service("input_datetime", "set_datetime", {entity_id: i.dataset.time, time: i.value + ":00"}); i.blur(); setTimeout(async () => { await refreshHA(); delete cfgPend[i.dataset.time]; renderCfg(true); }, 1500); }
+  catch(err){ delete cfgPend[i.dataset.time]; handleErr(err); }
+});
 async function refreshHA(){
   if (document.hidden) return;   // en segundo plano no se gasta nada
   try{
@@ -1334,6 +1473,7 @@ async function refreshHA(){
     renderPrice(); renderCost(); loadH24();
     refreshShop(); refreshNotes();
     if (tab === "pla") loadCalendar();
+    if (tab === "cfg") renderCfg();
   }catch(err){ handleErr(err); }
 }
 (async () => {
