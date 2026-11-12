@@ -171,10 +171,16 @@ svg.i{width:20px;height:20px}
 
 /* ---------- Clima ---------- */
 .t-cli{grid-template-columns:repeat(6,1fr);grid-template-rows:auto auto 1fr;gap:14px}
-.t-cli .ac,.t-cli .cost{grid-column:span 2}
-.t-cli .bars{grid-column:1/3;grid-row:3}
-.t-cli .h24{grid-column:3/5;grid-row:3}
-.t-cli .bath{grid-column:5/7;grid-row:3;display:flex;flex-direction:column}
+.t-cli .ac{grid-column:span 2}
+.t-cli .h24{grid-column:1/7;grid-row:3}
+#h24{flex-direction:row!important;gap:22px}
+#h24 .pn .ax{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);font-weight:500;padding:2px 34px 0}
+.t-cos{grid-template-columns:1fr 2fr;grid-template-rows:auto 1fr;gap:14px}
+.t-cos .bars{grid-column:2/3;grid-row:1/3}
+.t-cos .hoy{grid-column:1/2;grid-row:2}
+.t-cos .mb{grid-template-columns:repeat(12,1fr)!important;gap:10px}
+.nav button.cos.on{background:rgba(214,140,40,.15)}.nav button.cos.on svg{color:#c27a1a}
+.t-cli .bath{grid-column:5/7;display:flex;flex-direction:column}
 .bath .gauge{position:relative;height:10px;border-radius:6px;background:linear-gradient(90deg,#e9e2d6,#cfe0f1);margin:22px 0 22px}
 .bath .gauge i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:#3b7fc4}
 .bath .gauge .mk{position:absolute;top:-5px;width:2px;height:20px;background:var(--ink);opacity:.55}
@@ -401,7 +407,9 @@ button.pill{cursor:pointer}
   .hrs{display:flex;overflow-x:auto;gap:6px;scrollbar-width:none}.hrs::-webkit-scrollbar{display:none}
   .hrs .hr{flex:0 0 58px}
   .t-cli .bars{height:230px}
-  .h24{height:320px}
+  .h24{height:auto}
+  #h24{flex-direction:column!important}
+  #h24 .pn{height:170px;flex:none}
   .t-ent .tv{display:flex!important;flex-direction:column}
   .t-ent .tv .chs{flex-direction:row!important;flex-wrap:wrap;margin-bottom:10px!important}
   .t-ent .tv .chs .sep{width:1px!important;height:30px!important}
@@ -428,6 +436,7 @@ button.pill{cursor:pointer}
       <button class="cli" data-t="cli" title="Clima" aria-label="Clima"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0zM18 6h3M18 10h3"/></svg>Clima</button>
       <button class="ent" data-t="ent" title="Entretenimiento" aria-label="Entretenimiento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3zM8 21h8M10 9.5l4 2.5-4 2.5z"/></svg>Entretenimiento</button>
       <button class="pla" data-t="pla" title="Planning" aria-label="Planning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 10h16M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>Planning</button>
+      <button class="cos" data-t="cos" title="Costes" aria-label="Costes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7a7 7 0 1 0 0 10M4 10h9M4 14h9"/></svg>Costes</button>
       <button class="cfg" data-t="cfg" title="Ajustes" aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Ajustes</button>
     </nav>
     <button class="morning" id="morning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="4"/><path d="M12 3v3M4.2 6.2l2 2M19.8 6.2l-2 2M2 17h20M5 21h14"/></svg><span>Buenos días<small id="morningSub">La 1 · salón a 20°</small></span></button>
@@ -466,10 +475,8 @@ button.pill{cursor:pointer}
       <div class="card wx"><div class="now" id="wxnow"><div class="d">Cargando el tiempo de Vigo…</div></div><div class="hrs" id="hrs"></div></div>
       <div class="card ac" id="ac0"><div class="msg">Conectando con Home Assistant…</div></div>
       <div class="card ac" id="ac1"></div>
-      <div class="card cost"><div class="lbl">Reparto del mes <span id="pfix" style="white-space:nowrap"></span></div><div id="cost"></div></div>
       <div class="card h24"><div class="lbl">Últimas 24 h <span class="leg"><span><i style="background:#d64545"></i>Temp.</span><span><i style="background:#3b7fc4"></i>Humedad</span><span><i style="background:rgba(59,127,196,.3);height:8px"></i>Deshum.</span></span></div><div id="h24"></div></div>
       <div class="card ac bath" id="bath"></div>
-      <div class="card bars"><div class="lbl">Por meses <button class="pill" id="half"></button></div><div class="mb" id="months"></div></div>
     </section>
 
     <!-- PLANNING -->
@@ -487,6 +494,13 @@ button.pill{cursor:pointer}
         <div class="card notes rem"><div class="lbl" style="white-space:nowrap">Recordatorios <span class="pill" id="remAt"></span></div><div id="rems" class="scroll"></div></div>
 
       </div>
+    </section>
+
+    <!-- COSTES -->
+    <section class="tab t-cos" id="t-cos">
+      <div class="card cost"><div class="lbl">Reparto del mes <span id="pfix" style="white-space:nowrap"></span></div><div id="cost"></div></div>
+      <div class="card hoy"><div class="lbl">Hoy y ayer</div><div id="hoy"></div></div>
+      <div class="card bars"><div class="lbl">Gasto por meses <span class="pill" id="half"></span></div><div class="mb" id="months"></div></div>
     </section>
 
     <!-- AJUSTES -->
@@ -575,7 +589,7 @@ function tick(){
   const s = fmtDate.format(d); $("date").textContent = s[0].toUpperCase() + s.slice(1);
 }
 tick(); setInterval(tick, 5000);
-const TT = {ent:["Entretenimiento","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario y próximos días"], cfg:["Ajustes","Deshumidificadores, aires y modo Noche · se guarda en Home Assistant"]};
+const TT = {ent:["Entretenimiento","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario y próximos días"], cos:["Costes","Luz de los aires y deshumidificadores · compartido"], cfg:["Ajustes","Deshumidificadores, aires y modo Noche · se guarda en Home Assistant"]};
 let tab = "cli";   // al abrir el panel, siempre en Clima
 function show(t){
   tab = t;
@@ -1083,7 +1097,7 @@ function renderCost(){
     <div class="k">ahora ${Math.round(totalW)} W · hoy ${today}</div>
     <table>${rows}<tr class="tot"><td>Total ${mname}</td><td>${eur(all.e)}</td><td>${kwh(all.k)}</td></tr></table>`;
   $("pfix").innerHTML = `<span class="pill">${KWH_FINAL.toLocaleString("es-ES",{minimumFractionDigits:3, maximumFractionDigits:3})} €/kWh</span>`;
-  renderMonths(energy.map(s => s.entity_id));
+  renderMonths(energy.map(s => s.entity_id)); renderHoy();
 }
 /* ---------- Clima: últimas 24 h (sensores Tapo + deshumidificador) ---------- */
 let h24At = 0, h24Data = null, h24Sig = "";
@@ -1092,7 +1106,7 @@ function h24Sensors(){
   const f = (dc, re) => states.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === dc && re.test(noAcc(x.attributes.friendly_name)));
   return {ts: f("temperature", /sensor salon/i), td: f("temperature", /sensor dormitorio/i),
           hs: f("humidity", /sensor salon/i), hd: f("humidity", /sensor dormitorio/i),
-          hb: f("humidity", /sensor bano/i),
+          hb: f("humidity", /sensor bano/i), tb: f("temperature", /sensor bano/i),
           dh: states.find(x => x.entity_id === "switch.deshumidificador"),
           db: states.find(x => x.entity_id === DEHUM_BATH)};
 }
@@ -1108,7 +1122,7 @@ async function loadH24(){
     (h || []).forEach(l => { if (!l.length) return; by[l[0].entity_id] = l.map(x => ({t: Math.max(start, Date.parse(x.last_changed || x.last_updated)), v: x.state})); });
     const SLOT = 10*60*1000;   // una muestra cada 10 min (como mucho 145 puntos por línea)
     Object.keys(by).forEach(id => { const m = new Map(); by[id].forEach(p => m.set(Math.floor(p.t / SLOT), p)); by[id] = [...m.values()]; });
-    h24Data = {s, by, start}; h24Sig = ""; renderH24();
+    h24Data = {s, by, start}; h24Sig = ""; renderH24(); renderHoy();
   }catch(err){ h24At = 0; }
 }
 function renderH24(){
@@ -1125,7 +1139,7 @@ function renderH24(){
   const grid = [6, 12, 18].map(hh => { const t = end - hh*3600e3; return `<line x1="${X(t)}" x2="${X(t)}" y1="0" y2="${H}" stroke="var(--line)" stroke-width="1"/>`; }).join("");
   const mm = P => P.length ? [Math.min(...P.map(p => p.v)), Math.max(...P.map(p => p.v))] : null;
   // una gráfica por estancia: temperatura (eje izquierdo) y humedad (eje derecho)
-  const room = (title, te, he, withBands) => {
+  const room = (title, te, he, band) => {
     const T = ser(te), Hm = ser(he); if (!T.length && !Hm.length) return "";
     const YT = scale(T, [], 2), YH = scale(Hm, [60], 10), tm = mm(T), hmm = mm(Hm);
     const yl = (Y, v, txt, side, col) => `<span class="yl ${side}" style="top:${(Y(v) / H * 100).toFixed(1)}%;color:${col}">${txt}</span>`;
@@ -1133,34 +1147,31 @@ function renderH24(){
     if (tm){ labs += yl(YT, tm[1], fmt1(tm[1]) + "°", "l", TC); if (tm[1] - tm[0] >= .2) labs += yl(YT, tm[0], fmt1(tm[0]) + "°", "l", TC); }
     if (hmm){ labs += yl(YH, hmm[1], Math.round(hmm[1]) + "%", "r", HC); if (hmm[1] - hmm[0] >= 1) labs += yl(YH, hmm[0], Math.round(hmm[0]) + "%", "r", HC); }
     let extra = "";
-    if (withBands && s.dh){ const L = (by[s.dh.entity_id] || []).concat([{t: end, v: s.dh.state}]);
+    if (band){ const L = (by[band.entity_id] || []).concat([{t: end, v: band.state}]);
       for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on") extra += `<rect x="${X(L[i].t)}" width="${Math.max(1, X(L[i+1].t) - X(L[i].t))}" y="0" height="${H}" fill="rgba(59,127,196,.13)"/>`; }
     if (YH) extra += `<line x1="0" x2="${W}" y1="${YH(60)}" y2="${YH(60)}" stroke="${HC}" stroke-width="1" stroke-dasharray="5 4" opacity=".6" vector-effect="non-scaling-stroke"/>`;
     const cur = e => e && !isNaN(parseFloat(e.state)) ? parseFloat(e.state) : null, ct = cur(te), ch = cur(he);
     return `<div class="pn"><div class="pt"><span>${title}</span><span><b style="color:${TC}">${ct != null ? fmt1(ct) + "°" : "—"}</b> · <b style="color:${HC}">${ch != null ? Math.round(ch) + " %" : "—"}</b></span></div>
       <div class="plot">${labs}<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${extra}
         ${YT ? `<path d="${path(T, YT)}" fill="none" stroke="${TC}" stroke-width="2.2" vector-effect="non-scaling-stroke"/>` : ""}
-        ${YH ? `<path d="${path(Hm, YH)}" fill="none" stroke="${HC}" stroke-width="2.2" vector-effect="non-scaling-stroke"/>` : ""}</svg></div></div>`;
+        ${YH ? `<path d="${path(Hm, YH)}" fill="none" stroke="${HC}" stroke-width="2.2" vector-effect="non-scaling-stroke"/>` : ""}</svg></div>
+      <div class="ax"><span>−24 h</span><span>−12 h</span><span>ahora</span></div></div>`;
   };
-  $("h24").innerHTML = room("Salón", s.ts, s.hs, false) + room("Dormitorio", s.td, s.hd, true) +
-    `<div class="pt" style="font-weight:500;font-size:11px;padding:0 34px"><span>hace 24 h</span><span>18 h</span><span>12 h</span><span>6 h</span><span>ahora</span></div>`;
+  $("h24").innerHTML = room("Salón", s.ts, s.hs, null) + room("Dormitorio", s.td, s.hd, s.dh) + room("Baño", s.tb, s.hb, s.db);
 }
 
-function renderHoy(ser){
-  const box = $("hoy"); if (!box || !h24Data) return;
-  const {s, by} = h24Data, t0 = new Date().setHours(0,0,0,0), end = Date.now();
-  const onOf = sw => { let ms = 0; if (!sw) return 0; const L = (by[sw.entity_id] || []).concat([{t: end, v: sw.state}]);
+function renderHoy(){
+  const box = $("hoy"); if (!box) return;
+  const t0 = new Date().setHours(0,0,0,0), end = Date.now();
+  const onOf = sw => { let ms = 0; if (!sw || !h24Data) return null; const L = (h24Data.by[sw.entity_id] || []).concat([{t: end, v: sw.state}]);
     for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on"){ const a = Math.max(t0, L[i].t), b = L[i+1].t; if (b > a) ms += b - a; } return ms; };
-  const onMs = onOf(s.dh), onB = onOf(s.db);
-  const T = ser(s.ts).concat(ser(s.td)).map(p => p.v), mean = e => { const v = ser(e).map(p => p.v); return v.length ? Math.round(v.reduce((a,b) => a+b, 0) / v.length) : null; };
-  const hS = mean(s.hs), hD = mean(s.hd), hB = mean(s.hb), hm = ms => `${Math.floor(ms/3600e3)} h ${String(Math.round(ms%3600e3/60e3)).padStart(2,"0")} min`,
-    hm2 = ms => `${Math.floor(ms/3600e3)}h${String(Math.round(ms%3600e3/60e3)).padStart(2,"0")}`;
+  const hm = ms => ms == null ? "—" : `${Math.floor(ms/3600e3)} h ${String(Math.round(ms%3600e3/60e3)).padStart(2,"0")} min`;
+  const s = h24Data ? h24Data.s : {};
   box.innerHTML = `
     <div class="r"><span>Gasto de hoy</span><span><b>${todayKWh != null ? eur(todayEUR ?? todayKWh*curPrice) : "—"}</b><small>${todayKWh != null ? fmt1(todayKWh) + " kWh" : ""}</small></span></div>
     <div class="r"><span>Gasto de ayer</span><span><b>${ayer ? eur(ayer.eur) : "—"}</b><small>${ayer ? fmt1(ayer.kwh) + " kWh" : ""}</small></span></div>
-    ${s.dh && s.db ? `<div class="r"><span>Deshum. hoy</span><span style="white-space:nowrap"><small>dorm.</small> <b>${hm2(onMs)}</b> · <small>baño</small> <b>${hm2(onB)}</b></span></div>`
-      : s.dh ? `<div class="r"><span>Deshumidificador hoy</span><span><b>${hm(onMs)}</b></span></div>` : ""}
-    <div class="r"><span>${s.hb ? "Humedad" : "Humedad media"}</span><span style="white-space:nowrap"><small>salón</small> <b>${hS != null ? hS + "%" : "—"}</b> · <small>dorm.</small> <b>${hD != null ? hD + "%" : "—"}</b>${s.hb ? ` · <small>baño</small> <b>${hB != null ? hB + "%" : "—"}</b>` : ""}</span></div>`;
+    ${s.dh ? `<div class="r"><span>Deshumidificador dormitorio hoy</span><span><b>${hm(onOf(s.dh))}</b></span></div>` : ""}
+    ${s.db ? `<div class="r"><span>Deshumidificador baño hoy</span><span><b>${hm(onOf(s.db))}</b></span></div>` : ""}`;
 }
 
 /* ---------- Entretenimiento: noticias de El País (RSS) en carrusel ---------- */
@@ -1229,11 +1240,11 @@ function renderMonths(ids){
   const cur = new Date().getMonth(); if (half == null) half = cur >= 6 ? 1 : 0;
   const tot = MESES.map((_,i) => ids.reduce((a,id) => a + ((yearLive[id] && yearLive[id][i].eur) || 0), 0));
   const mx = Math.max(...tot, 0.01);
-  $("months").innerHTML = tot.slice(half*6, half*6+6).map((v,j) => { const i = half*6 + j;
+  $("months").innerHTML = tot.map((v,i) => {
     return `<div class="${i===cur?"cur":""}"><span class="mv">${v > 0 ? (v >= 10 ? Math.round(v) : v.toFixed(v < 1 ? 2 : 1).replace(".", ",")) + " €" : "—"}</span><i style="height:${Math.max(2, Math.round(v/mx*100))}%"></i>${MESES[i]}</div>`; }).join("");
-  $("half").textContent = half ? "Jul – Dic ⇄" : "Ene – Jun ⇄";
+  $("half").textContent = new Date().getFullYear() + " · " + (v => v >= 10 ? Math.round(v) + " €" : v.toFixed(2).replace(".", ",") + " €")(tot.reduce((a,b) => a+b, 0));
 }
-$("half").onclick = () => { half = half ? 0 : 1; renderCost(); };
+
 document.querySelector(".cost").addEventListener("click", e => {
   if (!e.target.closest("#priceBtn")) return;
   const v = prompt("Precio de la luz en €/kWh (con impuestos):", String(store.get("kwh_price", 0.15)).replace(".", ","));
@@ -1474,6 +1485,7 @@ async function refreshHA(){
     refreshShop(); refreshNotes();
     if (tab === "pla") loadCalendar();
     if (tab === "cfg") renderCfg();
+    renderHoy();
   }catch(err){ handleErr(err); }
 }
 (async () => {
