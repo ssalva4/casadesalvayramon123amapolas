@@ -53,9 +53,13 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .dehum{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px 10px;border-radius:12px;background:rgba(80,140,200,.08);font-size:12.5px}
 .dehum .dx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}.dehum .dn{font-weight:700}.dehum .dt{color:var(--muted);font-size:11.5px}
 .dehum button{padding:6px 12px;border-radius:10px;font-weight:700;font-size:12.5px;background:rgba(0,0,0,.06)}
-.dehum.on{background:rgba(80,140,200,.16)}.dehum.on button{background:#3b7fc4;color:#fff}
+.dehum.on{background:rgba(80,140,200,.16)}.dehum.on > button{background:#3b7fc4;color:#fff}
 .dehum .dlock{width:40px;height:40px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none;background:#fff;color:#d64545;border:2px solid #d64545}
-.dehum .dlock .i{width:20px;height:20px}
+.dehum .dlock .i,.dehum .dforce .i{width:20px;height:20px}
+.dehum .dbtns{display:flex;gap:8px;flex:none}
+.dehum .dforce{width:40px;height:40px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none;background:#fff;color:#d99211;border:2px solid #e8a21f}
+.dehum .dforce.fz{background:#e8a21f;color:#fff;box-shadow:0 0 0 4px rgba(232,162,31,.2)}
+.dehum.fz{background:rgba(232,162,31,.14)}.dehum.fz .dt{color:#a86d06;font-weight:600}
 .dehum .dlock.lk{background:#d64545;color:#fff;box-shadow:0 0 0 4px rgba(214,69,69,.18)}
 .dehum.lk{background:rgba(214,69,69,.10)}.dehum.lk .dt{color:#b33a3a;font-weight:600}
 .hwarn{color:#d9822b;font-weight:700}
@@ -595,6 +599,7 @@ const IC = {
   flame:'<path d="M12 22c4 0 7-3 7-7 0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-2 2-5 5-5 8 0 4 3 7 7 7z"/>',
   drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
   power:'<path d="M12 3v9M6.3 7a8 8 0 1 0 11.4 0"/>',
+  bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
   moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'
 };
 const svg = n => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
@@ -910,6 +915,11 @@ const hst = id => (window.__states || []).find(x => x.entity_id === id);
 const hv = (id, d) => { const x = hst(id); return x && x.state !== "unknown" && x.state !== "unavailable" ? x.state : d; };
 const hhmm = id => String(hv(id, "")).slice(0, 5);
 const pctv = id => Math.round(parseFloat(hv(id, 60)));
+const FORCE_ID = r => `input_boolean.deshum_${r}_forzado`;
+const forceUntil = r => { const f = hst(FORCE_ID(r)); if (!f || f.state !== "on") return null;
+  const t = new Date(Date.parse(f.last_changed) + parseFloat(hv("input_number.deshum_forzado_horas", 2)) * 3600e3);
+  return String(t.getHours()).padStart(2,"0") + ":" + String(t.getMinutes()).padStart(2,"0"); };
+const forceBtn = r => hst(FORCE_ID(r)) ? (on => `<button class="dforce ${on ? "fz" : ""}" data-dforce="${on ? 1 : 0}" data-fid="${FORCE_ID(r)}" aria-label="${on ? "Quitar el encendido forzado" : "Encender ya, aunque esté fuera de horario"}" title="${on ? "Forzado: toca para quitarlo" : "Encender ya, fuera de horario"}">${svg("bolt")}</button>`)(hv(FORCE_ID(r)) === "on") : "";
 const enFranja = r => {   // ¿estamos en el horario de noche del deshumidificador de esa estancia?
   if (hv(`input_boolean.deshum_${r}_horario_noche`, "on") !== "on") return false;
   const a = hhmm(`input_datetime.deshum_${r}_noche_desde`) || "23:00", b = hhmm(`input_datetime.deshum_${r}_noche_hasta`) || "10:00";
@@ -926,7 +936,8 @@ function bathCard(){
   const pw = S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === "power" && /deshumidificador_ba[ñn]o/i.test(x.entity_id));
   const w = pw ? parseFloat(pw.state) : null, on = sw && sw.state === "on", lk = lkS && lkS.state === "on";
   const onAt = pctv("input_number.deshum_bano_enciende"), offAt = pctv("input_number.deshum_bano_apaga");
-  const dtxt = lk ? "bloqueado · no se enciende aunque haya humedad"
+  const fu = forceUntil("bano");
+  const dtxt = fu ? `encendido forzado · se quita a las ${fu}` : lk ? "bloqueado · no se enciende aunque haya humedad"
     : !sw || sw.state === "unavailable" ? "enchufe aún sin conectar a Home Assistant"
     : !on ? (enFranja("bano") ? `apagado de noche · vuelve a las ${hhmm("input_datetime.deshum_bano_noche_hasta") || "10:00"}` : `apagado · se enciende por encima del ${onAt} %`)
     : (w != null && w > 5 ? `secando · ${Math.round(w)} W · se apaga al ${offAt} %` : "con corriente pero parado · ¿depósito lleno?");
@@ -942,21 +953,22 @@ function bathCard(){
   return `<div class="row"><div><div class="room">Baño</div><div class="cur num">${!isNaN(t) ? fmt1(t) + "°" : "—"}</div>
       <div class="st">${!isNaN(h) ? humTxt(h).replace(/ · $/, "") : "sin sensor"}</div></div></div>
     ${gauge}
-    <div class="dehum ${lk ? "lk" : on ? "on" : ""}"><span class="dx"><span class="dn">Deshumidificador</span><span class="dt">${dtxt}</span></span>${btn}</div>
+    <div class="dehum ${fu ? "fz" : lk ? "lk" : on ? "on" : ""}"><span class="dx"><span class="dn">Deshumidificador</span><span class="dt">${dtxt}</span></span><span class="dbtns">${forceBtn("bano")}${btn}</span></div>
     <div class="bfoot">${foot}</div>`;
 }
 const dehumHTML = e => {
   const d = dehumOf(e); if (!d) return "";
   const franja = enFranja("dormitorio"), modoN = hv("input_boolean.deshum_dormitorio_con_modo_noche", "on") === "on" && hv("input_boolean.noche_dormitorio") === "on";
   const lkS = hst(DEHUM_LOCK), lk = lkS && lkS.state === "on";
-  const txt = lk ? "bloqueado · no se enciende aunque haya humedad"
+  const fu = forceUntil("dormitorio");
+  const txt = fu ? `encendido forzado · se quita a las ${fu}` : lk ? "bloqueado · no se enciende aunque haya humedad"
     : !d.on ? (franja ? `apagado de noche · vuelve a las ${hhmm("input_datetime.deshum_dormitorio_noche_hasta") || "10:00"}` : modoN ? "apagado por el modo Noche"
       : `apagado · se enciende por encima del ${pctv("input_number.deshum_dormitorio_enciende")} %`)
     : (d.w != null && d.w > 5 ? `secando · ${Math.round(d.w)} W · se apaga al ${pctv("input_number.deshum_dormitorio_apaga")} %` : "con corriente pero parado · ¿depósito lleno?");
   const btn = lkS
     ? `<button class="dlock ${lk ? "lk" : ""}" data-dlock="${lk ? 1 : 0}" aria-label="${lk ? "Desbloquear el deshumidificador" : "Bloquear el deshumidificador"}" title="${lk ? "Bloqueado: toca para que vuelva a funcionar solo" : "Toca para apagarlo y que no se encienda"}">${svg("power")}</button>`
     : `<button data-dehum="${esc(d.id)}" data-on="${d.on ? 1 : 0}">${d.on ? "Apagar" : "Encender"}</button>`;
-  return `<div class="dehum ${lk ? "lk" : d.on ? "on" : ""}"><span class="dx"><span class="dn">Deshumidificador</span><span class="dt">${txt}</span></span>${btn}</div>`;
+  return `<div class="dehum ${fu ? "fz" : lk ? "lk" : d.on ? "on" : ""}"><span class="dx"><span class="dn">Deshumidificador</span><span class="dt">${txt}</span></span><span class="dbtns">${lkS ? forceBtn("dormitorio") : ""}${btn}</span></div>`;
 };
 const termoTxt = e => {   // qué está haciendo el aire para llegar a tu temperatura
   const st = e.state, t = e.attributes.temperature;
@@ -989,6 +1001,12 @@ function renderACs(){
 }
 document.querySelectorAll(".t-cli .ac").forEach(card => card.addEventListener("click", async ev => {
   const b = ev.target.closest("button"); if (!b) return;
+  if (b.dataset.dforce){
+    b.style.opacity = .5;
+    try{ await service("input_boolean", b.dataset.dforce === "1" ? "turn_off" : "turn_on", {entity_id: b.dataset.fid}); setTimeout(refreshHA, 1500); }
+    catch(err){ b.style.opacity = 1; handleErr(err); }
+    return;
+  }
   if (b.dataset.dlock){
     b.style.opacity = .5;
     try{ await service("input_boolean", b.dataset.dlock === "1" ? "turn_off" : "turn_on", {entity_id: b.dataset.lockid || DEHUM_LOCK}); setTimeout(refreshHA, 1500); }
@@ -1446,7 +1464,10 @@ function renderCfg(force){
     ${cTime(`input_datetime.deshum_${r}_noche_desde`, "Desde las", cv(`input_boolean.deshum_${r}_horario_noche`) !== "on")}
     ${cTime(`input_datetime.deshum_${r}_noche_hasta`, "Hasta las", cv(`input_boolean.deshum_${r}_horario_noche`) !== "on")}
     ${dorm ? cTog("input_boolean.deshum_dormitorio_con_modo_noche", "Apagado también con el modo Noche") : ""}
-    ${cTog(r === "bano" ? DEHUM_BATH_LOCK : DEHUM_LOCK, "Bloqueado (botón rojo)")}</div>`;
+    ${cTog(r === "bano" ? DEHUM_BATH_LOCK : DEHUM_LOCK, "Bloqueado (botón rojo)")}
+    <h4>Encendido forzado (botón ⚡)</h4>
+    ${cTog(FORCE_ID(r), "Encendido ahora, fuera de horario")}
+    ${cNum("input_number.deshum_forzado_horas", "Se quita solo al cabo de", " h", 0.5, true)}</div>`;
   const aire = a => { const e = hst(a.id); if (!e) return "";
     const at = e.attributes, off = e.state === "off" || e.state === "unavailable";
     const swT = (k, label) => { const x = hst(a.sw[k]); return x ? cTog(a.sw[k], label, (cfgPend[a.sw[k]] ?? x.state) === "on") : ""; };
