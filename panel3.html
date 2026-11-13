@@ -762,6 +762,7 @@ const IC = {
   drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
   power:'<path d="M12 3v9M6.3 7a8 8 0 1 0 11.4 0"/>',
   bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'
 };
 const svg = n => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
@@ -1968,11 +1969,21 @@ async function ambAction(e){
     return; }
   await homeAction(e); renderAmb(); setTimeout(renderAmb, 1800);
 }
+/* alarma del iPhone (la manda un Atajo a input_text.alarma_iphone: "07:30,08:15|fecha") — solo se muestra, no suena */
+function alarmHTML(){
+  const x = hst("input_text.alarma_iphone"); if (!x || !x.state) return "";
+  const [list, when] = x.state.split("|"); if (when && Date.now() - Date.parse(when) > 2*86400e3) return "";
+  const now = new Date(), nowM = now.getHours() * 60 + now.getMinutes();
+  const ts = (list || "").split(",").map(t => t.trim()).filter(Boolean).map(t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; }).filter(v => !isNaN(v));
+  if (!ts.length) return `<div class="nal off">${svg("bell")}Sin alarma</div>`;
+  const next = ts.map(v => ({v, d: (v - nowM + 1440) % 1440 || 1440})).sort((a, b) => a.d - b.d)[0].v;
+  return `<div class="nal">${svg("bell")}Alarma ${pad(Math.floor(next / 60))}:${pad(next % 60)}${ts.length > 1 ? ` <small>+${ts.length - 1}</small>` : ""}</div>`;
+}
 function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return;
   const red = typeof inRed === "function" && inRed(); a.classList.toggle("redface", red);
   if (red){ const d = new Date(), ds = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"});
     a.classList.remove("night"); a.style.backgroundImage = "none";
-    a.innerHTML = `<div class="nf"><div class="nt">${pad(d.getHours())}:${pad(d.getMinutes())}</div><div class="nd">${ds[0].toUpperCase() + ds.slice(1)}</div>
+    a.innerHTML = `<div class="nf"><div class="nt">${pad(d.getHours())}:${pad(d.getMinutes())}</div><div class="nd">${ds[0].toUpperCase() + ds.slice(1)}</div>${alarmHTML()}
       <div class="nr">${HOME_ROOMS.map(r => { const v = roomTH(r.re); return `<div><small>${r.n}</small><b>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><em>${!isNaN(v.h) ? Math.round(v.h) + " %" : ""}</em></div>`; }).join("")}</div></div>`; return; }
   const h = new Date().getHours(); a.classList.toggle("night", h >= 0 && h < 7); a.style.backgroundImage = AMB_BG; a.innerHTML = ambHTML(); }
 function openAmb(){ if (ambOpen) return; ambOpen = true; if (typeof stopMini === "function") stopMini(); ambFace = Math.max(0, AMB_FACES.findIndex(f => f[0] === ambCfg().face)); $("amb").classList.add("on"); renderAmb(); }
@@ -2197,6 +2208,9 @@ body{background:var(--bgp)!important}
 #amb .nf .nr div{display:flex;flex-direction:column;align-items:center;gap:.6vh}
 #amb .nf .nr small{font-size:min(1.7vw,2.2vh);letter-spacing:.12em;text-transform:uppercase;color:#5e0b05;font-weight:700}
 #amb .nf .nr b{font-size:min(4.6vw,6vh);font-weight:300}
+#amb .nf .nal{display:flex;align-items:center;gap:.5em;margin-top:2.2vh;font-size:min(3vw,3.9vh);font-weight:500;color:#a3150b;padding:.35em .9em;border:1px solid #4a0904;border-radius:999px}
+#amb .nf .nal svg{width:1em;height:1em}#amb .nf .nal small{font-size:.7em;color:#6a0d07}
+#amb .nf .nal.off{color:#5e0b05;border-color:#2a0502}
 #amb .nf .nr em{font-style:normal;font-size:min(2.6vw,3.4vh);font-weight:400;color:#6a0d07}
 @media (max-width:900px){
   .hg{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:170px}
