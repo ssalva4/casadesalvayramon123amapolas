@@ -780,9 +780,9 @@ function show(t){
   if (t === "cfg" && typeof renderCfg === "function") renderCfg(true);
 }
 document.querySelectorAll(".nav button").forEach(b => b.onclick = () => show(b.dataset.t));
-let user = store.get("p2_user", "S");
+let user = store.get("p3_user", "S");
 function setUser(u){
-  user = u; store.set("p2_user", u);
+  user = u; store.set("p3_user", u);
   document.querySelectorAll(".av").forEach(x => x.classList.toggle("on", x.dataset.u === u));
   $("who").textContent = "Agenda de " + USERS[u].n;
   calCache = {}; renderPlanning(); loadCalendar(); refreshNotes();
