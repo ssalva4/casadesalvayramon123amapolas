@@ -1987,7 +1987,7 @@ function ambChrome(){   // que las franjas de arriba y abajo del iPad (barra de 
 }
 function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return; ambChrome();
   const red = typeof inRed === "function" && inRed(); a.classList.toggle("redface", red);
-  if (red){ const d = new Date(), ds = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"});
+  if (red){ a.style.setProperty("--nb", store.get("p3_red_lvl", .4)); const d = new Date(), ds = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"});
     a.classList.remove("night"); a.style.backgroundImage = "none";
     a.innerHTML = `<div class="nf"><div class="nt">${pad(d.getHours())}:${pad(d.getMinutes())}</div><div class="nd">${ds[0].toUpperCase() + ds.slice(1)}</div>${alarmHTML()}
       <div class="nr">${HOME_ROOMS.map(r => { const v = roomTH(r.re); return `<div><small>${r.n}</small><b>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><em>${!isNaN(v.h) ? Math.round(v.h) + " %" : ""}</em></div>`; }).join("")}</div></div>`; return; }
@@ -2207,6 +2207,7 @@ body{background:var(--bgp)!important}
 
 /* ---------- Modo descanso nocturno: negro y rojo, poco brillo ---------- */
 #amb.redface{background:#000!important;filter:none!important}
+#amb.redface .nf{opacity:var(--nb,.4)}
 html.ambon,html.ambon body{background:#0a1157!important}
 html.ambon.ambred,html.ambon.ambred body{background:#000!important}
 #amb .nf{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#b3170d;text-align:center;font-family:var(--font)}
@@ -2352,7 +2353,10 @@ ambCfgCard = function(){ const c = redCfg();
     <div class="cf-r"><span>Negro y rojo por la noche</span><button class="sw ${c.on ? "on" : ""}" data-red="on" role="switch" aria-checked="${c.on}" aria-label="Modo descanso"></button></div>
     <div class="cf-r"><span>Desde las</span><input type="time" data-redt="from" value="${c.from}" ${c.on ? "" : "disabled"}></div>
     <div class="cf-r"><span>Hasta las</span><input type="time" data-redt="to" value="${c.to}" ${c.on ? "" : "disabled"}></div>
+    ${cSeg("Brillo del reloj rojo", String(store.get("p3_red_lvl", .4)), [["0.7", "Medio"], ["0.4", "Bajo"], ["0.22", "Muy bajo"], ["0.12", "Mínimo"]], v => `data-redl="${v}" data-v="${v}"`)}
     <div class="cf-note">En esas horas la pantalla en reposo es un reloj negro y rojo tenue, y al empezar pasa sola a ella. Si la tocas, el panel se ve normal.</div></div>`; };
+$("cfg").addEventListener("click", ev => { const l = ev.target.closest("[data-redl]"); if (!l) return; ev.stopImmediatePropagation();
+  store.set("p3_red_lvl", parseFloat(l.dataset.redl)); renderCfg(true); renderAmb(); }, true);
 $("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-red]"); if (!b) return; ev.stopImmediatePropagation();
   store.set("p3_red_on", !redCfg().on); syncRed(); renderCfg(true); }, true);
 $("cfg").addEventListener("change", ev => { const i = ev.target.closest("[data-redt]"); if (!i || !i.value) return; ev.stopImmediatePropagation();
