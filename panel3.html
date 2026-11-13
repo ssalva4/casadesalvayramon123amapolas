@@ -2189,10 +2189,6 @@ body{background:var(--bgp)!important}
 @media (max-width:900px){ #amb .gg{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:20vh;height:88vh;overflow:auto} #amb .thermo{grid-column:1/3;grid-row:span 2} }
 
 /* ---------- Modo descanso nocturno: negro y rojo, poco brillo ---------- */
-html.redn,html.redn body{background:#000!important}
-html.redn .app{filter:invert(1) url(#rojo) brightness(.75)}
-html.redn .app video,html.redn .app img{filter:invert(1)}
-html.redn #homebar i,html.redn #ccgrab i{background:rgba(150,18,10,.7)}
 #amb.redface{background:#000!important;filter:none!important}
 #amb .nf{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#b3170d;text-align:center;font-family:var(--font)}
 #amb .nf .nt{font-size:min(30vw,46vh);font-weight:200;letter-spacing:-.05em;line-height:.9;font-variant-numeric:tabular-nums;color:#c2190e}
@@ -2331,7 +2327,7 @@ ambCfgCard = function(){ const c = redCfg();
     <div class="cf-r"><span>Negro y rojo por la noche</span><button class="sw ${c.on ? "on" : ""}" data-red="on" role="switch" aria-checked="${c.on}" aria-label="Modo descanso"></button></div>
     <div class="cf-r"><span>Desde las</span><input type="time" data-redt="from" value="${c.from}" ${c.on ? "" : "disabled"}></div>
     <div class="cf-r"><span>Hasta las</span><input type="time" data-redt="to" value="${c.to}" ${c.on ? "" : "disabled"}></div>
-    <div class="cf-note">En esas horas todo se ve en negro y rojo tenue para no molestar a oscuras, y al empezar pasa a la pantalla en reposo.</div></div>`; };
+    <div class="cf-note">En esas horas la pantalla en reposo es un reloj negro y rojo tenue, y al empezar pasa sola a ella. Si la tocas, el panel se ve normal.</div></div>`; };
 $("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-red]"); if (!b) return; ev.stopImmediatePropagation();
   store.set("p3_red_on", !redCfg().on); syncRed(); renderCfg(true); }, true);
 $("cfg").addEventListener("change", ev => { const i = ev.target.closest("[data-redt]"); if (!i || !i.value) return; ev.stopImmediatePropagation();
