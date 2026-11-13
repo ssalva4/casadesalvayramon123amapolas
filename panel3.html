@@ -336,7 +336,8 @@ a{color:inherit;text-decoration:none}
 .yback{position:absolute;top:10px;left:10px;z-index:3;background:rgba(0,0,0,.6);color:#fff;border-radius:999px;padding:7px 12px;font-weight:700;font-size:13px}
 .xclose{position:absolute;top:10px;right:10px;z-index:3;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-weight:700}
 .screen .live{z-index:2}
-.screen .tvclock{position:absolute;top:12px;right:62px;z-index:3;pointer-events:none;background:rgba(0,0,0,.5);color:#fff;font-family:var(--head);font-size:15px;font-weight:600;letter-spacing:.02em;padding:4px 10px;border-radius:8px;font-variant-numeric:tabular-nums;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#entClock{font-family:var(--head);font-size:34px;font-weight:300;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums;margin-left:16px;line-height:1;padding:2px 14px;border-radius:12px;background:rgba(255,255,255,.55)}
+.top{align-items:center}
 .ytwrap{flex:1;position:relative;border-radius:14px;overflow:hidden;min-height:118px}
 .ytbox{width:100%;height:100%;min-height:118px;border-radius:14px;background:linear-gradient(135deg,#2a1414,#3b1d1d);display:flex;align-items:center;gap:14px;padding:0 16px;text-align:left}
 .ytbox .pl{width:52px;height:36px;border-radius:10px;background:#ff3b3b;display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
@@ -1988,13 +1989,13 @@ setInterval(() => { renderHome(); loadHomeEvents(); }, 5000);
 show("hom");
 </script>
 <script>
-/* La hora siempre visible sobre la pantalla de la tele */
+/* La hora grande junto al título «Entretenimiento» */
 (() => {
-  const sc = document.getElementById("screen"); if (!sc) return;
-  const put = () => { let c = sc.querySelector(".tvclock"); if (!c){ c = document.createElement("span"); c.className = "tvclock"; c.setAttribute("aria-hidden", "true"); sc.appendChild(c); }
-    const d = new Date(); c.textContent = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); };
-  new MutationObserver(() => { if (!sc.querySelector(".tvclock")) put(); }).observe(sc, {childList: true});
-  put(); setInterval(put, 10000);
+  const h1 = document.getElementById("title"); if (!h1) return;
+  const c = document.createElement("span"); c.id = "entClock"; c.setAttribute("aria-label", "Hora"); h1.after(c);
+  const put = () => { const d = new Date(); c.textContent = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    c.style.display = tab === "ent" ? "" : "none"; };
+  put(); setInterval(put, 2000);
 })();
 </script>
 </body>
