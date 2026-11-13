@@ -1998,5 +1998,180 @@ show("hom");
   put(); setInterval(put, 2000);
 })();
 </script>
+<style id="v3b-style">
+/* ===== V3b: lenguaje visual de terminal de pared (fondo claro liso, mosaicos cuadrados, activo en lavanda) ===== */
+:root{
+  --bgp:#f2f2f7; --tl:#e5e5ea; --tl-t:#6e6e73; --tl-s:#a1a1a6;
+  --lav:#cdc6ef; --lav-t:#5a4cb0; --lav-s:#8a7fcb; --ink:#1c1c1e; --muted:#8e8e93; --soft:#3a3a3c;
+  --card:#ffffff; --card2:#ececf1; --line:rgba(0,0,0,.07);
+}
+html,body{background:var(--bgp)!important}
+body{background:var(--bgp)!important}
+.card,.hw{background:#fff!important;border:0!important;box-shadow:none!important;border-radius:28px!important}
+.main{padding:22px 30px 30px!important}
+/* cabecera de cada pantalla: título grande y negrita, hora a la derecha */
+.top{align-items:center!important}
+.top h1{font-size:44px!important;font-weight:700!important;letter-spacing:-.025em;color:#000}
+.top .sub{display:none}
+.top .back{background:none!important;color:var(--lav-t)!important;font-size:19px!important;font-weight:500!important;padding:6px 2px!important}
+#v3time{margin-left:auto;font-size:28px;font-weight:400;color:#000;font-variant-numeric:tabular-nums}
+#entClock{background:none!important;font-size:44px!important;font-weight:300!important;color:var(--muted)!important;padding:0 6px!important}
+.lbl{font-size:19px!important;font-weight:600!important;letter-spacing:-.01em!important;text-transform:none!important;color:#000!important;margin-bottom:12px!important}
+.pill{background:var(--bgp)!important;color:var(--soft)!important;font-size:13px!important;padding:5px 12px!important}
+/* botones de modos y en general, como mosaicos */
+.modes button{background:var(--tl)!important;color:var(--tl-t)!important;box-shadow:none!important;border-radius:16px!important;padding:10px 0!important}
+.modes button.on,.modes button.heat,.modes button.night.on{background:var(--lav)!important;color:var(--lav-t)!important}
+.modes button.on.offm{background:#f6d2d0!important;color:#c0392b!important}
+.stemp{background:var(--bgp)!important;border-radius:18px!important}
+.dehum{background:var(--bgp)!important;border-radius:20px!important}
+.dehum.on{background:var(--lav)!important}.dehum.on .dn,.dehum.on .dt{color:var(--lav-t)!important}
+.seg button{background:var(--tl)!important;color:var(--tl-t)!important;border-radius:12px!important}
+.seg button.on{background:var(--lav)!important;color:var(--lav-t)!important}
+.sw.on{background:#8f80dd!important}
+/* tele: pantalla tipo cámara (esquinas grandes, etiqueta abajo) y canales en mosaico */
+.screen{border-radius:30px!important;box-shadow:none!important}
+.screen .live{top:16px!important;left:18px!important;background:none!important;font-size:15px!important;font-weight:600!important;letter-spacing:0!important;text-transform:none;text-shadow:0 1px 6px rgba(0,0,0,.6);padding:0!important}
+.screen .live::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff453a;margin-right:7px;vertical-align:1px}
+.chs button.logo{border-radius:16px!important;opacity:1!important;background:var(--tl)!important;box-shadow:none!important;padding:5px!important}
+.chs button.logo img{border-radius:11px}
+.chs button.logo.on{background:var(--lav)!important;box-shadow:none!important}
+.r-item,.radio .st{background:var(--bgp)}
+#cc .ccp{background:rgba(242,242,247,.92)!important}
+
+/* ---------- Inicio ---------- */
+.tab.t-hom.on{display:flex!important;flex-direction:column;gap:16px}
+#home{display:flex!important;flex-direction:column;gap:16px;flex:1;min-height:0}
+.h3t{display:flex;align-items:baseline;justify-content:space-between;padding:4px 6px 0}
+.h3t h2{font-size:52px;font-weight:700;letter-spacing:-.03em;margin:0;color:#000}
+.h3t span{font-size:30px;color:#000;font-variant-numeric:tabular-nums}
+.pills{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.pills::-webkit-scrollbar{display:none}
+.pl{flex:none;display:flex;align-items:center;gap:8px;background:#fff;border-radius:999px;padding:11px 20px;font-size:21px;font-weight:500;white-space:nowrap}
+.pl svg{width:24px;height:24px}
+.hg{flex:1;min-height:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:14px}
+.tl{background:var(--tl);border-radius:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px;text-align:center;min-width:0;min-height:0;overflow:hidden;transition:transform .12s,background .2s;color:var(--tl-t)}
+.tl:active{transform:scale(.96)}
+.tl .ti{width:46px;height:46px;margin-bottom:8px;color:#6e6e73}
+.tl .ti svg{width:100%;height:100%}
+.tl b{font-size:19px;font-weight:600;line-height:1.15;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tl small{font-size:16px;color:var(--tl-s);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tl.on{background:var(--lav);color:var(--lav-t)}.tl.on .ti{color:var(--lav-t)}.tl.on small{color:var(--lav-s)}
+.tl.fz{background:#f8dfb1;color:#9a5b00}.tl.fz .ti{color:#c77a00}.tl.fz small{color:#c28a3a}
+.tl.lk{background:#f6d2d0;color:#b0372c}.tl.lk .ti{color:#c0392b}.tl.lk small{color:#d0786f}
+.tl.clk{background:#fff;padding:6px}
+.tl.clk svg{width:100%;height:100%}
+.tl.casa{background:#fff}
+.tl.casa .rm{display:flex;flex-direction:column;gap:6px;width:100%;padding:0 6px}
+.tl.casa .rm div{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;color:var(--muted)}
+.tl.casa .rm b{font-size:21px;font-weight:500;color:#000;display:inline}
+.tl.tv{padding:0;background:#1c1c1e;color:#fff;justify-content:flex-end;align-items:flex-start;position:relative}
+.tl.tv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9}
+.tl.tv .tvb{position:relative;margin:0 0 14px 16px;text-align:left;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.tl.tv .tvb b{font-size:17px}.tl.tv .tvb small{color:rgba(255,255,255,.8);font-size:14px}
+.tl.wxt{background:#fff;color:#000;grid-column:auto!important}.tl.wxt .ti{width:62px;height:62px;margin:0}.tl.wxt b{font-size:34px;font-weight:400}
+.tl.ag{background:#fff;align-items:flex-start;justify-content:flex-start;text-align:left;padding:16px 18px;gap:6px}
+.tl.ag .ah{font-size:15px;font-weight:600;color:#ff453a;text-transform:capitalize}
+.tl.ag .ev{font-size:15px;line-height:1.25;color:#000;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl.ag .ev em{font-style:normal;color:var(--muted);font-size:13px;display:block}
+.tl.eur{background:#fff;color:#000}.tl.eur b{font-size:34px;font-weight:400}
+#cc .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#cc .tl{aspect-ratio:1.15}
+#cc .tl .ti{width:34px;height:34px}#cc .tl b{font-size:15px}#cc .tl small{font-size:13px}
+@media (max-width:900px){
+  .hg{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:170px}
+  .h3t h2{font-size:38px}.pl{font-size:16px;padding:8px 14px}
+}
+</style>
+<script>
+/* ===== V3b: Inicio en mosaicos cuadrados ===== */
+const TI = {
+  fan:'<circle cx="12" cy="12" r="1.6"/><path d="M12 10.4c-.3-3 .6-6.4 3.3-6.4 2.4 0 2.6 3.2.3 4.6l-3.6 1.8M13.6 12c3-.3 6.4.6 6.4 3.3 0 2.4-3.2 2.6-4.6.3L13.6 12M12 13.6c.3 3-.6 6.4-3.3 6.4-2.4 0-2.6-3.2-.3-4.6l3.6-1.8M10.4 12c-3 .3-6.4-.6-6.4-3.3 0-2.4 3.2-2.6 4.6-.3l1.8 3.6"/>',
+  moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="currentColor"/>',
+  drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z" fill="currentColor"/>',
+  bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z" fill="currentColor"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  sun:'<circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/>',
+  door:'<path d="M14 3H6v18h8"/><path d="M10 12h11M18 9l3 3-3 3"/>',
+  power:'<path d="M12 3v9M6.3 7a8 8 0 1 0 11.4 0"/>',
+  therm:'<path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z"/>',
+  hum:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+  tv:'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/>',
+  cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  eur:'<path d="M18 7a7 7 0 1 0 0 10M4 10h9M4 14h9"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/>'
+};
+const tsvg = (n, c) => `<svg viewBox="0 0 24 24" fill="none" stroke="${c || "currentColor"}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TI[n]}</svg>`;
+function analogClock(){
+  const d = new Date(), h = d.getHours() % 12, m = d.getMinutes(), s = d.getSeconds();
+  let t = "";
+  for (let i = 0; i < 60; i++){ const a = i * 6 * Math.PI / 180, big = i % 5 === 0, r1 = big ? 41 : 43.5, r2 = 46;
+    t += `<line x1="${50 + r1*Math.sin(a)}" y1="${50 - r1*Math.cos(a)}" x2="${50 + r2*Math.sin(a)}" y2="${50 - r2*Math.cos(a)}" stroke="${big ? "#3a3a3c" : "#c7c7cc"}" stroke-width="${big ? 1.1 : .6}"/>`; }
+  for (let i = 1; i <= 12; i++){ const a = i * 30 * Math.PI / 180; t += `<text x="${50 + 34*Math.sin(a)}" y="${50 - 34*Math.cos(a) + 3.6}" text-anchor="middle" font-size="10" font-weight="500" fill="#6e6e73">${i}</text>`; }
+  const hA = (h + m/60) * 30, mA = (m + s/60) * 6;
+  return `<svg viewBox="0 0 100 100" aria-label="Reloj ${pad(d.getHours())}:${pad(m)}">${t}
+    <line x1="50" y1="50" x2="50" y2="27" stroke="#1c1c1e" stroke-width="3.2" stroke-linecap="round" transform="rotate(${hA} 50 50)"/>
+    <line x1="50" y1="50" x2="50" y2="13" stroke="#1c1c1e" stroke-width="2.2" stroke-linecap="round" transform="rotate(${mA} 50 50)"/>
+    <g class="sec" style="transform-origin:50px 50px;animation:secs 60s linear infinite;animation-delay:-${s}s"><line x1="50" y1="58" x2="50" y2="10" stroke="#8f80dd" stroke-width=".9" stroke-linecap="round"/></g>
+    <circle cx="50" cy="50" r="2.4" fill="#8f80dd"/><circle cx="50" cy="50" r="1" fill="#fff"/></svg>`;
+}
+const T = (cls, ic, name, sub, attrs) => `<button class="tl ${cls}" ${attrs || ""}><span class="ti">${tsvg(ic)}</span><b>${name}</b><small>${sub}</small></button>`;
+function homeTiles(){
+  const out = {};
+  HOME_ROOMS.forEach(r => {
+    if (r.ac){ const e = hst(r.ac); if (e){ const st = hPend[r.ac] ?? e.state, on = st !== "off" && st !== "unavailable";
+      out["ac_" + r.k] = T(on ? "on" : "", st === "cool" ? "fan" : "therm", "Aire", `${r.n}${on ? " · " + (MODE_TXT[st] || st) : ""}`, `data-hac="${r.ac}" data-on="${on ? 1 : 0}"`); } }
+    if (r.nt && hst(r.nt)){ const on = hs(r.nt) === "on"; out["nt_" + r.k] = T(on ? "on" : "", "moon", "Noche", r.n, `data-hnt="${r.nt}" data-on="${on ? 1 : 0}"`); }
+    if (r.dh && hst(r.lk)){ const F = FORCE_ID(r.k), lk = hs(r.lk) === "on", fz = hs(F) === "on", sw = hst(r.dh), run = sw && sw.state === "on";
+      out["dh_" + r.k] = T(fz ? "fz" : lk ? "lk" : run ? "on" : "", fz ? "bolt" : lk ? "lock" : "drop", "Deshumidificador",
+        `${r.n} · ${fz ? "forzado" : lk ? "bloqueado" : run ? "secando" : "automático"}`, `data-hdh="${r.k}" data-mode="${fz ? "fz" : lk ? "lk" : "auto"}"`); }
+  });
+  return out;
+}
+tilesHTML = function(){ const o = homeTiles(); return ["ac_salon", "ac_dormitorio", "nt_salon", "nt_dormitorio", "dh_dormitorio", "dh_bano"].map(k => o[k] || "").join(""); };
+renderHome = function(){
+  const box = $("home"); if (!box || tab !== "hom") return;
+  const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), c = window.__cost || {};
+  const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)})), Ts = R.map(x => x.v.t).filter(v => !isNaN(v)), Hs = R.map(x => x.v.h).filter(v => !isNaN(v));
+  const nAc = HOME_ROOMS.filter(r => r.ac && hst(r.ac) && !["off", "unavailable"].includes(hPend[r.ac] ?? hst(r.ac).state)).length;
+  const nDh = HOME_ROOMS.filter(r => r.dh && hst(r.dh) && hst(r.dh).state === "on").length;
+  const pills = `<div class="pills">
+    <button class="pl" data-go="cli">${tsvg("therm", "#4aa3f0")}<span style="color:#4aa3f0">${Ts.length ? fmt1(Math.min(...Ts)) + "–" + fmt1(Math.max(...Ts)) + "°" : "—"}</span></button>
+    <button class="pl" data-go="cli">${tsvg("hum", "#3b7fc4")}<span style="color:#3b7fc4">${Hs.length ? Math.round(Math.min(...Hs)) + "–" + Math.round(Math.max(...Hs)) + " %" : "—"}</span></button>
+    <button class="pl" data-go="cli">${tsvg("fan", "#e8822f")}<span style="color:#e8822f">${nAc}</span></button>
+    <button class="pl" data-go="cli">${tsvg("drop", "#1f9e91")}<span style="color:#1f9e91">${nDh}</span></button>
+    <button class="pl" data-go="cos">${tsvg("eur", "#e0a400")}<span style="color:#c98f00">${c.mes != null ? eur(c.mes) : "—"}</span></button>
+    <button class="pl" data-go="ent">${tsvg("tv", "#636366")}</button>
+    <button class="pl" data-go="pla">${tsvg("cal", "#ff453a")}</button>
+    <button class="pl" data-go="cfg">${tsvg("gear", "#636366")}</button></div>`;
+  const chn = CHANNELS.find(x => x.k === ch) || {k: "la1", n: "La 1"};
+  const logo = LOGOS[chn.k] || "";
+  const tvOnNow = typeof tvOn !== "undefined" && (tvOn || ytOn);
+  const tvTile = `<button class="tl tv" data-go="ent">${logo ? `<img src="${logo}" alt="">` : ""}<span class="tvb"><b>${esc(chn.n)}</b><small>${tvOnNow ? "● En directo" : "Tele · toca para ver"}</small></span></button>`;
+  const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
+  const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
+  const ev = homeEv.evs[0];
+  const agT = `<button class="tl ag" data-go="pla"><span class="ah">${d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric"})}</span>${homeEv.evs.slice(0, 3).map(e => `<span class="ev"><em>${evWhen(e)}</em>${esc(e.summary || "")}</span>`).join("") || '<span class="ev" style="color:var(--muted)">Sin planes hoy ni mañana</span>'}</button>`;
+  const eurT = `<button class="tl eur" data-go="cos"><span class="ti" style="color:#e0a400">${tsvg("eur")}</span><b>${c.mes != null ? eur(c.mes) : "—"}</b><small>luz de ${d.toLocaleDateString("es-ES", {month:"long"})}</small></button>`;
+  box.innerHTML = `<div class="h3t"><h2>Mi casa</h2><span>${pad(d.getHours())}:${pad(d.getMinutes())}</span></div>${pills}
+    <div class="hg">
+      <div class="tl clk" aria-hidden="false">${analogClock()}</div>${o.ac_salon || ""}${o.ac_dormitorio || ""}${wxT}
+      ${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}
+      ${tvTile}${casa}${o.nt_salon || ""}${o.nt_dormitorio || ""}
+      ${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}
+      ${o.dh_dormitorio || ""}${o.dh_bano || ""}${eurT}${agT}
+      ${T("", "power", "Aires", "Apagar todos", 'data-scr="aires_off"')}
+    </div>`;
+};
+renderCC = function(){ if (!ccOpen) return; const p = $("ccp"); const d = new Date();
+  p.innerHTML = `<div class="cch"><b>${pad(d.getHours())}:${pad(d.getMinutes())}</b><span>Centro de control</span></div><div class="tiles">${tilesHTML()}</div>
+    <div class="tiles">${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "power", "Aires", "Apagar todos", 'data-scr="aires_off"')}</div>
+    <div class="ccx">Deshumidificadores: cada toque pasa de Automático → Forzado → Bloqueado.</div>`; };
+/* hora siempre arriba a la derecha en cada pantalla */
+(() => { const top = document.querySelector(".top"); if (!top) return; const s = document.createElement("span"); s.id = "v3time"; top.appendChild(s);
+  const put = () => { const d = new Date(); s.textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()); s.style.display = tab === "ent" ? "none" : ""; }; put(); setInterval(put, 5000);
+  const st = document.createElement("style"); st.textContent = "@keyframes secs{to{transform:rotate(360deg)}}"; document.head.appendChild(st); })();
+$("home").addEventListener("click", ev => { const p = ev.target.closest("button[data-go]"); if (p){ ev.stopImmediatePropagation(); show(p.dataset.go); } }, true);
+renderHome();
+</script>
 </body>
 </html>
