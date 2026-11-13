@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" id="themeColor" content="#f2f2f7">
 <meta name="apple-mobile-web-app-title" content="Casa">
 <style>
 :root{
@@ -1979,7 +1980,12 @@ function alarmHTML(){
   const next = ts.map(v => ({v, d: (v - nowM + 1440) % 1440 || 1440})).sort((a, b) => a.d - b.d)[0].v;
   return `<div class="nal">${svg("bell")}Alarma ${pad(Math.floor(next / 60))}:${pad(next % 60)}${ts.length > 1 ? ` <small>+${ts.length - 1}</small>` : ""}</div>`;
 }
-function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return;
+function ambChrome(){   // que las franjas de arriba y abajo del iPad (barra de estado y zona inferior) también se pongan oscuras
+  const red = ambOpen && typeof inRed === "function" && inRed(), h = document.documentElement;
+  h.classList.toggle("ambon", ambOpen); h.classList.toggle("ambred", red);
+  const m = document.getElementById("themeColor"); if (m) m.setAttribute("content", !ambOpen ? "#f2f2f7" : red ? "#000000" : "#0a1157");
+}
+function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return; ambChrome();
   const red = typeof inRed === "function" && inRed(); a.classList.toggle("redface", red);
   if (red){ const d = new Date(), ds = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"});
     a.classList.remove("night"); a.style.backgroundImage = "none";
@@ -1987,7 +1993,7 @@ function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return;
       <div class="nr">${HOME_ROOMS.map(r => { const v = roomTH(r.re); return `<div><small>${r.n}</small><b>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><em>${!isNaN(v.h) ? Math.round(v.h) + " %" : ""}</em></div>`; }).join("")}</div></div>`; return; }
   const h = new Date().getHours(); a.classList.toggle("night", h >= 0 && h < 7); a.style.backgroundImage = AMB_BG; a.innerHTML = ambHTML(); }
 function openAmb(){ if (ambOpen) return; ambOpen = true; if (typeof stopMini === "function") stopMini(); ambFace = Math.max(0, AMB_FACES.findIndex(f => f[0] === ambCfg().face)); $("amb").classList.add("on"); renderAmb(); }
-function closeAmb(){ ambOpen = false; $("amb").classList.remove("on"); lastAct = Date.now(); if (tab !== "ent" && tab !== "cfg") show("hom"); }
+function closeAmb(){ ambOpen = false; $("amb").classList.remove("on"); ambChrome(); lastAct = Date.now(); if (tab !== "ent" && tab !== "cfg") show("hom"); }
 (() => {
   const a = document.createElement("div"); a.id = "amb"; a.setAttribute("role", "dialog"); a.setAttribute("aria-label", "Pantalla en reposo"); document.body.appendChild(a);
   let x0 = null, y0 = null;
@@ -2201,6 +2207,8 @@ body{background:var(--bgp)!important}
 
 /* ---------- Modo descanso nocturno: negro y rojo, poco brillo ---------- */
 #amb.redface{background:#000!important;filter:none!important}
+html.ambon,html.ambon body{background:#0a1157!important}
+html.ambon.ambred,html.ambon.ambred body{background:#000!important}
 #amb .nf{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#b3170d;text-align:center;font-family:var(--font)}
 #amb .nf .nt{font-size:min(30vw,46vh);font-weight:200;letter-spacing:-.05em;line-height:.9;font-variant-numeric:tabular-nums;color:#c2190e}
 #amb .nf .nd{font-size:min(3.4vw,4.4vh);font-weight:500;color:#7a0f08;margin-top:1.5vh}
