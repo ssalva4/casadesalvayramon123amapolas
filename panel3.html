@@ -603,7 +603,7 @@ body.at-home #homebar{display:none}
 #amb .fx{display:flex;align-items:center;gap:.25em}#amb .fx svg{width:1em;height:1em}
 </style>
 </head>
-<body>
+<body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
 <div class="app">
   <aside class="side">
     <div class="brand">CASA<small>Salva y Ramón</small></div>
@@ -1968,7 +1968,13 @@ async function ambAction(e){
     return; }
   await homeAction(e); renderAmb(); setTimeout(renderAmb, 1800);
 }
-function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return; const h = new Date().getHours(); a.classList.toggle("night", h >= 0 && h < 7); a.style.backgroundImage = AMB_BG; a.innerHTML = ambHTML(); }
+function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return;
+  const red = typeof inRed === "function" && inRed(); a.classList.toggle("redface", red);
+  if (red){ const d = new Date(), ds = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"});
+    a.classList.remove("night"); a.style.backgroundImage = "none";
+    a.innerHTML = `<div class="nf"><div class="nt">${pad(d.getHours())}:${pad(d.getMinutes())}</div><div class="nd">${ds[0].toUpperCase() + ds.slice(1)}</div>
+      <div class="nr">${HOME_ROOMS.map(r => { const v = roomTH(r.re); return `<div><small>${r.n}</small><b>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b></div>`; }).join("")}</div></div>`; return; }
+  const h = new Date().getHours(); a.classList.toggle("night", h >= 0 && h < 7); a.style.backgroundImage = AMB_BG; a.innerHTML = ambHTML(); }
 function openAmb(){ if (ambOpen) return; ambOpen = true; if (typeof stopMini === "function") stopMini(); ambFace = Math.max(0, AMB_FACES.findIndex(f => f[0] === ambCfg().face)); $("amb").classList.add("on"); renderAmb(); }
 function closeAmb(){ ambOpen = false; $("amb").classList.remove("on"); lastAct = Date.now(); if (tab !== "ent" && tab !== "cfg") show("hom"); }
 (() => {
@@ -2181,6 +2187,20 @@ body{background:var(--bgp)!important}
 #amb .hint{display:none}
 #amb .dots{bottom:1.4vh}
 @media (max-width:900px){ #amb .gg{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:20vh;height:88vh;overflow:auto} #amb .thermo{grid-column:1/3;grid-row:span 2} }
+
+/* ---------- Modo descanso nocturno: negro y rojo, poco brillo ---------- */
+html.redn,html.redn body{background:#000!important}
+html.redn .app{filter:invert(1) url(#rojo) brightness(.75)}
+html.redn .app video,html.redn .app img{filter:invert(1)}
+html.redn #homebar i,html.redn #ccgrab i{background:rgba(150,18,10,.7)}
+#amb.redface{background:#000!important;filter:none!important}
+#amb .nf{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#b3170d;text-align:center;font-family:var(--font)}
+#amb .nf .nt{font-size:min(30vw,46vh);font-weight:200;letter-spacing:-.05em;line-height:.9;font-variant-numeric:tabular-nums;color:#c2190e}
+#amb .nf .nd{font-size:min(3.4vw,4.4vh);font-weight:500;color:#7a0f08;margin-top:1.5vh}
+#amb .nf .nr{display:flex;gap:min(6vw,70px);margin-top:6vh;color:#8c1209}
+#amb .nf .nr div{display:flex;flex-direction:column;align-items:center;gap:.6vh}
+#amb .nf .nr small{font-size:min(1.7vw,2.2vh);letter-spacing:.12em;text-transform:uppercase;color:#5e0b05;font-weight:700}
+#amb .nf .nr b{font-size:min(4.6vw,6vh);font-weight:300}
 @media (max-width:900px){
   .hg{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:170px}
   .tl.tv.wide{grid-column:1/3;grid-row:span 2}
@@ -2290,6 +2310,31 @@ renderCC = function(){ if (!ccOpen) return; const p = $("ccp"); const d = new Da
   const st = document.createElement("style"); st.textContent = "@keyframes secs{to{transform:rotate(360deg)}}"; document.head.appendChild(st); })();
 $("home").addEventListener("click", ev => { const p = ev.target.closest("button[data-go]"); if (p){ ev.stopImmediatePropagation(); show(p.dataset.go); } }, true);
 renderHome();
+</script>
+<script>
+/* Modo descanso de 23:00 a 7:00 (se cambia en Ajustes): pantalla en negro y rojo, y pasa sola a la pantalla en reposo */
+const redCfg = () => ({on: store.get("p3_red_on", true), from: store.get("p3_red_from", "23:00"), to: store.get("p3_red_to", "07:00")});
+const inRed = () => { const c = redCfg(); if (!c.on) return false; const d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes());
+  return c.from > c.to ? (n >= c.from || n < c.to) : (n >= c.from && n < c.to); };
+let wasRed = null;
+function syncRed(){
+  const r = inRed(); document.documentElement.classList.toggle("redn", r);
+  if (r && wasRed === false && !tvOn && !ytOn) openAmb();   // al empezar la franja, a la pantalla en reposo
+  if (wasRed !== null && r !== wasRed) renderAmb();
+  wasRed = r;
+}
+syncRed(); setInterval(syncRed, 20000);
+const _ambCfgCard = ambCfgCard;
+ambCfgCard = function(){ const c = redCfg();
+  return _ambCfgCard() + `<div class="card"><h3>🌙 Modo descanso (este aparato)</h3>
+    <div class="cf-r"><span>Negro y rojo por la noche</span><button class="sw ${c.on ? "on" : ""}" data-red="on" role="switch" aria-checked="${c.on}" aria-label="Modo descanso"></button></div>
+    <div class="cf-r"><span>Desde las</span><input type="time" data-redt="from" value="${c.from}" ${c.on ? "" : "disabled"}></div>
+    <div class="cf-r"><span>Hasta las</span><input type="time" data-redt="to" value="${c.to}" ${c.on ? "" : "disabled"}></div>
+    <div class="cf-note">En esas horas todo se ve en negro y rojo tenue para no molestar a oscuras, y al empezar pasa a la pantalla en reposo.</div></div>`; };
+$("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-red]"); if (!b) return; ev.stopImmediatePropagation();
+  store.set("p3_red_on", !redCfg().on); syncRed(); renderCfg(true); }, true);
+$("cfg").addEventListener("change", ev => { const i = ev.target.closest("[data-redt]"); if (!i || !i.value) return; ev.stopImmediatePropagation();
+  store.set(i.dataset.redt === "from" ? "p3_red_from" : "p3_red_to", i.value); syncRed(); }, true);
 </script>
 </body>
 </html>
