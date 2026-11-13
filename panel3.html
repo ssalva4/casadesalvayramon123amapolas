@@ -2272,7 +2272,10 @@ renderHome = function(){
       <div class="hg"><div id="hgA" style="display:contents"></div>
         <div class="tl tv wide" id="tvTile" role="button" tabindex="0" aria-label="Ver la tele"><video id="tvMini" muted playsinline autoplay preload="none"></video><img id="tvMiniLogo" alt=""><span class="tvb"><b id="tvMiniN"></b><small id="tvMiniS"></small></span></div>
         <div id="hgB" style="display:contents"></div></div>`;
-    $("tvTile").addEventListener("click", () => { stopMini(); show("ent"); setTimeout(() => { const pb = $("screen").querySelector("[data-play]"); if (pb && !tvOn && !ytOn) pb.click(); }, 300); });
+    $("tvTile").addEventListener("click", () => {   // un toque: sonido sí/no; para ir a Entretenimiento está su icono arriba
+      const v = $("tvMini");
+      if (v && v.dataset.src && !v.dataset.err){ v.muted = !v.muted; if (!v.muted){ v.volume = 1; const pr = v.play(); if (pr) pr.catch(() => {}); } syncMini(); return; }
+      show("ent"); setTimeout(() => { const pb = $("screen").querySelector("[data-play]"); if (pb && !tvOn && !ytOn) pb.click(); }, 300); });
   }
   const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), c = window.__cost || {};
   const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)})), Ts = R.map(x => x.v.t).filter(v => !isNaN(v)), Hs = R.map(x => x.v.h).filter(v => !isNaN(v));
@@ -2304,8 +2307,8 @@ function syncMini(){
   const want = tab === "hom" && !ambOpen && !document.hidden && !tvOn && !ytOn && chn.u ? chn.u : "";
   $("tvMiniN").textContent = chn.n;
   $("tvMiniLogo").src = logo; $("tvMiniLogo").style.display = want && !v.dataset.err ? "none" : "";
-  $("tvMiniS").textContent = want && !v.dataset.err ? "● En directo · toca para verla con sonido" : (chn.u ? "Toca para verla" : "Toca para verla · en directo por YouTube");
-  if (want && v.dataset.src !== want && !v.dataset.err){ v.dataset.src = want; v.src = want; v.muted = true; const pr = v.play(); if (pr) pr.catch(() => {}); }
+  $("tvMiniS").textContent = want && !v.dataset.err ? (v.muted ? "● En directo · toca para activar el sonido" : "🔊 Con sonido · toca para silenciar") : (chn.u ? "Toca para verla" : "Toca para verla · en directo por YouTube");
+  if (want && v.dataset.src !== want && !v.dataset.err){ v.dataset.src = want; v.src = want; v.muted = true; $("tvMiniS").textContent = "● En directo · toca para activar el sonido"; const pr = v.play(); if (pr) pr.catch(() => {}); }
   if (!want && v.dataset.src){ stopMini(); }
 }
 function stopMini(){ const v = $("tvMini"); if (!v) return; try{ v.pause(); }catch(e){} v.removeAttribute("src"); v.load(); delete v.dataset.src; }
