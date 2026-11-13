@@ -2123,7 +2123,8 @@ body{background:var(--bgp)!important}
 .tl.casa .rm{display:flex;flex-direction:column;gap:6px;width:100%;padding:0 6px}
 .tl.casa .rm div{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;color:var(--muted)}
 .tl.casa .rm b{font-size:21px;font-weight:500;color:#000;display:inline}
-.tl.tv.wide{grid-column:span 2;cursor:pointer}
+.tl.tv.wide{grid-column:span 2;grid-row:span 2;cursor:pointer}
+.tl.tv.wide .tvb{margin:0 0 20px 22px}.tl.tv.wide .tvb b{font-size:22px}.tl.tv.wide .tvb small{font-size:15px}
 .tl.tv video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
 .tl.tv .tvb small{display:block}
 .tl.tv{padding:0;background:#1c1c1e;color:#fff;justify-content:flex-end;align-items:flex-start;position:relative}
@@ -2182,6 +2183,7 @@ body{background:var(--bgp)!important}
 @media (max-width:900px){ #amb .gg{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:20vh;height:88vh;overflow:auto} #amb .thermo{grid-column:1/3;grid-row:span 2} }
 @media (max-width:900px){
   .hg{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:170px}
+  .tl.tv.wide{grid-column:1/3;grid-row:span 2}
   .h3t h2{font-size:38px}.pl{font-size:16px;padding:8px 14px}
 }
 </style>
@@ -2261,7 +2263,7 @@ renderHome = function(){
   const agT = `<button class="tl ag" data-go="pla"><span class="ah">${d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric"})}</span>${homeEv.evs.slice(0, 3).map(e => `<span class="ev"><em>${evWhen(e)}</em>${esc(e.summary || "")}</span>`).join("") || '<span class="ev" style="color:var(--muted)">Sin planes hoy ni mañana</span>'}</button>`;
   const eurT = `<button class="tl eur" data-go="cos"><span class="ti" style="color:#e0a400">${tsvg("eur")}</span><b>${c.mes != null ? eur(c.mes) : "—"}</b><small>luz de ${d.toLocaleDateString("es-ES", {month:"long"})}</small></button>`;
   $("hgA").innerHTML = `<div class="tl clk">${analogClock()}</div>${o.ac_salon || ""}${o.ac_dormitorio || ""}${wxT}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}`;
-  $("hgB").innerHTML = `${casa}${o.nt_salon || ""}${o.nt_dormitorio || ""}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${o.dh_dormitorio || ""}${o.dh_bano || ""}${eurT}${agT}`;
+  $("hgB").innerHTML = `${casa}${o.nt_salon || ""}${o.nt_dormitorio || ""}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${o.dh_dormitorio || ""}${o.dh_bano || ""}`;
   syncMini();
 };
 /* la tele del Inicio: el último canal que viste, en directo y sin sonido */
