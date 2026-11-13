@@ -1973,7 +1973,7 @@ function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return;
   if (red){ const d = new Date(), ds = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"});
     a.classList.remove("night"); a.style.backgroundImage = "none";
     a.innerHTML = `<div class="nf"><div class="nt">${pad(d.getHours())}:${pad(d.getMinutes())}</div><div class="nd">${ds[0].toUpperCase() + ds.slice(1)}</div>
-      <div class="nr">${HOME_ROOMS.map(r => { const v = roomTH(r.re); return `<div><small>${r.n}</small><b>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b></div>`; }).join("")}</div></div>`; return; }
+      <div class="nr">${HOME_ROOMS.map(r => { const v = roomTH(r.re); return `<div><small>${r.n}</small><b>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><em>${!isNaN(v.h) ? Math.round(v.h) + " %" : ""}</em></div>`; }).join("")}</div></div>`; return; }
   const h = new Date().getHours(); a.classList.toggle("night", h >= 0 && h < 7); a.style.backgroundImage = AMB_BG; a.innerHTML = ambHTML(); }
 function openAmb(){ if (ambOpen) return; ambOpen = true; if (typeof stopMini === "function") stopMini(); ambFace = Math.max(0, AMB_FACES.findIndex(f => f[0] === ambCfg().face)); $("amb").classList.add("on"); renderAmb(); }
 function closeAmb(){ ambOpen = false; $("amb").classList.remove("on"); lastAct = Date.now(); if (tab !== "ent" && tab !== "cfg") show("hom"); }
@@ -2201,6 +2201,7 @@ html.redn #homebar i,html.redn #ccgrab i{background:rgba(150,18,10,.7)}
 #amb .nf .nr div{display:flex;flex-direction:column;align-items:center;gap:.6vh}
 #amb .nf .nr small{font-size:min(1.7vw,2.2vh);letter-spacing:.12em;text-transform:uppercase;color:#5e0b05;font-weight:700}
 #amb .nf .nr b{font-size:min(4.6vw,6vh);font-weight:300}
+#amb .nf .nr em{font-style:normal;font-size:min(2.6vw,3.4vh);font-weight:400;color:#6a0d07}
 @media (max-width:900px){
   .hg{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:170px}
   .tl.tv.wide{grid-column:1/3;grid-row:span 2}
