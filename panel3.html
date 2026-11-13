@@ -1890,27 +1890,86 @@ async function homeAction(ev){
 $("home").addEventListener("click", homeAction);
 
 /* ---------- Pantalla en reposo (esferas) ---------- */
-const AMB_FACES = [["reloj", "Reloj"], ["tiempo", "Tiempo"], ["casa", "Casa"], ["agenda", "Agenda"]];
-const ambCfg = () => ({on: store.get("p2_amb_on", true), min: store.get("p2_amb_min", 2), face: store.get("p2_amb_face", "reloj")});
+/* Pantalla en reposo: mosaicos de cristal sobre fondo azul, con termostato grande y reloj de agujas */
+const AMB_BG = "url(\"data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 1000' preserveAspectRatio='xMidYMid slice'>
+<defs><radialGradient id='a' cx='28%' cy='18%' r='90%'><stop offset='0' stop-color='#6f86ff'/><stop offset='.45' stop-color='#2a3fc4'/><stop offset='1' stop-color='#0a1157'/></radialGradient>
+<linearGradient id='b' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#a9b6ff' stop-opacity='.6'/><stop offset='1' stop-color='#1b2a9a' stop-opacity='0'/></linearGradient>
+<linearGradient id='c' x1='0' y1='1' x2='1' y2='0'><stop offset='0' stop-color='#0b1468' stop-opacity='.9'/><stop offset='1' stop-color='#3149d8' stop-opacity='0'/></linearGradient></defs>
+<rect width='1600' height='1000' fill='url(#a)'/>
+<path d='M-100 300 C 380 80 820 520 1220 240 S 1700 40 1800 140 L1800 -100 L-100 -100Z' fill='url(#b)'/>
+<path d='M-100 720 C 300 470 720 920 1120 620 S 1700 320 1800 520 L1800 1100 L-100 1100Z' fill='url(#c)'/>
+<path d='M560 1000 C 760 690 1110 640 1420 760 S 1760 1000 1760 1000Z' fill='#7a8fff' opacity='.25'/>
+<path d='M1000 -50 C 1150 200 1450 260 1650 180 L1650 -50Z' fill='#93a3ff' opacity='.22'/>
+<ellipse cx='300' cy='880' rx='420' ry='160' fill='#0a1157' opacity='.45'/></svg>`) + "\")";
+const AMB_FACES = [["salon", "Salón"], ["dormitorio", "Dormitorio"], ["tiempo", "Tiempo"], ["agenda", "Agenda"]];
+const ambCfg = () => ({on: store.get("p2_amb_on", true), min: store.get("p2_amb_min", 2), face: store.get("p2_amb_face", "salon")});
 let ambFace = 0, ambOpen = false, lastAct = Date.now();
-function ambHTML(){
-  const d = new Date(), ds = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"}), w = store.get("p2_wx", null);
-  const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
-  const reloj = `<div class="face"><div class="bigt">${pad(d.getHours())}:${pad(d.getMinutes())}</div><div class="adate">${ds[0].toUpperCase() + ds.slice(1)}</div>
-    <div class="arow">${w && w.current ? `<div><small>Fuera</small><b class="fx">${wx(w.current.weather_code, w.current.is_day)}${Math.round(w.current.temperature_2m)}°</b><em>${wxText(w.current.weather_code)}</em></div>` : ""}
-    ${R.map(x => `<div><small>${x.r.n}</small><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b><em>${!isNaN(x.v.h) ? "💧 " + Math.round(x.v.h) + " %" : ""}</em></div>`).join("")}</div></div>`;
-  const casa = `<div class="face"><div class="grid">${R.map(x => `<div class="rc"><small>${x.r.n}</small><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b><em>${!isNaN(x.v.h) ? "💧 " + Math.round(x.v.h) + " %" : ""}</em>
-    <p>${roomChips(x.r).replace(/<i[^>]*><\/i>/g, "").replace(/<span>/g, "").replace(/<\/span>/g, "<br>")}</p></div>`).join("")}</div></div>`;
-  const evs = homeEv.evs.slice(0, 6);
-  const agenda = `<div class="face"><div class="agt">${ds[0].toUpperCase() + ds.slice(1)}</div><div class="agl">${evs.length ? evs.map(ev => `<div><i style="background:${evColor(ev)}"></i><em>${evWhen(ev)}</em><span>${esc(ev.summary || "")}</span></div>`).join("") : "<div><span style='opacity:.6'>Nada hoy ni mañana</span></div>"}</div></div>`;
-  const tiempo = w && w.current ? `<div class="face"><div class="wxbig">${wx(w.current.weather_code, w.current.is_day)}</div><div class="agt">${Math.round(w.current.temperature_2m)}° · ${wxText(w.current.weather_code)}</div>
-    <div class="adate">${PLACE} · máx ${Math.round(w.daily.temperature_2m_max[0])}° · mín ${Math.round(w.daily.temperature_2m_min[0])}° · sensación ${Math.round(w.current.apparent_temperature)}°</div>
-    <div class="ahr">${hourlyHTML(8)}</div></div>` : `<div class="face"><div class="agt">Sin datos del tiempo</div></div>`;
-  return `<div class="faces" style="transform:translateX(${-ambFace * 100}%)">${reloj}${tiempo}${casa}${agenda}</div>
-    <div class="dots">${AMB_FACES.map((f, i) => `<button class="${i === ambFace ? "on" : ""}" data-face="${i}" aria-label="${f[1]}"></button>`).join("")}</div><div class="hint">Toca para volver</div>`;
+const GIC = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TI[n] || HIC[n] || ""}</svg>`;
+function glassClock(){
+  const d = new Date(), h = d.getHours() % 12, m = d.getMinutes(), s = d.getSeconds(); let t = "";
+  for (let i = 0; i < 60; i++){ const a = i * 6 * Math.PI / 180, big = i % 5 === 0, r1 = big ? 41 : 43.5, r2 = 46;
+    t += `<line x1="${50 + r1*Math.sin(a)}" y1="${50 - r1*Math.cos(a)}" x2="${50 + r2*Math.sin(a)}" y2="${50 - r2*Math.cos(a)}" stroke="rgba(255,255,255,${big ? .95 : .5})" stroke-width="${big ? 1.2 : .6}"/>`; }
+  for (let i = 1; i <= 12; i++){ const a = i * 30 * Math.PI / 180; t += `<text x="${50 + 33.5*Math.sin(a)}" y="${50 - 33.5*Math.cos(a) + 3.8}" text-anchor="middle" font-size="10.5" font-weight="500" fill="#fff">${i}</text>`; }
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="Son las ${pad(d.getHours())}:${pad(m)}">${t}
+    <line x1="50" y1="50" x2="50" y2="27" stroke="#fff" stroke-width="3.2" stroke-linecap="round" transform="rotate(${(h + m/60) * 30} 50 50)"/>
+    <line x1="50" y1="50" x2="50" y2="12" stroke="#fff" stroke-width="2.2" stroke-linecap="round" transform="rotate(${(m + s/60) * 6} 50 50)"/>
+    <g style="transform-origin:50px 50px;animation:secs 60s linear infinite;animation-delay:-${s}s"><line x1="50" y1="58" x2="50" y2="10" stroke="#ffd36a" stroke-width=".9" stroke-linecap="round"/></g>
+    <circle cx="50" cy="50" r="2.3" fill="#fff"/></svg>`;
 }
-function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return; const h = new Date().getHours(); a.classList.toggle("night", h >= 0 && h < 7); a.innerHTML = ambHTML(); }
-function openAmb(){ if (ambOpen) return; ambOpen = true; ambFace = Math.max(0, AMB_FACES.findIndex(f => f[0] === ambCfg().face)); $("amb").classList.add("on"); renderAmb(); }
+const G = (cls, ic, name, sub, attrs) => `<button class="gt ${cls}" ${attrs || ""}><span class="gi">${GIC(ic)}</span><b>${name}</b><small>${sub}</small></button>`;
+function ambTiles(){   // los mismos mosaicos que el Inicio, en cristal
+  const o = {};
+  HOME_ROOMS.forEach(r => {
+    if (r.ac){ const e = hst(r.ac); if (e){ const st = hPend[r.ac] ?? e.state, on = st !== "off" && st !== "unavailable";
+      o["ac_" + r.k] = G(on ? "on" : "", st === "cool" ? "fan" : "therm", "Aire", `${r.n}${on ? " · " + (MODE_TXT[st] || st) : ""}`, `data-hac="${r.ac}" data-on="${on ? 1 : 0}"`); } }
+    if (r.nt && hst(r.nt)){ const on = hs(r.nt) === "on"; o["nt_" + r.k] = G(on ? "on" : "", "moon", "Noche", r.n, `data-hnt="${r.nt}" data-on="${on ? 1 : 0}"`); }
+    if (r.dh && hst(r.lk)){ const F = FORCE_ID(r.k), lk = hs(r.lk) === "on", fz = hs(F) === "on", sw = hst(r.dh), run = sw && sw.state === "on";
+      o["dh_" + r.k] = G(fz ? "fz" : lk ? "lk" : run ? "on" : "", fz ? "bolt" : lk ? "lock" : "drop", "Deshumidificador", `${r.n} · ${fz ? "forzado" : lk ? "bloqueado" : run ? "secando" : "automático"}`, `data-hdh="${r.k}" data-mode="${fz ? "fz" : lk ? "lk" : "auto"}"`); }
+    const v = roomTH(r.re); o["t_" + r.k] = `<div class="gt temp"><b class="tv">${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><b>${r.n}</b><small>${!isNaN(v.h) ? Math.round(v.h) + " % humedad" : ""}</small></div>`;
+  });
+  o.morning = G("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"');
+  o.bye = G("", "door", "Adiós", "Escena", 'data-scr="script.adios"');
+  o.off = G("", "power", "Aires", "Apagar todos", 'data-scr="aires_off"');
+  return o;
+}
+function thermoTile(k){
+  const r = HOME_ROOMS.find(x => x.k === k), id = `input_number.temp_deseada_${k}`, x = hst(id), v = roomTH(r.re);
+  const want = parseFloat(hPend[id] ?? (x ? x.state : NaN)), ac = r.ac && hst(r.ac), st = ac ? (hPend[r.ac] ?? ac.state) : "off", on = st !== "off" && st !== "unavailable";
+  const big = isNaN(want) ? "—" : (Number.isInteger(want) ? String(want) : fmt1(want));
+  return `<div class="gt thermo"><span class="th-now">${!isNaN(v.t) ? "Ahora " + fmt1(v.t) + "°" : ""}${!isNaN(v.h) ? " · 💧 " + Math.round(v.h) + " %" : ""}</span>
+    <span class="th-big">${big}</span>
+    <span class="th-row"><button class="th-a" data-tt="${id}" data-d="-0.5" aria-label="Bajar medio grado">${GIC("chev_d")}</button>
+      <span class="th-n"><b>Termostato</b><small>${r.n}${on ? " · " + (MODE_TXT[st] || st) : " · aire apagado"}</small></span>
+      <button class="th-a" data-tt="${id}" data-d="0.5" aria-label="Subir medio grado">${GIC("chev_u")}</button></span></div>`;
+}
+function ambHTML(){
+  const d = new Date(), w = store.get("p2_wx", null), o = ambTiles();
+  const clock = `<div class="gt clock">${glassClock()}</div>`;
+  const wxT = w && w.current ? `<div class="gt wxg"><span class="gi big">${wx(w.current.weather_code, w.current.is_day)}</span><b class="tv">${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></div>` : o.t_bano;
+  const salon = `<div class="gg">${thermoTile("salon")}${clock}${wxT}${o.nt_salon || ""}${o.ac_salon || ""}${o.morning}${o.bye}${o.dh_bano || ""}${o.off}</div>`;
+  const dorm = `<div class="gg">${thermoTile("dormitorio")}${clock}${o.t_bano}${o.nt_dormitorio || ""}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${o.dh_bano || ""}${o.t_salon}${o.off}</div>`;
+  const tiempo = w && w.current ? `<div class="gg one"><div class="gt wide"><span class="gi huge">${wx(w.current.weather_code, w.current.is_day)}</span>
+      <b class="tv xl">${Math.round(w.current.temperature_2m)}°</b><b>${wxText(w.current.weather_code)} en ${PLACE}</b>
+      <small>máx ${Math.round(w.daily.temperature_2m_max[0])}° · mín ${Math.round(w.daily.temperature_2m_min[0])}° · sensación ${Math.round(w.current.apparent_temperature)}°</small>
+      <div class="ghr">${hourlyHTML(8)}</div></div></div>` : `<div class="gg one"><div class="gt wide"><b>Sin datos del tiempo</b></div></div>`;
+  const evs = homeEv.evs.slice(0, 6), ds = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"});
+  const agenda = `<div class="gg one"><div class="gt wide ag"><b class="xl2">${ds[0].toUpperCase() + ds.slice(1)}</b>
+      <div class="gl">${evs.length ? evs.map(ev => `<div><i style="background:${evColor(ev)}"></i><em>${evWhen(ev)}</em><span>${esc(ev.summary || "")}</span></div>`).join("") : "<div><span style='opacity:.7'>Sin planes hoy ni mañana</span></div>"}</div></div></div>`;
+  return `<div class="faces" style="transform:translateX(${-ambFace * 100}%)"><div class="face">${salon}</div><div class="face">${dorm}</div><div class="face">${tiempo}</div><div class="face">${agenda}</div></div>
+    <div class="dots">${AMB_FACES.map((f, i) => `<button class="${i === ambFace ? "on" : ""}" data-face="${i}" aria-label="${f[1]}"></button>`).join("")}</div>`;
+}
+async function ambAction(e){
+  const t = e.target.closest("[data-tt]");
+  if (t){ const id = t.dataset.tt, x = hst(id); if (!x) return; const a = x.attributes;
+    const v = Math.min(a.max ?? 30, Math.max(a.min ?? 16, parseFloat(hPend[id] ?? x.state) + parseFloat(t.dataset.d)));
+    hPend[id] = String(v); renderAmb(); clearTimeout(timers["amb_" + id]);
+    timers["amb_" + id] = setTimeout(async () => { try{ await service("input_number", "set_value", {entity_id: id, value: v}); }catch(err){ handleErr(err); }
+      setTimeout(async () => { await refreshHA(); delete hPend[id]; renderAmb(); }, 1500); }, 700);
+    return; }
+  await homeAction(e); renderAmb(); setTimeout(renderAmb, 1800);
+}
+function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return; const h = new Date().getHours(); a.classList.toggle("night", h >= 0 && h < 7); a.style.backgroundImage = AMB_BG; a.innerHTML = ambHTML(); }
+function openAmb(){ if (ambOpen) return; ambOpen = true; if (typeof stopMini === "function") stopMini(); ambFace = Math.max(0, AMB_FACES.findIndex(f => f[0] === ambCfg().face)); $("amb").classList.add("on"); renderAmb(); }
 function closeAmb(){ ambOpen = false; $("amb").classList.remove("on"); lastAct = Date.now(); if (tab !== "ent" && tab !== "cfg") show("hom"); }
 (() => {
   const a = document.createElement("div"); a.id = "amb"; a.setAttribute("role", "dialog"); a.setAttribute("aria-label", "Pantalla en reposo"); document.body.appendChild(a);
@@ -1918,8 +1977,8 @@ function closeAmb(){ ambOpen = false; $("amb").classList.remove("on"); lastAct =
   a.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
   a.addEventListener("touchend", e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)){ ambFace = (ambFace + (dx < 0 ? 1 : -1) + AMB_FACES.length) % AMB_FACES.length; renderAmb(); e.preventDefault(); }
-    else if (!e.target.closest("[data-face]")){ e.preventDefault(); closeAmb(); } });
-  a.addEventListener("click", e => { const f = e.target.closest("[data-face]"); if (f){ ambFace = +f.dataset.face; renderAmb(); return; } closeAmb(); });
+    else if (!e.target.closest("[data-face],.gt")){ e.preventDefault(); closeAmb(); } });
+  a.addEventListener("click", e => { const f = e.target.closest("[data-face]"); if (f){ ambFace = +f.dataset.face; renderAmb(); return; } if (e.target.closest(".gt")){ if (e.target.closest("button")) ambAction(e); return; } closeAmb(); });
   ["pointerdown", "keydown", "wheel"].forEach(t => document.addEventListener(t, ev => { if (!ambOpen) lastAct = Date.now(); }, {passive: true}));
   setInterval(() => {
     const c = ambCfg();
@@ -1959,7 +2018,7 @@ const APPS = [
   {t:"cos", n:"Costes", bg:"linear-gradient(160deg,#ffc35a,#e08a1e)", ic:AIC('<path d="M18 7a7 7 0 1 0 0 10M4 10h9M4 14h9"/>')},
   {t:"cfg", n:"Ajustes", bg:"linear-gradient(160deg,#a9b1bf,#6b7383)", ic:AIC('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/>')}];
 const _show = show;
-show = function(t){ _show(t); document.body.classList.toggle("at-home", t === "hom"); if (t === "hom") renderHome(); };
+show = function(t){ _show(t); document.body.classList.toggle("at-home", t === "hom"); if (t === "hom") renderHome(); else if (typeof stopMini === "function") stopMini(); };
 (() => {
   const top = document.querySelector(".top");
   if (top && !$("goHome")){ const b = document.createElement("button"); b.id = "goHome"; b.className = "back"; b.innerHTML = "‹ Inicio"; b.onclick = () => show("hom"); top.prepend(b); }
@@ -2064,6 +2123,9 @@ body{background:var(--bgp)!important}
 .tl.casa .rm{display:flex;flex-direction:column;gap:6px;width:100%;padding:0 6px}
 .tl.casa .rm div{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;color:var(--muted)}
 .tl.casa .rm b{font-size:21px;font-weight:500;color:#000;display:inline}
+.tl.tv.wide{grid-column:span 2;cursor:pointer}
+.tl.tv video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+.tl.tv .tvb small{display:block}
 .tl.tv{padding:0;background:#1c1c1e;color:#fff;justify-content:flex-end;align-items:flex-start;position:relative}
 .tl.tv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9}
 .tl.tv .tvb{position:relative;margin:0 0 14px 16px;text-align:left;text-shadow:0 1px 6px rgba(0,0,0,.6)}
@@ -2077,6 +2139,47 @@ body{background:var(--bgp)!important}
 #cc .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 #cc .tl{aspect-ratio:1.15}
 #cc .tl .ti{width:34px;height:34px}#cc .tl b{font-size:15px}#cc .tl small{font-size:13px}
+/* ---------- Pantalla en reposo: cristal sobre azul ---------- */
+#amb{background-color:#0a1157!important;background-size:cover!important;background-position:center!important}
+#amb .face{padding:4vh 3vw}
+#amb .gg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:2.2vh;width:min(94vw,128vh);height:min(86vh,68vw)}
+#amb .gg.one{grid-template-columns:1fr;grid-template-rows:auto;width:min(90vw,1100px);height:auto}
+#amb .gt{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:min(4.4vh,34px);-webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 30px rgba(0,0,0,.18);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:.6vh;padding:1.6vh 1vw;min-width:0;min-height:0;overflow:hidden;font-family:var(--font);transition:transform .12s,background .2s}
+#amb .gt .gi{width:min(6.2vh,54px);height:min(6.2vh,54px);margin-bottom:.8vh;flex:none}
+#amb .gt .gi svg{width:100%;height:100%}
+#amb .gt b{font-size:min(2.5vh,21px);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#amb .gt small{font-size:min(2.1vh,17px);color:rgba(255,255,255,.68);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#amb .gt.on{background:rgba(255,255,255,.9);color:#1d2a8f}#amb .gt.on small{color:rgba(29,42,143,.62)}
+#amb .gt.fz{background:rgba(255,200,95,.9);color:#5a3500}#amb .gt.fz small{color:rgba(90,53,0,.65)}
+#amb .gt.lk{background:rgba(255,110,100,.78)}
+#amb button.gt:active{transform:scale(.96)}
+#amb .thermo{grid-column:1/3;grid-row:1/3;justify-content:space-between;padding:2.6vh 2vw 2.2vh}
+#amb .th-now{font-size:min(2.3vh,18px);opacity:.78;font-weight:500}
+#amb .th-big{font-size:min(25vh,220px);font-weight:500;letter-spacing:-.045em;line-height:.9;font-variant-numeric:tabular-nums}
+#amb .th-row{display:flex;align-items:center;justify-content:space-between;width:100%}
+#amb .th-a{width:min(7.5vh,62px);height:min(7.5vh,62px);border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.1);flex:none}
+#amb .th-a:active{background:rgba(255,255,255,.3)}
+#amb .th-a svg{width:62%;height:62%}
+#amb .th-n{display:flex;flex-direction:column;align-items:center;min-width:0}
+#amb .clock{padding:1.2vh;background:rgba(255,255,255,.1)}
+#amb .clock svg{width:100%;height:100%}
+#amb .temp .tv,#amb .wxg .tv{font-size:min(6vh,52px)!important;font-weight:400!important;letter-spacing:-.03em}
+#amb .wxg .gi.big{width:min(7.5vh,64px);height:min(7.5vh,64px);margin:0}
+#amb .wide{padding:5vh 4vw;gap:1.2vh}
+#amb .wide .gi.huge{width:min(18vh,170px);height:min(18vh,170px)}
+#amb .wide .tv.xl{font-size:min(12vh,110px)!important;font-weight:300!important}
+#amb .ghr{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:1.4vw;margin-top:3vh;width:100%}
+#amb .ghr div{display:flex;flex-direction:column;align-items:center;gap:.8vh;font-size:min(2vh,16px);color:rgba(255,255,255,.8)}
+#amb .ghr svg{width:min(5vh,44px);height:min(5vh,44px)}#amb .ghr b{font-size:min(2.8vh,22px);font-weight:400;color:#fff}
+#amb .ag{align-items:flex-start;text-align:left}
+#amb .xl2{font-size:min(5vh,44px)!important}
+#amb .gl{display:flex;flex-direction:column;gap:1.6vh;margin-top:2.4vh;width:100%}
+#amb .gl div{display:flex;gap:1.4vw;align-items:baseline;font-size:min(3vh,24px)}
+#amb .gl i{width:6px;align-self:stretch;border-radius:3px;flex:none}
+#amb .gl em{font-style:normal;opacity:.65;min-width:7em;font-size:.8em}
+#amb .hint{display:none}
+#amb .dots{bottom:1.4vh}
+@media (max-width:900px){ #amb .gg{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:20vh;height:88vh;overflow:auto} #amb .thermo{grid-column:1/3;grid-row:span 2} }
 @media (max-width:900px){
   .hg{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:170px}
   .h3t h2{font-size:38px}.pl{font-size:16px;padding:8px 14px}
@@ -2098,6 +2201,7 @@ const TI = {
   tv:'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/>',
   cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   eur:'<path d="M18 7a7 7 0 1 0 0 10M4 10h9M4 14h9"/>',
+  chev_u:'<path d="M5 15l7-7 7 7"/>', chev_d:'<path d="M5 9l7 7 7-7"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/>'
 };
 const tsvg = (n, c) => `<svg viewBox="0 0 24 24" fill="none" stroke="${c || "currentColor"}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TI[n]}</svg>`;
@@ -2130,11 +2234,19 @@ function homeTiles(){
 tilesHTML = function(){ const o = homeTiles(); return ["ac_salon", "ac_dormitorio", "nt_salon", "nt_dormitorio", "dh_dormitorio", "dh_bano"].map(k => o[k] || "").join(""); };
 renderHome = function(){
   const box = $("home"); if (!box || tab !== "hom") return;
+  if (!$("hgA")){   // esqueleto una vez: así el vídeo de la tele no se reinicia en cada refresco
+    box.innerHTML = `<div class="h3t"><h2>Mi casa</h2><span id="h3time"></span></div><div id="h3pills"></div>
+      <div class="hg"><div id="hgA" style="display:contents"></div>
+        <div class="tl tv wide" id="tvTile" role="button" tabindex="0" aria-label="Ver la tele"><video id="tvMini" muted playsinline autoplay preload="none"></video><img id="tvMiniLogo" alt=""><span class="tvb"><b id="tvMiniN"></b><small id="tvMiniS"></small></span></div>
+        <div id="hgB" style="display:contents"></div></div>`;
+    $("tvTile").addEventListener("click", () => { stopMini(); show("ent"); setTimeout(() => { const pb = $("screen").querySelector("[data-play]"); if (pb && !tvOn && !ytOn) pb.click(); }, 300); });
+  }
   const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), c = window.__cost || {};
   const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)})), Ts = R.map(x => x.v.t).filter(v => !isNaN(v)), Hs = R.map(x => x.v.h).filter(v => !isNaN(v));
   const nAc = HOME_ROOMS.filter(r => r.ac && hst(r.ac) && !["off", "unavailable"].includes(hPend[r.ac] ?? hst(r.ac).state)).length;
   const nDh = HOME_ROOMS.filter(r => r.dh && hst(r.dh) && hst(r.dh).state === "on").length;
-  const pills = `<div class="pills">
+  $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
+  $("h3pills").innerHTML = `<div class="pills">
     <button class="pl" data-go="cli">${tsvg("therm", "#4aa3f0")}<span style="color:#4aa3f0">${Ts.length ? fmt1(Math.min(...Ts)) + "–" + fmt1(Math.max(...Ts)) + "°" : "—"}</span></button>
     <button class="pl" data-go="cli">${tsvg("hum", "#3b7fc4")}<span style="color:#3b7fc4">${Hs.length ? Math.round(Math.min(...Hs)) + "–" + Math.round(Math.max(...Hs)) + " %" : "—"}</span></button>
     <button class="pl" data-go="cli">${tsvg("fan", "#e8822f")}<span style="color:#e8822f">${nAc}</span></button>
@@ -2142,26 +2254,30 @@ renderHome = function(){
     <button class="pl" data-go="cos">${tsvg("eur", "#e0a400")}<span style="color:#c98f00">${c.mes != null ? eur(c.mes) : "—"}</span></button>
     <button class="pl" data-go="ent">${tsvg("tv", "#636366")}</button>
     <button class="pl" data-go="pla">${tsvg("cal", "#ff453a")}</button>
-    <button class="pl" data-go="cfg">${tsvg("gear", "#636366")}</button></div>`;
-  const chn = CHANNELS.find(x => x.k === ch) || {k: "la1", n: "La 1"};
-  const logo = LOGOS[chn.k] || "";
-  const tvOnNow = typeof tvOn !== "undefined" && (tvOn || ytOn);
-  const tvTile = `<button class="tl tv" data-go="ent">${logo ? `<img src="${logo}" alt="">` : ""}<span class="tvb"><b>${esc(chn.n)}</b><small>${tvOnNow ? "● En directo" : "Tele · toca para ver"}</small></span></button>`;
+    <button class="pl" data-go="cfg">${tsvg("gear", "#636366")}</button>
+    <button class="pl" data-scr="aires_off">${tsvg("power", "#c0392b")}<span style="color:#c0392b">Aires</span></button></div>`;
   const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
-  const ev = homeEv.evs[0];
   const agT = `<button class="tl ag" data-go="pla"><span class="ah">${d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric"})}</span>${homeEv.evs.slice(0, 3).map(e => `<span class="ev"><em>${evWhen(e)}</em>${esc(e.summary || "")}</span>`).join("") || '<span class="ev" style="color:var(--muted)">Sin planes hoy ni mañana</span>'}</button>`;
   const eurT = `<button class="tl eur" data-go="cos"><span class="ti" style="color:#e0a400">${tsvg("eur")}</span><b>${c.mes != null ? eur(c.mes) : "—"}</b><small>luz de ${d.toLocaleDateString("es-ES", {month:"long"})}</small></button>`;
-  box.innerHTML = `<div class="h3t"><h2>Mi casa</h2><span>${pad(d.getHours())}:${pad(d.getMinutes())}</span></div>${pills}
-    <div class="hg">
-      <div class="tl clk" aria-hidden="false">${analogClock()}</div>${o.ac_salon || ""}${o.ac_dormitorio || ""}${wxT}
-      ${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}
-      ${tvTile}${casa}${o.nt_salon || ""}${o.nt_dormitorio || ""}
-      ${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}
-      ${o.dh_dormitorio || ""}${o.dh_bano || ""}${eurT}${agT}
-      ${T("", "power", "Aires", "Apagar todos", 'data-scr="aires_off"')}
-    </div>`;
+  $("hgA").innerHTML = `<div class="tl clk">${analogClock()}</div>${o.ac_salon || ""}${o.ac_dormitorio || ""}${wxT}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}`;
+  $("hgB").innerHTML = `${casa}${o.nt_salon || ""}${o.nt_dormitorio || ""}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${o.dh_dormitorio || ""}${o.dh_bano || ""}${eurT}${agT}`;
+  syncMini();
 };
+/* la tele del Inicio: el último canal que viste, en directo y sin sonido */
+function syncMini(){
+  const v = $("tvMini"); if (!v) return;
+  const chn = CHANNELS.find(x => x.k === ch) || CHANNELS[0], logo = LOGOS[chn.k] || "";
+  const want = tab === "hom" && !ambOpen && !document.hidden && !tvOn && !ytOn && chn.u ? chn.u : "";
+  $("tvMiniN").textContent = chn.n;
+  $("tvMiniLogo").src = logo; $("tvMiniLogo").style.display = want && !v.dataset.err ? "none" : "";
+  $("tvMiniS").textContent = want && !v.dataset.err ? "● En directo · toca para verla con sonido" : (chn.u ? "Toca para verla" : "Toca para verla · en directo por YouTube");
+  if (want && v.dataset.src !== want && !v.dataset.err){ v.dataset.src = want; v.src = want; v.muted = true; const pr = v.play(); if (pr) pr.catch(() => {}); }
+  if (!want && v.dataset.src){ stopMini(); }
+}
+function stopMini(){ const v = $("tvMini"); if (!v) return; try{ v.pause(); }catch(e){} v.removeAttribute("src"); v.load(); delete v.dataset.src; }
+document.addEventListener("visibilitychange", () => { if (document.hidden) stopMini(); else syncMini(); });
+document.addEventListener("error", e => { if (e.target && e.target.id === "tvMini"){ e.target.dataset.err = "1"; syncMini(); setTimeout(() => { delete e.target.dataset.err; }, 60000); } }, true);
 renderCC = function(){ if (!ccOpen) return; const p = $("ccp"); const d = new Date();
   p.innerHTML = `<div class="cch"><b>${pad(d.getHours())}:${pad(d.getMinutes())}</b><span>Centro de control</span></div><div class="tiles">${tilesHTML()}</div>
     <div class="tiles">${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "power", "Aires", "Apagar todos", 'data-scr="aires_off"')}</div>
