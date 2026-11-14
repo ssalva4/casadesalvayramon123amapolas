@@ -1822,7 +1822,7 @@ function renderCfg(force){
       ${(at.swing_modes || []).length ? cSeg("Oscilación de las lamas", cfgPend[a.id + ":swing"] ?? at.swing_mode, at.swing_modes.map(v => [v, SWING_T[v] || v]), v => `data-swing="${a.id}" data-v="${v}"`) : ""}
       ${(at.preset_modes || []).length ? cSeg("Modo especial", cfgPend[a.id + ":preset"] ?? at.preset_mode, at.preset_modes.filter(v => v !== "away").map(v => [v, PRESET_T[v] || v]), v => `data-preset="${a.id}" data-v="${v}"`) : ""}
       </div>
-      ${swT("pantalla", "Pantalla encendida")}${swT("tono", "Pitido al recibir órdenes")}${swT("ext", "Máquina exterior en silencio")}
+      ${swT("pantalla", "Pantalla encendida")}${swT("ext", "Máquina exterior en silencio")}
       ${a.id === "climate.aire_salon" ? `<h4>Por la noche</h4>
         ${cTog("input_boolean.salon_apagado_activo", "Apagarlo siempre por la noche")}
         ${cTime("input_datetime.salon_apagado_hora", "A las", cv("input_boolean.salon_apagado_activo") !== "on")}` : `<h4>Horario del modo Noche</h4>
@@ -1834,7 +1834,6 @@ function renderCfg(force){
   box.innerHTML = dh("dormitorio", "Dormitorio", true) + dh("bano", "Baño", false) + AIRES_CFG.map(aire).join("") +
     `<div class="card"><h3>🌙 Modo Noche (los dos aires)</h3>
       ${cTog("input_boolean.noche_pantalla_apagada", "Apagar la pantalla del aire")}
-      ${cTog("input_boolean.noche_sin_pitido", "Sin pitidos")}
       ${cTog("input_boolean.noche_silencio_exterior", "Máquina exterior en silencio")}
       ${cSeg("Ventilador de noche", cv("input_select.noche_ventilador"), fanOpts("input_select.noche_ventilador"), v => `data-sel="input_select.noche_ventilador" data-v="${v}"`)}
       ${cSeg("Ventilador al quitar la Noche", cv("input_select.aires_ventilador_normal"), fanOpts("input_select.aires_ventilador_normal"), v => `data-sel="input_select.aires_ventilador_normal" data-v="${v}"`)}</div>
@@ -2095,7 +2094,7 @@ function glassClock(){
   return `<svg viewBox="0 0 100 100" role="img" aria-label="Son las ${pad(d.getHours())}:${pad(m)}">${t}
     <line x1="50" y1="50" x2="50" y2="27" stroke="#fff" stroke-width="3.2" stroke-linecap="round" transform="rotate(${(h + m/60) * 30} 50 50)"/>
     <line x1="50" y1="50" x2="50" y2="12" stroke="#fff" stroke-width="2.2" stroke-linecap="round" transform="rotate(${(m + s/60) * 6} 50 50)"/>
-    <g style="transform-origin:50px 50px;animation:secs 60s linear infinite;animation-delay:-${s}s"><line x1="50" y1="58" x2="50" y2="10" stroke="#ffd36a" stroke-width=".9" stroke-linecap="round"/></g>
+    <g style="transform-box:view-box;-webkit-transform-box:view-box;transform-origin:50px 50px;animation:secs 60s linear infinite;animation-delay:-${s}s"><line x1="50" y1="58" x2="50" y2="10" stroke="#ffd36a" stroke-width=".9" stroke-linecap="round"/></g>
     <circle cx="50" cy="50" r="2.3" fill="#fff"/></svg>`;
 }
 const G = (cls, ic, name, sub, attrs, big) => `<button class="gt ${cls}${big ? " hasv" : ""}" ${attrs || ""}><span class="gi">${GIC(ic)}</span><b>${name}</b>${big ? `<span class="gv">${big}</span>` : ""}<small>${sub}</small></button>`;
@@ -2549,7 +2548,7 @@ function analogClock(){
   return `<svg viewBox="0 0 100 100" aria-label="Reloj ${pad(d.getHours())}:${pad(m)}">${t}
     <line x1="50" y1="50" x2="50" y2="27" stroke="#1c1c1e" stroke-width="3.2" stroke-linecap="round" transform="rotate(${hA} 50 50)"/>
     <line x1="50" y1="50" x2="50" y2="13" stroke="#1c1c1e" stroke-width="2.2" stroke-linecap="round" transform="rotate(${mA} 50 50)"/>
-    <g class="sec" style="transform-origin:50px 50px;animation:secs 60s linear infinite;animation-delay:-${s}s"><line x1="50" y1="58" x2="50" y2="10" stroke="#8f80dd" stroke-width=".9" stroke-linecap="round"/></g>
+    <g class="sec" style="transform-box:view-box;-webkit-transform-box:view-box;transform-origin:50px 50px;animation:secs 60s linear infinite;animation-delay:-${s}s"><line x1="50" y1="58" x2="50" y2="10" stroke="#8f80dd" stroke-width=".9" stroke-linecap="round"/></g>
     <circle cx="50" cy="50" r="2.4" fill="#8f80dd"/><circle cx="50" cy="50" r="1" fill="#fff"/></svg>`;
 }
 const T = (cls, ic, name, sub, attrs, big) => `<button class="tl ${cls}${big ? " hasv" : ""}" ${attrs || ""}><span class="ti">${tsvg(ic)}</span><b>${name}</b>${big ? `<span class="tv2">${big}</span>` : ""}<small>${sub}</small></button>`;
@@ -2629,7 +2628,7 @@ renderHome();
 </script>
 <script>
 /* Modo descanso de 23:00 a 7:00 (se cambia en Ajustes): pantalla en negro y rojo, y pasa sola a la pantalla en reposo */
-const redCfg = () => ({on: store.get("p3_red_on3", true), from: store.get("p3_red_from", "23:00"), to: store.get("p3_red_to", "07:00")});
+const redCfg = () => ({on: store.get("p3_red_on3", true) && !(typeof roomOf === "function" && roomOf() === "salon"),   /* en el salón no hay pantalla roja */ from: store.get("p3_red_from", "23:00"), to: store.get("p3_red_to", "07:00")});
 const inRed = () => { if (!redCfg().on) return false; const hh = new Date().getHours(); if (Date.now() < store.get("p3_red_force", 0)) return true;   /* Buenas noches pone el rojo a cualquier hora, hasta las 7:00 */ const c = redCfg(); if (!c.on) return false; const d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes());
   return c.from > c.to ? (n >= c.from || n < c.to) : (n >= c.from && n < c.to); };
 let wasRed = null;
@@ -2718,7 +2717,10 @@ async function roomAction(b){
   else if (b.dataset.rad === "prev") radStep(-1);
   else if (b.dataset.rad === "next") radStep(1);
   else if (b.dataset.rtimer){ const m = +b.dataset.rtimer; sleepAt = m ? Date.now() + m * 60000 : 0; if (m && !radioOn) await radPlay(radSel().k); }
-  else if (b.dataset.bn){   // Buenas noches: aire del salón apagado, Noche en el dormitorio y reloj rojo (sin radio)
+  else if (b.dataset.bn && roomOf() === "salon"){   // Buenas noches del salón: solo lo del salón (aire y tele), sin pantalla roja
+    if (typeof salonTv !== "undefined" && salonTv){ salonTv = false; stopMini(); syncMini(); }
+    try{ await service("climate", "set_hvac_mode", {entity_id: "climate.aire_salon", hvac_mode: "off"}); setTimeout(refreshHA, 1500); }catch(err){ handleErr(err); } }
+  else if (b.dataset.bn){   // Buenas noches del dormitorio: aire del salón apagado, Noche en el dormitorio y reloj rojo (sin radio)
     if (redCfg().on){ const t = new Date(); t.setHours(7, 0, 0, 0); if (t <= new Date()) t.setDate(t.getDate() + 1); store.set("p3_red_force", t.getTime());   // modo descanso hasta las 7:00
       setTimeout(() => { if (typeof syncRed === "function") syncRed(); if (ambOpen) renderAmb(); else if (inRed()) openAmb(); }, 400); }
     if (store.get("p3_bn_sc", false)) setTimeout(() => { location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent("Brillo noche"); }, 1200);   // el atajo baja el brillo y vuelve al panel
