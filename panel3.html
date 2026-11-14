@@ -657,6 +657,61 @@ body.at-home #homebar{display:none}
 .t-ent .ni b{color:#fff!important;font-size:15px!important;text-shadow:0 1px 4px rgba(0,0,0,.4)}
 .t-ent .ni small{color:rgba(255,255,255,.75)!important}
 </style>
+<style id="cli-v3">
+/* ===== Clima estilo HomeView (claro) ===== */
+.t-cli.on{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:auto minmax(0,1fr) auto!important;gap:14px!important}
+.t-cli .card{border-radius:28px!important;border:0!important;background:#fff!important;box-shadow:0 6px 20px rgba(0,0,0,.05)!important}
+.t-cli .wx{grid-column:1/4!important;grid-row:1!important;padding:12px 22px!important;gap:20px!important}
+.t-cli .wx .now{gap:14px!important;min-width:350px!important}
+.t-cli .wx .now .t{font-size:56px!important;font-weight:300!important;letter-spacing:-.03em}
+.t-cli .wx .now .d{font-size:13px!important;color:#8e8e93!important;line-height:1.4!important;white-space:nowrap}
+.t-cli .wx .now .d b{font-size:17px;color:#1c1c1e;font-weight:600}
+.t-cli .hrs{display:flex!important;justify-content:space-between;border-left:1px solid #eee;padding-left:16px}
+.t-cli .hr{background:none!important;width:64px;padding:6px 0!important;border-radius:16px!important;font-size:12px!important;font-weight:600;color:#8e8e93!important}
+.t-cli .hr b{font-size:16px!important;font-weight:600!important;margin:1px 0!important}
+.t-cli .hr em{display:block;font-style:normal;font-size:11px;color:#0a84ff;font-weight:600}
+.t-cli .hr.cur{background:#f2f2f7!important;color:#1c1c1e!important;border:0!important;box-shadow:none!important;outline:0!important}
+.t-cli .hr svg.hw{width:24px!important;height:24px!important}
+#ac0{grid-column:1!important;grid-row:2!important}#ac1{grid-column:2!important;grid-row:2!important}.t-cli .bath{grid-column:3!important;grid-row:2!important}
+.t-cli .h24{grid-column:1/4!important;grid-row:3!important;height:154px;padding:12px 18px!important}
+.t-cli .ac{padding:14px 18px!important;display:flex!important;flex-direction:column;min-height:0}
+.t-cli .ac>*{flex:none}
+.cv .hd{display:flex;justify-content:space-between;align-items:baseline}.cv .hd b{font-size:19px;font-weight:700}.cv .hd span{font-size:14px;font-weight:600;color:#0a84ff}.cv .hd span.w{color:#e8822f}
+.cv .dial{position:relative;width:200px;height:166px;margin:2px auto 0}
+.cv .dial svg.g{position:absolute;inset:0;width:100%;height:100%}
+.cv .dial .ctl{position:absolute;left:0;right:0;top:44px;text-align:center;display:block!important}
+.cv .dial .ctl span{display:block;font-size:50px;font-weight:300;letter-spacing:-.03em;line-height:1;font-family:var(--head)}
+.cv .dial small{position:absolute;left:0;right:0;top:104px;text-align:center;font-size:13.5px;color:#8e8e93;font-weight:600}
+.cv .dial .pm{position:absolute;bottom:2px;width:44px;height:44px;border-radius:50%;background:#f2f2f7;display:grid;place-items:center;font-size:24px;color:#3a3a3c;padding:0}
+.cv .dial .pm.m{left:-4px}.cv .dial .pm.p{right:-4px}.cv .dial .pm:active{transform:scale(.9)}
+.cv.off .dial .ctl span{color:#8e8e93}
+.cv .stx{text-align:center;font-size:13.5px;font-weight:600;margin-top:6px;min-height:17px;color:#8e8e93;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cv .stx.heat{color:#e8822f}.cv .stx.cool{color:#0a84ff}.cv .stx.dry{color:#1f9e91}
+.cv .mbar{display:flex;justify-content:space-between;margin-top:12px;padding:5px;border-radius:18px;background:#f2f2f7}
+.cv .mbar button{flex:1;height:48px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#6e6e73;padding:0;background:none}
+.cv .mbar button .i{width:18px;height:18px}
+.cv .mbar button span{font-size:10px;font-weight:700}
+.cv .mbar button.on{background:#fff;color:#1c1c1e;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.cv .mbar button.on.heat{color:#e8822f}.cv .mbar button.on.cool{color:#0a84ff}.cv .mbar button.on.dry{color:#1f9e91}.cv .mbar button.on.offm{color:#ff3b30}.cv .mbar button.on.night{color:#7a63d8}
+.cv .dh{margin-top:10px;display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;border-radius:18px;background:#f2f2f7}
+.cv .dh .di{width:34px;height:34px;border-radius:50%;background:#c7c7cc;color:#fff;display:grid;place-items:center;flex:none}
+.cv .dh .di .i{width:18px;height:18px}
+.cv .dh .dx{flex:1;min-width:0}.cv .dh .dx b{display:block;font-size:13.5px}.cv .dh .dx small{display:block;font-size:11.5px;color:#6e6e73;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cv .dh.on{background:#e8f1fd}.cv .dh.on .di{background:#0a84ff}.cv .dh.on small{color:#2f6db0}
+.cv .dh.fz{background:#fff3df}.cv .dh.fz .di{background:#f0a020}.cv .dh.fz small{color:#a8700f}
+.cv .dh.lk{background:#fde8e7}.cv .dh.lk .di{background:#ff3b30}.cv .dh.lk small{color:#c0392b}
+.cv .dh .dforce,.cv .dh .dlock{width:36px;height:36px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none;background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.cv .dh .dforce{color:#f0a020}.cv .dh .dlock{color:#ff3b30}
+.cv .dh .dforce.fz{background:#f0a020;color:#fff}.cv .dh .dlock.lk{background:#ff3b30;color:#fff}
+.cv .dh .dforce .i,.cv .dh .dlock .i{width:17px;height:17px}
+.cv .hbar{margin:6px 4px 0}.cv .hbar .t{height:8px;border-radius:4px;background:#e5e5ea;position:relative}
+.cv .hbar .t i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,#64d2ff,#0a84ff)}
+.cv .hbar .t u{position:absolute;top:-4px;width:2px;height:16px;background:#1c1c1e;border-radius:1px}
+.cv .hbar p{display:flex;justify-content:space-between;font-size:11px;color:#8e8e93;margin:5px 0 0;font-weight:600}
+.cv .foot{font-size:11.5px;color:#8e8e93;text-align:center;margin-top:6px;font-weight:600}
+.t-cli .h24 .lbl{font-size:17px!important;font-weight:700!important;text-transform:none!important;letter-spacing:0!important;color:#1c1c1e!important}
+#h24 .plot svg path{stroke-width:2.6px}
+</style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
 <div class="app">
@@ -1392,11 +1447,18 @@ function renderH24(){
   if (sig === h24Sig) return; h24Sig = sig;
   const {s, by, start} = h24Data, end = Date.now(), W = 600, H = 100, X = t => (t - start) / (end - start) * W;
   const ser = e => e ? (by[e.entity_id] || []).map(p => ({t: p.t, v: parseFloat(p.v)})).filter(p => !isNaN(p.v)).concat(!isNaN(parseFloat(e.state)) ? [{t: end, v: parseFloat(e.state)}] : []) : [];
-  const TC = "#d64545", HC = "#3b7fc4";   // temperatura en rojo, humedad en azul
+  const TC = "#ff6b5b", HC = "#0a84ff";   // temperatura en rojo, humedad en azul
   const scale = (P, fixed, minSpan) => { const v = P.map(p => p.v).concat(fixed || []); if (!v.length) return null;
     let lo = Math.min(...v), hi = Math.max(...v); if (hi - lo < minSpan){ const m = (hi + lo) / 2; lo = m - minSpan/2; hi = m + minSpan/2; }
     const pad = (hi - lo) * .12; lo -= pad; hi += pad; return v2 => H - (v2 - lo) / (hi - lo) * H; };
-  const path = (P, Y) => P.length ? "M" + P.map((p, i) => (i ? "L" + X(p.t).toFixed(1) + "," + Y(P[i-1].v).toFixed(1) + " " : "") + X(p.t).toFixed(1) + "," + Y(p.v).toFixed(1)).join(" ") : "";
+  const path = (P, Y) => { if (!P.length) return "";   // curva suave: valor cada 30 min y trazo con curvas
+    const B = [], step = 1800e3; let j = 0, last = P[0].v;
+    for (let t = start; t <= end + 1; t += step){ while (j < P.length && P[j].t <= t){ last = P[j].v; j++; } B.push({t, v: last}); }
+    B.push({t: end, v: P[P.length - 1].v});
+    const q = B.map(p => [X(p.t), Y(p.v)]); let d = "M" + q[0][0].toFixed(1) + "," + q[0][1].toFixed(1);
+    for (let i = 0; i < q.length - 1; i++){ const p0 = q[i - 1] || q[i], p1 = q[i], p2 = q[i + 1], p3 = q[i + 2] || p2;
+      d += " C" + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + "," + (p1[1] + (p2[1] - p0[1]) / 6).toFixed(1) + " " + (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + "," + (p2[1] - (p3[1] - p1[1]) / 6).toFixed(1) + " " + p2[0].toFixed(1) + "," + p2[1].toFixed(1); }
+    return d; };
   const grid = [6, 12, 18].map(hh => { const t = end - hh*3600e3; return `<line x1="${X(t)}" x2="${X(t)}" y1="0" y2="${H}" stroke="var(--line)" stroke-width="1"/>`; }).join("");
   const mm = P => P.length ? [Math.min(...P.map(p => p.v)), Math.max(...P.map(p => p.v))] : null;
   // una gráfica por estancia: temperatura (eje izquierdo) y humedad (eje derecho)
@@ -1409,7 +1471,7 @@ function renderH24(){
     if (hmm){ labs += yl(YH, hmm[1], Math.round(hmm[1]) + "%", "r", HC); if (hmm[1] - hmm[0] >= 1) labs += yl(YH, hmm[0], Math.round(hmm[0]) + "%", "r", HC); }
     let extra = "";
     if (band){ const L = (by[band.entity_id] || []).concat([{t: end, v: band.state}]);
-      for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on") extra += `<rect x="${X(L[i].t)}" width="${Math.max(1, X(L[i+1].t) - X(L[i].t))}" y="0" height="${H}" fill="rgba(59,127,196,.13)"/>`; }
+      for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on") extra += `<rect x="${X(L[i].t)}" width="${Math.max(1, X(L[i+1].t) - X(L[i].t))}" y="0" height="${H}" fill="rgba(10,132,255,.10)"/>`; }
     if (YH) extra += `<line x1="0" x2="${W}" y1="${YH(60)}" y2="${YH(60)}" stroke="${HC}" stroke-width="1" stroke-dasharray="5 4" opacity=".6" vector-effect="non-scaling-stroke"/>`;
     const cur = e => e && !isNaN(parseFloat(e.state)) ? parseFloat(e.state) : null, ct = cur(te), ch = cur(he);
     return `<div class="pn"><div class="pt"><span>${title}</span><span><b style="color:${TC}">${ct != null ? fmt1(ct) + "°" : "—"}</b> · <b style="color:${HC}">${ch != null ? Math.round(ch) + " %" : "—"}</b></span></div>
@@ -2634,7 +2696,7 @@ function renderSalon(box){
       <div class="hg rs"><div class="tl tv tvs" id="tvTile" role="button" tabindex="0" aria-label="Tele: toca para el sonido"><video id="tvMini" muted playsinline autoplay preload="none"></video><img id="tvMiniLogo" alt="">
         <button class="chb l" data-chs="-1" aria-label="Canal anterior">${tsvg("chev_l")}</button><button class="chb r" data-chs="1" aria-label="Canal siguiente">${tsvg("chev_r")}</button>
         <span class="tvbig">TV</span><span class="tvb"><b id="tvMiniN"></b><small id="tvMiniS"></small></span></div><div id="hgA" style="display:contents"></div></div>
-      <div class="mdock"><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="pla" aria-label="Agenda">${tsvg("cal")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
+      <div class="mdock"><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="pla" aria-label="Agenda">${tsvg("cal")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
     $("tvTile").addEventListener("click", ev => { const c = ev.target.closest("[data-chs]"); if (c){ ev.stopPropagation(); roomAction(c); return; }
       const chn = CHANNELS.find(x => x.k === ch) || CHANNELS[0];
       if (salonTv || (chn.u && !$("tvMini").dataset.err)){ salonTv = !salonTv; miniMuted = !salonTv; if (salonTv) syncMini(); else stopMini(); syncMini(); return; }   // un toque: se ve y se oye; otro: se para
@@ -2651,7 +2713,7 @@ function renderSalon(box){
 function renderDorm(box){
   if (box.dataset.layout !== "dormitorio"){ box.dataset.layout = "dormitorio"; stopMini();
     box.innerHTML = `<div class="h3t"><h2>Dormitorio</h2><span id="h3date"></span><span id="h3time" style="display:none"></span></div><div class="hg rd"><div id="hgA" style="display:contents"></div></div>
-      <div class="mdock"><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="pla" aria-label="Agenda">${tsvg("cal")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`; }
+      <div class="mdock"><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="pla" aria-label="Agenda">${tsvg("cal")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`; }
   const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), v = roomTH(HOME_ROOMS[1].re);
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()); $("h3date").textContent = fechaLarga(d);
   /* sin píldoras: la temperatura y la humedad ya están en los mosaicos */
@@ -2743,6 +2805,83 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     if (radioOn) go(nx.k); else { store.set("p3_rlast", nx.k); renderRNow(); } });
   const _rr = renderRadios; renderRadios = function(){ _rr(); if (radioOn) store.set("p3_rlast", radioOn); renderRNow(); };
   renderRNow();
+})();
+</script>
+<script>
+/* ===== Clima estilo HomeView: termostato redondo, modos tipo selector, deshumidificador en píldora ===== */
+(() => {
+  const C = {heat:"#e8822f", cool:"#0a84ff", dry:"#1f9e91", fan_only:"#8e8e93", auto:"#7a63d8"};
+  const pt = (a, r) => [90 + r * Math.cos(a * Math.PI / 180), 82 + r * Math.sin(a * Math.PI / 180)];
+  const arc = (f, col, knob) => { const r = 68, a0 = 135, a1 = 135 + 270 * Math.max(0, Math.min(1, f)), p0 = pt(a0, r), p1 = pt(a1, r), pe = pt(405, r);
+    let o = `<path d="M${p0[0].toFixed(1)} ${p0[1].toFixed(1)} A${r} ${r} 0 1 1 ${pe[0].toFixed(1)} ${pe[1].toFixed(1)}" fill="none" stroke="#f2f2f7" stroke-width="12" stroke-linecap="round"/>`;
+    if (col && f > 0.001){ const id = "g" + Math.random().toString(36).slice(2, 7);
+      o += `<defs><linearGradient id="${id}" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="${col}" stop-opacity=".45"/><stop offset="1" stop-color="${col}"/></linearGradient></defs>
+        <path d="M${p0[0].toFixed(1)} ${p0[1].toFixed(1)} A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${p1[0].toFixed(1)} ${p1[1].toFixed(1)}" fill="none" stroke="url(#${id})" stroke-width="12" stroke-linecap="round"/>`;
+      if (knob) o += `<circle cx="${p1[0].toFixed(1)}" cy="${p1[1].toFixed(1)}" r="8.5" fill="#fff" stroke="${col}" stroke-width="3"/>`; }
+    return `<svg class="g" viewBox="0 0 180 150" aria-hidden="true">${o}</svg>`; };
+  const hum = h => h == null || isNaN(h) ? "" : `<span class="${h >= 70 ? "w" : ""}">💧 ${Math.round(h)} %${h >= 70 ? " · ventilar" : ""}</span>`;
+  const pill = (cls, ic, sub, btns) => `<div class="dh ${cls}"><span class="di">${svg(ic)}</span><span class="dx"><b>Deshumidificador</b><small>${sub}</small></span>${btns}</div>`;
+  const lockBtn = (lk, id, lab) => `<button class="dlock ${lk ? "lk" : ""}" data-dlock="${lk ? 1 : 0}" ${id ? `data-lockid="${id}"` : ""} aria-label="${lk ? "Desbloquear" : "Bloquear"} el deshumidificador${lab}">${svg("power")}</button>`;
+  acHTML = function(e){
+    const a = e.attributes, st = e.state, off = st === "off" || st === "unavailable";
+    const cfg = NIGHT[e.entity_id] && helpers[NIGHT[e.entity_id].helper] ? NIGHT[e.entity_id] : null;
+    const sleep = (a.preset_modes || []).find(p => /sleep/i.test(p));
+    const night = cfg ? (!off && helpers[cfg.helper] === "on") : false;
+    const tm = termoOf(e), tgt = pendingT[e.entity_id] ?? (tm ? tm.v : a.temperature);
+    const lo = tm ? tm.min : (a.min_temp ?? 16), hi = tm ? tm.max : (a.max_temp ?? 30), cur = roomT(e);
+    const big = off ? (cur != null ? fmt1(cur) + "°" : "—") : (tgt != null ? fmt1(tgt) + "°" : "—");
+    const sub = off ? (st === "unavailable" ? "Sin conexión" : "Aire apagado") : (cur != null ? "Ahora " + fmt1(cur) + "°" : "");
+    const stx = off ? (tgt != null ? "Objetivo " + fmt1(tgt) + "°" : "") : (st === "heat" ? "Calentando" : st === "cool" ? "Enfriando" : (MODE_TXT[st] || st)) + (night ? " · Noche, " + cfg.txt : "");
+    let d = "";
+    const dd = dehumOf(e);
+    if (dd){ const lkS = hst(DEHUM_LOCK), lk = lkS && lkS.state === "on", fu = forceUntil("dormitorio");
+      const franja = enFranja("dormitorio"), modoN = hv("input_boolean.deshum_dormitorio_con_modo_noche", "on") === "on" && hv("input_boolean.noche_dormitorio") === "on";
+      const sub2 = fu ? `Forzado · hasta las ${fu}` : lk ? "Bloqueado · no se enciende" : !dd.on ? (franja ? `De noche · vuelve a las ${hhmm("input_datetime.deshum_dormitorio_noche_hasta") || "10:00"}` : modoN ? "Parado por el modo Noche" : `Automático · se enciende al ${pctv("input_number.deshum_dormitorio_enciende")} %`)
+        : (dd.w != null && dd.w > 5 ? `Secando · ${Math.round(dd.w)} W · apaga al ${pctv("input_number.deshum_dormitorio_apaga")} %` : "Sin consumo · ¿depósito lleno?");
+      d = pill(fu ? "fz" : lk ? "lk" : dd.on ? "on" : "", fu ? "bolt" : lk ? "power" : "drop", sub2, lkS ? forceBtn("dormitorio") + lockBtn(lk, "", " del dormitorio") : `<button class="dlock" data-dehum="${esc(dd.id)}" data-on="${dd.on ? 1 : 0}">${svg("power")}</button>`); }
+    return `<div class="cv ${off ? "off" : ""}"><div class="hd"><b>${esc(acName(e))}</b>${hum(roomH(e))}</div>
+      <div class="dial">${arc(off || tgt == null ? 0 : (tgt - lo) / (hi - lo), C[st], true)}<div class="ctl"><span class="num">${big}</span></div><small>${sub}</small>
+        <button class="pm m" data-act="minus" aria-label="Bajar medio grado">−</button><button class="pm p" data-act="plus" aria-label="Subir medio grado">+</button></div>
+      <div class="stx ${off ? "" : st}">${stx}</div>
+      <div class="mbar">${MODES.filter(x => (a.hvac_modes || []).includes(x.m)).map(x => `<button class="${st === x.m ? "on " + x.c : ""}" data-mode="${x.m}">${svg(x.i)}<span>${st === x.m && x.m === "off" ? "Apagado" : x.t}</span></button>`).join("")}
+        ${(cfg || sleep) ? `<button class="${night ? "on night" : ""}" data-night="1">${svg("moon")}<span>Noche</span></button>` : ""}</div>${d}</div>`;
+  };
+  bathCard = function(){
+    const S = window.__states || [];
+    const fs = dc => S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === dc && /sensor ba[ñn]o/i.test(x.attributes.friendly_name || ""));
+    const tS = fs("temperature"), hS = fs("humidity"), sw = hst(DEHUM_BATH), lkS = hst(DEHUM_BATH_LOCK);
+    const t = tS ? parseFloat(tS.state) : NaN, h = hS ? parseFloat(hS.state) : NaN;
+    const pw = S.find(x => x.entity_id.startsWith("sensor.") && x.attributes.device_class === "power" && /deshumidificador_ba[ñn]o/i.test(x.entity_id));
+    const w = pw ? parseFloat(pw.state) : null, on = sw && sw.state === "on", lk = lkS && lkS.state === "on";
+    const onAt = pctv("input_number.deshum_bano_enciende"), offAt = pctv("input_number.deshum_bano_apaga"), fu = forceUntil("bano");
+    const sub = fu ? `Forzado · hasta las ${fu}` : lk ? "Bloqueado · no se enciende" : !sw || sw.state === "unavailable" ? "Enchufe sin conexión"
+      : !on ? (enFranja("bano") ? `De noche · vuelve a las ${hhmm("input_datetime.deshum_bano_noche_hasta") || "10:00"}` : `Automático · se enciende al ${onAt} %`)
+      : (w != null && w > 5 ? `Secando · ${Math.round(w)} W` : "Sin consumo · ¿depósito lleno?");
+    const X = v => Math.max(0, Math.min(100, (v - 30) / 60 * 100));
+    let foot = "";
+    if (h24Data && h24Data.s.db){ const t0 = new Date().setHours(0,0,0,0), end = Date.now(), L = (h24Data.by[h24Data.s.db.entity_id] || []).concat([{t: end, v: h24Data.s.db.state}]); let ms = 0;
+      for (let i = 0; i < L.length - 1; i++) if (L[i].v === "on"){ const a = Math.max(t0, L[i].t), b = L[i+1].t; if (b > a) ms += b - a; }
+      foot = `Hoy ha secado ${Math.floor(ms/3600e3)} h ${String(Math.round(ms%3600e3/60e3)).padStart(2,"0")} min`; }
+    return `<div class="cv"><div class="hd"><b>Baño</b><span>${!isNaN(t) ? "🌡 " + fmt1(t) + "°" : ""}</span></div>
+      <div class="dial">${arc(isNaN(h) ? 0 : X(h) / 100, "#0a84ff", false)}<div class="ctl"><span class="num">${!isNaN(h) ? Math.round(h) + " %" : "—"}</span></div><small>Humedad</small></div>
+      <div class="hbar"><div class="t"><i style="width:${isNaN(h) ? 0 : X(h)}%"></i><u style="left:${X(offAt)}%"></u>${onAt !== offAt ? `<u style="left:${X(onAt)}%"></u>` : ""}</div><p><span>Apaga ${offAt} %</span><span>Enciende ${onAt} %</span></p></div>
+      ${foot ? `<div class="foot">${foot}</div>` : ""}
+      ${pill(fu ? "fz" : lk ? "lk" : on ? "on" : "", fu ? "bolt" : lk ? "power" : "drop", sub, forceBtn("bano") + (lkS ? lockBtn(lk, DEHUM_BATH_LOCK, " del baño") : ""))}</div>`;
+  };
+  renderWeather = function(w){
+    const c = w.current, d = w.daily, h = w.hourly;
+    $("tOut").textContent = fmt1(c.temperature_2m) + "°";
+    $("wxnow").innerHTML = `${wx(c.weather_code, c.is_day).replace('<svg','<svg width="54" height="54"')}<div class="t num">${Math.round(c.temperature_2m)}°</div>
+      <div class="d"><b>${wxText(c.weather_code)}</b><br>${PLACE} · máx ${Math.round(d.temperature_2m_max[0])}° · mín ${Math.round(d.temperature_2m_min[0])}°<br>Sensación ${Math.round(c.apparent_temperature)}° · viento ${Math.round(c.wind_speed_10m)} km/h</div>`;
+    const i0 = h.time.indexOf(c.time.slice(0, 13) + ":00"); let s2 = "";
+    if (i0 >= 0) for (let k = -6; k <= 12; k += 3){ const i = i0 + k; if (i < 0 || i >= h.time.length) continue;
+      const hh = parseInt(h.time[i].slice(11, 13), 10), p = h.precipitation_probability[i] ?? 0;
+      s2 += `<div class="hr ${k === 0 ? "cur" : ""}">${k === 0 ? "Ahora" : hh + "h"}${wx(h.weather_code[i], h.is_day[i]).replace('<svg','<svg class="hw"')}<b class="num">${Math.round(h.temperature_2m[i])}°</b><em>${p}%</em></div>`; }
+    $("hrs").innerHTML = s2;
+    if (typeof renderHome === "function") renderHome();
+  };
+  try{ const o = store.get("p2_wx", null); if (o) renderWeather(o); }catch(_){}
+  if (typeof renderACs === "function" && climates.length) renderACs();
 })();
 </script>
 </body>
