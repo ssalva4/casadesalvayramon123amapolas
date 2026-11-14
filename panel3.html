@@ -2540,7 +2540,8 @@ renderHome = function(){
 };
 /* que la tele pequeña recuerde si tenía sonido al cambiar de canal */
 const _syncMini = syncMini;
-syncMini = function(){ const v = $("tvMini"); _syncMini(); if (v && v.dataset.src && v.muted !== miniMuted && !v.dataset.err){ v.muted = miniMuted; } };
+syncMini = function(){ const v = $("tvMini"), before = v ? v.dataset.src : null; _syncMini();
+  if (v && v.dataset.src && v.dataset.src !== before && !v.dataset.err){ v.muted = miniMuted; if (!miniMuted){ const pr = v.play(); if (pr) pr.catch(() => {}); } } };   // solo al cambiar de canal
 const _stopMini = stopMini;
 stopMini = function(){ miniMuted = true; _stopMini(); };
 document.addEventListener("click", ev => { const t = ev.target.closest("#tvTile"); if (t && roomOf() === "casa"){ setTimeout(() => { const v = $("tvMini"); if (v) miniMuted = v.muted; }, 0); } }, true);
