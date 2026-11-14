@@ -714,6 +714,8 @@ const RADIOS = [
   {k:"rg", t:"Radio Galega",   s:"Galicia",        lg:"RG", bg:"#0a64b4", fg:"#fff",    u: "https://crtvg-radiogalega-hls.flumotion.cloud/playlist.m3u8"},
   {k:"r5", t:"Radio 5",        s:"Todo noticias",  lg:"R5", bg:"#ffe08a", fg:"#7a4b00", u: RTVE + "rne/rne_r5_madrid_main.m3u8"},
   {k:"r3", t:"Radio 3",        s:"Música",         lg:"R3", bg:"#1f1f1f", fg:"#fff",    u: RTVE + "rne/rne_r3_main.m3u8"},
+  {k:"dz", t:"Drone Zone",     s:"Ambiente relajante", lg:"DZ", bg:"#16324f", fg:"#bfe3ff", u: "https://ice2.somafm.com/dronezone-128-mp3"},
+  {k:"gs", t:"Groove Salad",   s:"Chill tranquilo",    lg:"GS", bg:"#2f5d3a", fg:"#d9f5c9", u: "https://ice2.somafm.com/groovesalad-128-mp3"},
   {k:"rc", t:"Radio Clásica",  s:"Música clásica", lg:"RC", bg:"#c9b8ff", fg:"#2d1a6b", u: RTVE + "rne/rne_r2_main.m3u8"}
 ];
 // Modo Noche: interruptores de Home Assistant (los mismos que usa el panel 1)
@@ -1939,7 +1941,7 @@ function ambTiles(){   // los mismos mosaicos que el Inicio, en cristal
 }
 function thermoTile(k){
   const r = HOME_ROOMS.find(x => x.k === k), id = `input_number.temp_deseada_${k}`, x = hst(id), v = roomTH(r.re);
-  const want = parseFloat(hPend[id] ?? (x ? x.state : NaN)), ac = r.ac && hst(r.ac), st = ac ? (hPend[r.ac] ?? ac.state) : "off", on = st !== "off" && st !== "unavailable";
+  const want = parseFloat(hPend[id] ?? (x ? x.state : (r.ac && hst(r.ac) ? hst(r.ac).attributes.temperature : NaN))), ac = r.ac && hst(r.ac), st = ac ? (hPend[r.ac] ?? ac.state) : "off", on = st !== "off" && st !== "unavailable";
   const big = isNaN(want) ? "—" : (Number.isInteger(want) ? String(want) : fmt1(want));
   return `<div class="gt thermo"><span class="th-now"><span><small>Ahora</small>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</span><span><small>Humedad</small>${!isNaN(v.h) ? Math.round(v.h) + " %" : "—"}</span></span>
     <span class="th-big">${big}</span>
@@ -1951,8 +1953,13 @@ function ambHTML(){
   const d = new Date(), w = store.get("p2_wx", null), o = ambTiles();
   const clock = `<div class="gt clock">${glassClock()}</div>`;
   const wxT = w && w.current ? `<div class="gt wxg"><span class="gi big">${wx(w.current.weather_code, w.current.is_day)}</span><b class="tv">${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></div>` : o.t_bano;
-  const salon = `<div class="gg">${thermoTile("salon")}${clock}${wxT}${o.nt_salon || ""}${o.ac_salon || ""}${o.morning}${o.bye}${o.dh_bano || ""}${o.off}</div>`;
-  const dorm = `<div class="gg">${thermoTile("dormitorio")}${clock}${o.t_bano}${o.nt_dormitorio || ""}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${o.dh_bano || ""}${o.t_salon}${o.off}</div>`;
+  const RM = typeof roomOf === "function" ? roomOf() : "casa";
+  const salon = RM === "salon"
+    ? `<div class="gg">${thermoTile("salon")}${clock}${wxT}${o.nt_salon || ""}${o.ac_salon || ""}${o.morning}${o.bye}${ambTvTile()}</div>`
+    : `<div class="gg">${thermoTile("salon")}${clock}${wxT}${o.nt_salon || ""}${o.ac_salon || ""}${o.morning}${o.bye}${o.dh_bano || ""}${o.off}</div>`;
+  const dorm = RM === "dormitorio"
+    ? `<div class="gg">${thermoTile("dormitorio")}${clock}${ambAlarmTile()}${o.nt_dormitorio || ""}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${ambRadioTile()}${G("", "moon", "Buenas noches", "Escena", 'data-bn="1"')}${wxT}</div>`
+    : `<div class="gg">${thermoTile("dormitorio")}${clock}${o.t_bano}${o.nt_dormitorio || ""}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${o.dh_bano || ""}${o.t_salon}${o.off}</div>`;
   const tiempo = w && w.current ? `<div class="gg one"><div class="gt wide"><span class="gi huge">${wx(w.current.weather_code, w.current.is_day)}</span>
       <b class="tv xl">${Math.round(w.current.temperature_2m)}°</b><b>${wxText(w.current.weather_code)} en ${PLACE}</b>
       <small>máx ${Math.round(w.daily.temperature_2m_max[0])}° · mín ${Math.round(w.daily.temperature_2m_min[0])}° · sensación ${Math.round(w.current.apparent_temperature)}°</small>
@@ -1964,6 +1971,8 @@ function ambHTML(){
     <div class="dots">${AMB_FACES.map((f, i) => `<button class="${i === ambFace ? "on" : ""}" data-face="${i}" aria-label="${f[1]}"></button>`).join("")}</div>`;
 }
 async function ambAction(e){
+  if (e.target.closest("[data-go]")){ closeAmb(); return; }
+  const rb = e.target.closest("[data-rad],[data-bn],[data-rtimer]"); if (rb){ await roomAction(rb); renderAmb(); return; }
   const t = e.target.closest("[data-tt]");
   if (t){ const id = t.dataset.tt, x = hst(id); if (!x) return; const a = x.attributes;
     const v = Math.min(a.max ?? 30, Math.max(a.min ?? 16, parseFloat(hPend[id] ?? x.state) + parseFloat(t.dataset.d)));
@@ -1995,7 +2004,9 @@ function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return; ambChrome(
     a.innerHTML = `<div class="nf"><div class="nt">${pad(d.getHours())}:${pad(d.getMinutes())}</div><div class="nd">${ds[0].toUpperCase() + ds.slice(1)}</div>${alarmHTML()}
       <div class="nr">${HOME_ROOMS.map(r => { const v = roomTH(r.re); return `<div><small>${r.n}</small><b>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><em>${!isNaN(v.h) ? Math.round(v.h) + " %" : ""}</em></div>`; }).join("")}</div></div>`; return; }
   const h = new Date().getHours(); a.classList.toggle("night", h >= 0 && h < 7); a.style.backgroundImage = AMB_BG; a.innerHTML = ambHTML(); }
-function openAmb(){ if (ambOpen) return; ambOpen = true; if (typeof stopMini === "function") stopMini(); ambFace = Math.max(0, AMB_FACES.findIndex(f => f[0] === ambCfg().face)); $("amb").classList.add("on"); renderAmb(); }
+function openAmb(){ if (ambOpen) return; ambOpen = true; if (typeof stopMini === "function") stopMini();
+  const RM = typeof roomOf === "function" ? roomOf() : "casa";
+  ambFace = RM === "salon" ? 0 : RM === "dormitorio" ? 1 : Math.max(0, AMB_FACES.findIndex(f => f[0] === ambCfg().face)); $("amb").classList.add("on"); renderAmb(); }
 function closeAmb(){ ambOpen = false; $("amb").classList.remove("on"); ambChrome(); lastAct = Date.now(); if (tab !== "ent" && tab !== "cfg") show("hom"); }
 (() => {
   const a = document.createElement("div"); a.id = "amb"; a.setAttribute("role", "dialog"); a.setAttribute("aria-label", "Pantalla en reposo"); document.body.appendChild(a);
@@ -2233,6 +2244,26 @@ html.ambon.ambred,html.ambon.ambred body{background:#000!important}
 #amb .nf .nal svg{width:1em;height:1em}#amb .nf .nal small{font-size:.7em;color:#6a0d07}
 #amb .nf .nal.off{color:#5e0b05;border-color:#2a0502}
 #amb .nf .nr em{font-style:normal;font-size:min(2.6vw,3.4vh);font-weight:400;color:#6a0d07}
+
+/* ---------- Inicio por estancias ---------- */
+.hg.rs .tl.tv.big3{grid-column:1/4;grid-row:1/4;cursor:pointer}
+.hg.rs .tl.tv.big3 .tvb{margin:0 0 24px 26px}.hg.rs .tl.tv.big3 .tvb b{font-size:26px}.hg.rs .tl.tv.big3 .tvb small{font-size:16px}
+.tl.tv .chb{position:absolute;top:50%;transform:translateY(-50%);width:58px;height:58px;border-radius:50%;background:rgba(0,0,0,.38);color:#fff;display:grid;place-items:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:2}
+.tl.tv .chb svg{width:28px;height:28px}.tl.tv .chb.l{left:16px}.tl.tv .chb.r{right:16px}
+.hg.rd .tl.radio2{grid-column:1/3;grid-row:1/4}
+.tl.radio2{background:#fff;color:#000;gap:10px;justify-content:center}
+.tl.radio2.on{background:var(--lav)}
+.tl.radio2 .rlg{width:110px;height:110px;border-radius:26px;display:grid;place-items:center;font-size:40px;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,.12)}
+.tl.radio2 b{font-size:26px}.tl.radio2 small{font-size:16px}
+.tl.radio2 .rctl{display:flex;gap:18px;align-items:center;margin-top:6px}
+.tl.radio2 .rctl button{width:52px;height:52px;border-radius:50%;background:var(--tl);display:grid;place-items:center;color:#3a3a3c}
+.tl.radio2 .rctl button svg{width:26px;height:26px}
+.tl.radio2 .rctl .pp{width:74px;height:74px;background:#1c1c1e;color:#fff}.tl.radio2.on .rctl .pp{background:var(--lav-t)}
+.tl.radio2 .rtm{display:flex;gap:8px;margin-top:8px}
+.tl.radio2 .rtm button{padding:8px 14px;border-radius:999px;background:var(--tl);font-weight:600;font-size:15px;color:#3a3a3c}
+.tl.radio2 .rtm button.on{background:#1c1c1e;color:#fff}
+.tl.radio2 .rsl{color:var(--muted)!important}
+@media (max-width:900px){ .hg.rs .tl.tv.big3,.hg.rd .tl.radio2{grid-column:1/3;grid-row:span 2} }
 @media (max-width:900px){
   .hg{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:170px}
   .tl.tv.wide{grid-column:1/3;grid-row:span 2}
@@ -2255,7 +2286,8 @@ const TI = {
   tv:'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/>',
   cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   eur:'<path d="M18 7a7 7 0 1 0 0 10M4 10h9M4 14h9"/>',
-  chev_u:'<path d="M5 15l7-7 7 7"/>', chev_d:'<path d="M5 9l7 7 7-7"/>',
+  chev_u:'<path d="M5 15l7-7 7 7"/>', chev_d:'<path d="M5 9l7 7 7-7"/>', chev_l:'<path d="M15 5l-7 7 7 7"/>', chev_r:'<path d="M9 5l7 7-7 7"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>', music:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/>'
 };
 const tsvg = (n, c) => `<svg viewBox="0 0 24 24" fill="none" stroke="${c || "currentColor"}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TI[n]}</svg>`;
@@ -2392,6 +2424,129 @@ $("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-fs
   const on = !fsOn(); store.set("p3_fs", on);
   if (!on && isFs()){ const x = document.exitFullscreen || document.webkitExitFullscreen; if (x) try{ x.call(document); }catch(e){} }
   renderCfg(true); }, true);
+</script>
+<script>
+/* ===== Personalización por estancia (se guarda en cada aparato): casa · salón · dormitorio ===== */
+const ROOMS_T = {casa: "Toda la casa", salon: "Salón", dormitorio: "Dormitorio"};
+const roomOf = () => { const r = store.get("p3_room", "casa"); return ROOMS_T[r] ? r : "casa"; };
+
+/* --- radio: emisora elegida, reproducir, temporizador para dormir --- */
+let sleepAt = 0;
+const radSel = () => { const k = radioOn || store.get("p3_rad", "dz"); return RADIOS.find(r => r.k === k) || RADIOS[0]; };
+async function radPlay(k){ const r = RADIOS.find(x => x.k === k) || RADIOS[0]; store.set("p3_rad", r.k);
+  stopAll("radio"); radioErr = null; radioOn = r.k; player.src = r.u; renderRadios();
+  try{ await player.play(); }catch(err){ radioErr = r.k; radioOn = null; renderRadios(); } }
+function radStop(){ stopAll(); sleepAt = 0; }
+function radStep(d){ const i = RADIOS.findIndex(r => r.k === radSel().k), r = RADIOS[(i + d + RADIOS.length) % RADIOS.length];
+  if (radioOn) radPlay(r.k); else store.set("p3_rad", r.k); }
+setInterval(() => { if (sleepAt && Date.now() >= sleepAt){ sleepAt = 0; if (radioOn) stopAll(); if (typeof renderHome === "function") renderHome(); renderAmb(); } }, 5000);
+const sleepTxt = () => { if (!sleepAt) return ""; const d = new Date(sleepAt); return `Se apaga a las ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
+/* --- próxima alarma del iPhone (texto corto) --- */
+function nextAlarm(){
+  const x = hst("input_text.alarma_iphone"); if (!x || !x.state) return null;
+  const [list, when] = x.state.split("|"); if (when && Date.now() - Date.parse(when) > 2*86400e3) return null;
+  const now = new Date(), nowM = now.getHours() * 60 + now.getMinutes();
+  const ts = (list || "").split(",").map(t => t.trim()).filter(Boolean).map(t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; }).filter(v => !isNaN(v));
+  if (!ts.length) return "";
+  const n = ts.map(v => ({v, d: (v - nowM + 1440) % 1440 || 1440})).sort((a, b) => a.d - b.d)[0].v;
+  return pad(Math.floor(n / 60)) + ":" + pad(n % 60);
+}
+
+/* --- acciones propias de las estancias (radio, temporizador, buenas noches, canales) --- */
+async function roomAction(b){
+  if (b.dataset.rad === "play"){ if (radioOn) radStop(); else await radPlay(radSel().k); }
+  else if (b.dataset.rad === "prev") radStep(-1);
+  else if (b.dataset.rad === "next") radStep(1);
+  else if (b.dataset.rtimer){ const m = +b.dataset.rtimer; sleepAt = m ? Date.now() + m * 60000 : 0; if (m && !radioOn) await radPlay(radSel().k); }
+  else if (b.dataset.bn){   // Buenas noches: aire del salón apagado, Noche en el dormitorio, radio relajante 30 min
+    sleepAt = Date.now() + 30 * 60000; await radPlay(store.get("p3_rad_relax", "dz"));
+    try{ await service("climate", "set_hvac_mode", {entity_id: "climate.aire_salon", hvac_mode: "off"});
+      await service("input_boolean", "turn_on", {entity_id: "input_boolean.noche_dormitorio"}); setTimeout(refreshHA, 1500); }catch(err){ handleErr(err); } }
+  else if (b.dataset.chs){ const hls = CHANNELS.filter(c => c.u), i = Math.max(0, hls.findIndex(c => c.k === ch)), n = hls[(i + (+b.dataset.chs) + hls.length) % hls.length];
+    ch = n.k; store.set("p2_ch", ch); renderTV(); const v = $("tvMini"); if (v){ delete v.dataset.err; } syncMini(); }
+  renderHome();
+}
+
+/* --- mosaicos (blanco y cristal) --- */
+function radioTileW(){ const r = radSel(), on = radioOn === r.k;
+  return `<div class="tl radio2 ${on ? "on" : ""}"><div class="rlg" style="background:${r.bg};color:${r.fg}">${r.lg}</div>
+    <b>${esc(r.t)}</b><small>${on ? "● Sonando" : radioErr === r.k ? "Sin señal, reintenta" : r.s}</small>
+    <div class="rctl"><button data-rad="prev" aria-label="Emisora anterior">${tsvg("chev_l")}</button><button class="pp" data-rad="play" aria-label="${on ? "Parar" : "Escuchar"}">${svg(on ? "stop" : "play")}</button><button data-rad="next" aria-label="Emisora siguiente">${tsvg("chev_r")}</button></div>
+    <div class="rtm">${[15, 30, 60].map(m => `<button data-rtimer="${m}" class="${sleepAt && Math.abs(sleepAt - Date.now() - m*60000) < 60000 ? "on" : ""}">${m}'</button>`).join("")}<button data-rtimer="0" aria-label="Quitar temporizador">✕</button></div>
+    <small class="rsl">${sleepTxt() || "Temporizador para dormir"}</small></div>`; }
+function alarmTileW(){ const a = nextAlarm();
+  return `<div class="tl ${a ? "on" : ""}"><span class="ti">${tsvg("bell")}</span><b>Alarma</b>${a ? `<span class="tv2">${a}</span>` : ""}<small>${a == null ? "sin datos del iPhone" : a ? "iPhone" : "ninguna activada"}</small></div>`; }
+function ambRadioTile(){ const r = radSel(), on = radioOn === r.k;
+  return `<button class="gt ${on ? "on" : ""}" data-rad="play"><span class="gi">${GIC("music")}</span><b>${esc(r.t)}</b><small>${on ? (sleepTxt() || "Sonando · toca para parar") : "Toca para escuchar"}</small></button>`; }
+function ambAlarmTile(){ const a = nextAlarm();
+  return `<div class="gt ${a ? "" : ""}"><span class="gi">${GIC("bell")}</span><b>Alarma</b>${a ? `<span class="gv">${a}</span>` : ""}<small>${a == null ? "sin datos" : a ? "iPhone" : "ninguna"}</small></div>`; }
+function ambTvTile(){ const c = CHANNELS.find(x => x.k === ch) || CHANNELS[0];
+  return `<button class="gt" data-go="hom" style="grid-column:span 2"><span class="gi">${GIC("tv")}</span><b>Tele · ${esc(c.n)}</b><small>Toca para volver y verla</small></button>`; }
+
+/* --- Inicio del salón: la tele manda --- */
+function renderSalon(box){
+  if (box.dataset.layout !== "salon"){ box.dataset.layout = "salon";
+    box.innerHTML = `<div class="h3t"><h2>Salón</h2><span id="h3time"></span></div><div id="h3pills"></div>
+      <div class="hg rs"><div class="tl tv big3" id="tvTile" role="button" tabindex="0" aria-label="Tele: toca para el sonido"><video id="tvMini" muted playsinline autoplay preload="none"></video><img id="tvMiniLogo" alt="">
+        <button class="chb l" data-chs="-1" aria-label="Canal anterior">${tsvg("chev_l")}</button><button class="chb r" data-chs="1" aria-label="Canal siguiente">${tsvg("chev_r")}</button>
+        <span class="tvb"><b id="tvMiniN"></b><small id="tvMiniS"></small></span></div><div id="hgA" style="display:contents"></div></div>`;
+    $("tvTile").addEventListener("click", ev => { const c = ev.target.closest("[data-chs]"); if (c){ ev.stopPropagation(); roomAction(c); return; }
+      const v = $("tvMini"); if (v && v.dataset.src && !v.dataset.err){ v.muted = !v.muted; miniMuted = v.muted; if (!v.muted){ const pr = v.play(); if (pr) pr.catch(() => {}); } syncMini(); return; }
+      show("ent"); setTimeout(() => { const pb = $("screen").querySelector("[data-play]"); if (pb && !tvOn && !ytOn) pb.click(); }, 300); });
+  }
+  const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), v = roomTH(HOME_ROOMS[0].re);
+  $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
+  $("h3pills").innerHTML = `<div class="pills"><button class="pl" data-go="cli">${tsvg("therm", "#4aa3f0")}<span style="color:#4aa3f0">${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</span></button>
+    <button class="pl" data-go="cli">${tsvg("hum", "#3b7fc4")}<span style="color:#3b7fc4">${!isNaN(v.h) ? Math.round(v.h) + " %" : "—"}</span></button>
+    <button class="pl" data-go="ent">${tsvg("tv", "#636366")}</button><button class="pl" data-go="pla">${tsvg("cal", "#ff453a")}</button><button class="pl" data-go="cfg">${tsvg("gear", "#636366")}</button></div>`;
+  const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
+  $("hgA").innerHTML = `<div class="tl clk">${analogClock()}</div>${o.ac_salon || ""}${o.nt_salon || ""}${wxT}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}`;
+  syncMini();
+}
+/* --- Inicio del dormitorio: descanso y radio --- */
+function renderDorm(box){
+  if (box.dataset.layout !== "dormitorio"){ box.dataset.layout = "dormitorio"; stopMini();
+    box.innerHTML = `<div class="h3t"><h2>Dormitorio</h2><span id="h3time"></span></div><div id="h3pills"></div><div class="hg rd"><div id="hgA" style="display:contents"></div></div>`; }
+  const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), v = roomTH(HOME_ROOMS[1].re);
+  $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
+  $("h3pills").innerHTML = `<div class="pills"><button class="pl" data-go="cli">${tsvg("therm", "#4aa3f0")}<span style="color:#4aa3f0">${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</span></button>
+    <button class="pl" data-go="cli">${tsvg("hum", "#3b7fc4")}<span style="color:#3b7fc4">${!isNaN(v.h) ? Math.round(v.h) + " %" : "—"}</span></button>
+    <button class="pl" data-go="ent">${tsvg("tv", "#636366")}</button><button class="pl" data-go="pla">${tsvg("cal", "#ff453a")}</button><button class="pl" data-go="cfg">${tsvg("gear", "#636366")}</button></div>`;
+  const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
+  const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
+  const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
+  $("hgA").innerHTML = `${radioTileW()}<div class="tl clk">${analogClock()}</div>${o.ac_dormitorio || ""}${wxT}${o.nt_dormitorio || ""}${o.dh_dormitorio || ""}${alarmTileW()}
+    ${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "moon", "Buenas noches", "Radio 30' y Noche", 'data-bn="1"')}`;
+}
+let miniMuted = true;
+const _renderHomeCasa = renderHome;
+renderHome = function(){
+  const box = $("home"); if (!box || tab !== "hom") return;
+  const rm = roomOf();
+  if (rm === "salon") return renderSalon(box);
+  if (rm === "dormitorio") return renderDorm(box);
+  if (box.dataset.layout){ delete box.dataset.layout; box.innerHTML = ""; }
+  _renderHomeCasa();
+};
+/* que la tele pequeña recuerde si tenía sonido al cambiar de canal */
+const _syncMini = syncMini;
+syncMini = function(){ const v = $("tvMini"); _syncMini(); if (v && v.dataset.src && v.muted !== miniMuted && !v.dataset.err){ v.muted = miniMuted; } };
+const _stopMini = stopMini;
+stopMini = function(){ miniMuted = true; _stopMini(); };
+document.addEventListener("click", ev => { const t = ev.target.closest("#tvTile"); if (t && roomOf() === "casa"){ setTimeout(() => { const v = $("tvMini"); if (v) miniMuted = v.muted; }, 0); } }, true);
+/* clics de radio / buenas noches en el Inicio */
+$("home").addEventListener("click", ev => { const b = ev.target.closest("[data-rad],[data-bn],[data-rtimer]"); if (!b) return; ev.stopImmediatePropagation(); roomAction(b); }, true);
+/* la radio sonando tampoco pasa a reposo si estás en el dormitorio con temporizador: no; sí deja pasar (reloj rojo con radio de fondo) */
+
+/* --- Ajustes: dónde está este aparato --- */
+const _ambCfgCard3 = ambCfgCard;
+ambCfgCard = function(){ const rm = roomOf();
+  return `<div class="card"><h3>📍 Este aparato está en</h3>${cSeg("Estancia", rm, Object.entries(ROOMS_T), v => `data-room="${v}" data-v="${v}"`)}
+    <div class="cf-note">Cambia el Inicio y la pantalla en reposo: el Salón da protagonismo a la tele y el Dormitorio a la radio y el descanso. Se guarda solo en este aparato.</div></div>` + _ambCfgCard3(); };
+$("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-room]"); if (!b) return; ev.stopImmediatePropagation();
+  store.set("p3_room", b.dataset.room); renderCfg(true); }, true);
+renderHome();
 </script>
 </body>
 </html>
