@@ -1918,15 +1918,16 @@ function glassClock(){
     <g style="transform-origin:50px 50px;animation:secs 60s linear infinite;animation-delay:-${s}s"><line x1="50" y1="58" x2="50" y2="10" stroke="#ffd36a" stroke-width=".9" stroke-linecap="round"/></g>
     <circle cx="50" cy="50" r="2.3" fill="#fff"/></svg>`;
 }
-const G = (cls, ic, name, sub, attrs) => `<button class="gt ${cls}" ${attrs || ""}><span class="gi">${GIC(ic)}</span><b>${name}</b><small>${sub}</small></button>`;
+const G = (cls, ic, name, sub, attrs, big) => `<button class="gt ${cls}${big ? " hasv" : ""}" ${attrs || ""}><span class="gi">${GIC(ic)}</span><b>${name}</b>${big ? `<span class="gv">${big}</span>` : ""}<small>${sub}</small></button>`;
 function ambTiles(){   // los mismos mosaicos que el Inicio, en cristal
   const o = {};
   HOME_ROOMS.forEach(r => {
     if (r.ac){ const e = hst(r.ac); if (e){ const st = hPend[r.ac] ?? e.state, on = st !== "off" && st !== "unavailable";
-      o["ac_" + r.k] = G(on ? "on" : "", st === "cool" ? "fan" : "therm", "Aire", `${r.n}${on ? " · " + (MODE_TXT[st] || st) : ""}`, `data-hac="${r.ac}" data-on="${on ? 1 : 0}"`); } }
+      const want = parseFloat(hPend[`input_number.temp_deseada_${r.k}`] ?? hv(`input_number.temp_deseada_${r.k}`, e.attributes.temperature));
+      o["ac_" + r.k] = G(on ? "on" : "", st === "cool" ? "fan" : "therm", "Aire", `${r.n}${on ? " · " + (MODE_TXT[st] || st) : " · apagado"}`, `data-hac="${r.ac}" data-on="${on ? 1 : 0}"`, !isNaN(want) ? fmt1(want).replace(",0", "") + "°" : ""); } }
     if (r.nt && hst(r.nt)){ const on = hs(r.nt) === "on"; o["nt_" + r.k] = G(on ? "on" : "", "moon", "Noche", r.n, `data-hnt="${r.nt}" data-on="${on ? 1 : 0}"`); }
     if (r.dh && hst(r.lk)){ const F = FORCE_ID(r.k), lk = hs(r.lk) === "on", fz = hs(F) === "on", sw = hst(r.dh), run = sw && sw.state === "on";
-      o["dh_" + r.k] = G(fz ? "fz" : lk ? "lk" : run ? "on" : "", fz ? "bolt" : lk ? "lock" : "drop", "Deshumidificador", `${r.n} · ${fz ? "forzado" : lk ? "bloqueado" : run ? "secando" : "automático"}`, `data-hdh="${r.k}" data-mode="${fz ? "fz" : lk ? "lk" : "auto"}"`); }
+      o["dh_" + r.k] = G(fz ? "fz" : lk ? "lk" : run ? "on" : "", fz ? "bolt" : lk ? "lock" : "drop", "Deshumidificador", `${r.n} · ${fz ? "forzado" : lk ? "bloqueado" : run ? "secando" : "automático"}`, `data-hdh="${r.k}" data-mode="${fz ? "fz" : lk ? "lk" : "auto"}"`, (h => !isNaN(h) ? Math.round(h) + " %" : "")(roomTH(r.re).h)); }
     const v = roomTH(r.re); o["t_" + r.k] = `<div class="gt temp"><b class="tv">${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><b>${r.n}</b><small>${!isNaN(v.h) ? Math.round(v.h) + " % humedad" : ""}</small></div>`;
   });
   o.morning = G("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"');
@@ -1938,7 +1939,7 @@ function thermoTile(k){
   const r = HOME_ROOMS.find(x => x.k === k), id = `input_number.temp_deseada_${k}`, x = hst(id), v = roomTH(r.re);
   const want = parseFloat(hPend[id] ?? (x ? x.state : NaN)), ac = r.ac && hst(r.ac), st = ac ? (hPend[r.ac] ?? ac.state) : "off", on = st !== "off" && st !== "unavailable";
   const big = isNaN(want) ? "—" : (Number.isInteger(want) ? String(want) : fmt1(want));
-  return `<div class="gt thermo"><span class="th-now">${!isNaN(v.t) ? "Ahora " + fmt1(v.t) + "°" : ""}${!isNaN(v.h) ? " · 💧 " + Math.round(v.h) + " %" : ""}</span>
+  return `<div class="gt thermo"><span class="th-now"><span><small>Ahora</small>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</span><span><small>Humedad</small>${!isNaN(v.h) ? Math.round(v.h) + " %" : "—"}</span></span>
     <span class="th-big">${big}</span>
     <span class="th-row"><button class="th-a" data-tt="${id}" data-d="-0.5" aria-label="Bajar medio grado">${GIC("chev_d")}</button>
       <span class="th-n"><b>Termostato</b><small>${r.n}${on ? " · " + (MODE_TXT[st] || st) : " · aire apagado"}</small></span>
@@ -2182,7 +2183,12 @@ body{background:var(--bgp)!important}
 #amb .gt.lk{background:rgba(255,110,100,.78)}
 #amb button.gt:active{transform:scale(.96)}
 #amb .thermo{grid-column:1/3;grid-row:1/3;justify-content:space-between;padding:2.6vh 2vw 2.2vh}
-#amb .th-now{font-size:min(2.3vh,18px);opacity:.78;font-weight:500}
+#amb .th-now{display:flex;gap:min(5vw,48px);font-size:min(5vh,42px);font-weight:400;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+#amb .th-now > span{display:flex;flex-direction:column;align-items:center;line-height:1.05}
+#amb .th-now small{font-size:min(1.8vh,15px)!important;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:rgba(255,255,255,.65)!important}
+#amb .gt.hasv{gap:.2vh}#amb .gt.hasv .gi{width:min(4.4vh,38px);height:min(4.4vh,38px);margin-bottom:.4vh}
+#amb .gt .gv{font-size:min(5.6vh,48px);font-weight:500;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}
+#amb .th-big{font-size:min(21vh,190px)!important}
 #amb .th-big{font-size:min(25vh,220px);font-weight:500;letter-spacing:-.045em;line-height:.9;font-variant-numeric:tabular-nums}
 #amb .th-row{display:flex;align-items:center;justify-content:space-between;width:100%}
 #amb .th-a{width:min(7.5vh,62px);height:min(7.5vh,62px);border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.1);flex:none}
