@@ -2276,6 +2276,12 @@ html.ambon.ambred,html.ambon.ambred body{background:#000!important}
 #amb .face > *{translate:var(--sx,0px) var(--sy,0px);transition:translate 6s ease-in-out}
 #amb .nf{translate:var(--sx,0px) var(--sy,0px);transition:translate 8s ease-in-out}
 @media (prefers-reduced-motion:reduce){#amb::before{animation:none}}
+
+/* ---------- Pantalla blanca sin tocar 2 min: ondas suaves y desplazamiento lento ---------- */
+#waves{position:fixed;inset:-20%;z-index:40;pointer-events:none;opacity:0;transition:opacity 2.5s ease;
+  background:radial-gradient(38% 30% at 30% 40%,rgba(143,128,221,.16),transparent 70%),radial-gradient(34% 28% at 70% 62%,rgba(74,163,240,.14),transparent 70%),radial-gradient(30% 24% at 52% 18%,rgba(255,170,120,.12),transparent 70%)}
+html.idlew #waves{opacity:1;animation:ambwave 46s ease-in-out infinite alternate}
+html.idlew .app{translate:var(--ix,0px) var(--iy,0px);transition:translate 6s ease-in-out}
 /* ---------- Inicio por estancias ---------- */
 .mdock{align-self:center;display:flex;gap:26px;padding:10px 26px;border-radius:24px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.7);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);flex:none}
 .mdock button{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;color:#8e8e93;background:rgba(120,120,128,.12)}
@@ -2622,6 +2628,19 @@ renderHome();
 setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.classList.contains("on")) return;
   const r = a.classList.contains("redface") ? 18 : 8, rnd = () => Math.round((Math.random() * 2 - 1) * r) + "px";
   a.style.setProperty("--sx", rnd()); a.style.setProperty("--sy", rnd()); }, 60000);
+</script>
+<script>
+/* a los 2 minutos sin tocar (de día), ondas muy suaves y el contenido se mueve unos píxeles cada minuto */
+(() => { const w = document.createElement("div"); w.id = "waves"; w.setAttribute("aria-hidden", "true"); document.body.appendChild(w);
+  let last = Date.now(); const h = document.documentElement;
+  const wake = () => { last = Date.now(); if (h.classList.contains("idlew")){ h.classList.remove("idlew"); h.style.removeProperty("--ix"); h.style.removeProperty("--iy"); } };
+  ["pointerdown", "keydown", "wheel", "touchstart"].forEach(t => document.addEventListener(t, wake, {passive: true, capture: true}));
+  let n = 0;
+  setInterval(() => { const idle = Date.now() - last > 2 * 60000 && !ambOpen && !document.hidden;
+    if (idle && !h.classList.contains("idlew")) h.classList.add("idlew");
+    if (h.classList.contains("idlew") && (++n % 12 === 0)){ const r = () => Math.round((Math.random() * 2 - 1) * 6) + "px"; h.style.setProperty("--ix", r()); h.style.setProperty("--iy", r()); }
+  }, 5000);
+})();
 </script>
 </body>
 </html>
