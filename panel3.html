@@ -713,6 +713,15 @@ body.at-home #homebar{display:none}
 #h24 .plot svg path{stroke-width:2.6px}
 </style>
 <style id="gdock-v3">
+.hg.rd .tl.clk.bigclk{grid-row:1/3!important}.hg.rd .tl.dual{grid-column:1/3;grid-row:3}
+.tl.dual{grid-column:span 2;flex-direction:row!important;background:#fff;color:#1c1c1e;gap:0;padding:10px 6px}
+.tl.dual .half{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0}
+.tl.dual .half small{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8e8e93}
+.tl.dual .half .ti{width:40px;height:40px;margin:2px 0}.tl.dual .half .ti svg{width:100%;height:100%}
+.tl.dual .half:last-child .ti{color:#ff9500}
+.tl.dual .half b{font-size:34px;font-weight:400;letter-spacing:-.02em;line-height:1}
+.tl.dual .half em{font-style:normal;font-size:14px;font-weight:600;color:#0a84ff}.tl.dual .half em.w{color:#e8822f}
+.tl.dual .dv{width:1px;align-self:stretch;margin:14px 0;background:#e5e5ea}
 /* dock fijo en todas las secciones (sustituye a «‹ Inicio») */
 #goHome,#homebar{display:none!important}
 #gdock{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;display:flex;gap:18px;padding:8px 18px;border-radius:24px;
@@ -2773,9 +2782,13 @@ function renderSalon(box){
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
   $("h3date").textContent = fechaLarga(d);
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
-  $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${o.ac_salon || ""}${wxT}${o.nt_salon || ""}${T("", "therm", "Salón", !isNaN(v.h) ? Math.round(v.h) + " % humedad" : "Ahora", 'data-go="cli"', !isNaN(v.t) ? fmt1(v.t) + "°" : "—")}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
+  $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${o.ac_salon || ""}${dualTH(w, v)}${o.nt_salon || ""}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
   syncMini();
 }
+/* recuadro doble: fuera (tiempo) y dentro (sensor del salón) */
+function dualTH(w, v){ const c = w && w.current;
+  return `<button class="tl dual" data-go="cli"><span class="half"><small>Fuera</small>${c ? `<span class="ti">${wx(c.weather_code, c.is_day)}</span><b>${Math.round(c.temperature_2m)}°</b><em>💧 ${Math.round(c.relative_humidity_2m)} %</em>` : "<b>—</b>"}</span>
+    <i class="dv"></i><span class="half"><small>Dentro</small><span class="ti">${tsvg("home")}</span><b>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><em class="${!isNaN(v.h) && v.h >= 70 ? "w" : ""}">💧 ${!isNaN(v.h) ? Math.round(v.h) + " %" : "—"}</em></span></button>`; }
 /* --- Inicio del dormitorio: descanso y radio --- */
 function renderDorm(box){
   if (box.dataset.layout !== "dormitorio"){ box.dataset.layout = "dormitorio"; stopMini();
@@ -2787,7 +2800,7 @@ function renderDorm(box){
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
   const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
   const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
-  $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${radioSmallW()}${o.ac_dormitorio || ""}${wxT}${o.nt_dormitorio || ""}${o.dh_dormitorio || ""}${alarmTileW()}
+  $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${radioSmallW()}${o.ac_dormitorio || ""}${dualTH(w, v)}${o.nt_dormitorio || ""}${o.dh_dormitorio || ""}${alarmTileW()}
     ${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${luzTile("light.luz_despacho", "Despacho")}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
 }
 let miniMuted = true;
