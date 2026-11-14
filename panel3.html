@@ -2028,7 +2028,8 @@ function closeAmb(){ ambOpen = false; $("amb").classList.remove("on"); ambChrome
   setInterval(() => {
     const c = ambCfg();
     if (ambOpen){ renderAmb(); return; }
-    if (!c.on || document.hidden || tvOn || ytOn || miniSound() || $("sheet") && !$("sheet").hidden) return;
+    const night = typeof inRed === "function" && inRed();   // de noche, al dejar de tocar vuelve al reloj rojo
+    if ((!c.on && !night) || document.hidden || tvOn || ytOn || miniSound() || $("sheet") && !$("sheet").hidden) return;
     if (Date.now() - lastAct > c.min * 60000) openAmb();
   }, 5000);
 })();
@@ -2432,14 +2433,15 @@ renderHome();
 </script>
 <script>
 /* Modo descanso de 23:00 a 7:00 (se cambia en Ajustes): pantalla en negro y rojo, y pasa sola a la pantalla en reposo */
-const redCfg = () => ({on: store.get("p3_red_on2", false), from: store.get("p3_red_from", "23:00"), to: store.get("p3_red_to", "07:00")});
+const redCfg = () => ({on: store.get("p3_red_on3", true), from: store.get("p3_red_from", "23:00"), to: store.get("p3_red_to", "07:00")});
 const inRed = () => { if (!redCfg().on) return false; const hh = new Date().getHours(); if ((hh >= 18 || hh < 7) && Date.now() < store.get("p3_red_force", 0)) return true;   /* Buenas noches adelanta el rojo, pero solo de tarde-noche */ const c = redCfg(); if (!c.on) return false; const d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes());
   return c.from > c.to ? (n >= c.from || n < c.to) : (n >= c.from && n < c.to); };
 let wasRed = null;
 function syncRed(){
   const r = inRed(); document.documentElement.classList.toggle("redn", r);
   if (r && wasRed === false && !tvOn && !ytOn && !miniSound()) openAmb();   // al empezar la franja, a la pantalla en reposo
-  if (wasRed !== null && r !== wasRed) renderAmb();
+  if (wasRed === true && !r && ambOpen) closeAmb();   // a las 7:00, de vuelta a la pantalla blanca
+  else if (wasRed !== null && r !== wasRed) renderAmb();
   wasRed = r;
 }
 syncRed(); setInterval(syncRed, 20000);
@@ -2454,7 +2456,7 @@ ambCfgCard = function(){ const c = redCfg();
 $("cfg").addEventListener("click", ev => { const l = ev.target.closest("[data-redl]"); if (!l) return; ev.stopImmediatePropagation();
   store.set("p3_red_lvl", parseFloat(l.dataset.redl)); renderCfg(true); renderAmb(); }, true);
 $("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-red]"); if (!b) return; ev.stopImmediatePropagation();
-  store.set("p3_red_on2", !redCfg().on); syncRed(); renderCfg(true); }, true);
+  store.set("p3_red_on3", !redCfg().on); syncRed(); renderCfg(true); }, true);
 $("cfg").addEventListener("change", ev => { const i = ev.target.closest("[data-redt]"); if (!i || !i.value) return; ev.stopImmediatePropagation();
   store.set(i.dataset.redt === "from" ? "p3_red_from" : "p3_red_to", i.value); syncRed(); }, true);
 </script>
@@ -2513,7 +2515,7 @@ async function roomAction(b){
   else if (b.dataset.rtimer){ const m = +b.dataset.rtimer; sleepAt = m ? Date.now() + m * 60000 : 0; if (m && !radioOn) await radPlay(radSel().k); }
   else if (b.dataset.bn){   // Buenas noches: aire del salón apagado, Noche en el dormitorio y reloj rojo (sin radio)
     if (redCfg().on){ const t = new Date(); t.setHours(7, 0, 0, 0); if (t <= new Date()) t.setDate(t.getDate() + 1); store.set("p3_red_force", t.getTime());   // modo descanso hasta las 7:00
-      setTimeout(() => { if (typeof syncRed === "function") syncRed(); if (ambOpen) renderAmb(); else if (ambCfg().on) openAmb(); }, 400); }
+      setTimeout(() => { if (typeof syncRed === "function") syncRed(); if (ambOpen) renderAmb(); else if (inRed()) openAmb(); }, 400); }
     if (store.get("p3_bn_sc", false)) setTimeout(() => { location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent("Brillo noche"); }, 1200);   // el atajo baja el brillo y vuelve al panel
     try{ await service("climate", "set_hvac_mode", {entity_id: "climate.aire_salon", hvac_mode: "off"});
       await service("input_boolean", "turn_on", {entity_id: "input_boolean.noche_dormitorio"}); setTimeout(refreshHA, 1500); }catch(err){ handleErr(err); } }
