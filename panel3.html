@@ -2663,7 +2663,7 @@ function nextAlarm(){
 }
 
 /* --- acciones propias de las estancias (radio, temporizador, buenas noches, canales) --- */
-/* luz WiZ: un toque enciende o apaga (vuelve como estaba: brillo y modo) */
+/* luz WiZ: un toque la enciende para trabajar (blanco neutro 4500 K al 100 %) y otro la apaga */
 const luzPend = {};
 function luzTile(id, name){ const e = hst(id), st = luzPend[id] ?? (e ? e.state : "unavailable"), on = st === "on";
   const pct = on && e && e.attributes.brightness ? Math.max(10, Math.round(e.attributes.brightness / 2.55)) + " %" : "";
@@ -2671,7 +2671,7 @@ function luzTile(id, name){ const e = hst(id), st = luzPend[id] ?? (e ? e.state 
   return T(on ? "on lt" : "", "bulb", name, sub, `data-lt="${id}" data-on="${on ? 1 : 0}"`); }
 async function roomAction(b){
   if (b.dataset.lt){ const id = b.dataset.lt, on = b.dataset.on === "1"; luzPend[id] = on ? "off" : "on"; renderHome();
-    try{ await service("light", on ? "turn_off" : "turn_on", {entity_id: id}); }catch(err){ handleErr(err); }
+    try{ await service("light", on ? "turn_off" : "turn_on", on ? {entity_id: id} : {entity_id: id, brightness_pct: 100, color_temp_kelvin: 4500}); }catch(err){ handleErr(err); }   // para trabajar: blanco neutro al máximo
     setTimeout(async () => { await refreshHA(); delete luzPend[id]; renderHome(); }, 1500); return; }
   if (b.dataset.rad === "play"){ if (radioOn) radStop(); else await radPlay(radSel().k); }
   else if (b.dataset.rad === "prev") radStep(-1);
