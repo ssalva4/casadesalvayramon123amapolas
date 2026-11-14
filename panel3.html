@@ -605,19 +605,49 @@ body.at-home #homebar{display:none}
 #amb .fx{display:flex;align-items:center;gap:.25em}#amb .fx svg{width:1em;height:1em}
 </style>
 <style id="ent-v3">
-/* Entretenimiento: tele grande, radios en un lateral solo con su icono, noticias debajo */
-.t-ent.on{grid-template-columns:minmax(0,1fr) 88px!important;grid-template-rows:auto minmax(0,1fr)!important}
-.t-ent>.card:last-child{grid-column:2!important;grid-row:1/3!important;padding:12px 10px!important;align-items:center;overflow:auto}
+/* ===== Entretenimiento estilo HomeView (claro): tele protagonista, canales debajo, radio a la derecha, noticias en tarjetas con foto ===== */
+.t-ent.on{grid-template-columns:minmax(0,1fr) 250px!important;grid-template-rows:auto minmax(0,1fr)!important;gap:16px!important}
+.t-ent .tv{grid-column:1!important;grid-row:1!important;display:flex!important;flex-direction:column;gap:12px;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;
+  width:min(100%,calc(var(--tvmaxh,400px) * 16 / 9));justify-self:center;min-height:0}
+.t-ent .tv>.lbl{display:none!important}
+.t-ent .tv .screen{width:100%!important;max-width:none!important;border-radius:30px!important;box-shadow:0 18px 40px rgba(0,0,0,.18)!important;order:1}
+.t-ent .tv .chs{order:2;flex-direction:row!important;justify-content:center;align-self:center;gap:14px!important;padding:8px 14px!important;margin:0!important;border-radius:22px;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+.t-ent .tv .chs .sep{width:1px!important;height:30px!important;margin:0 4px!important}
+.t-ent .tv .chs button.logo{width:50px!important;height:50px!important;border-radius:14px!important;opacity:.45;background:#fff!important;box-shadow:none!important}
+.t-ent .tv .chs button.logo img{object-fit:cover!important}
+.t-ent .tv .chs button.logo.on{opacity:1;box-shadow:0 0 0 2px #fff,0 0 0 4.5px #1c1c1e!important}
+.t-ent .screen .ttl{font-size:30px!important;font-weight:700!important;letter-spacing:-.02em;left:24px!important;bottom:22px!important}
+.t-ent .screen .ttl small{font-size:15px!important;font-weight:500!important}
+.t-ent .screen .bigplay{width:86px!important;height:86px!important;background:rgba(255,255,255,.22)!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+/* radio: reproductor + emisoras en círculos */
+.t-ent>.card:last-child{grid-column:2!important;grid-row:1/3!important;padding:18px 16px!important;display:flex!important;flex-direction:column;gap:18px;overflow:auto;border-radius:30px!important}
 .t-ent>.card:last-child>.lbl,.t-ent>.card:last-child .apps{display:none!important}
-.t-ent .radios{display:flex;flex-direction:column;gap:12px;align-items:center}
-.t-ent .rad{padding:0!important;background:none!important;box-shadow:none!important;border-radius:16px}
+#rnow{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding-bottom:16px;border-bottom:1px solid rgba(0,0,0,.07)}
+#rnow small{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8e8e93}
+#rnow .big{width:118px;height:118px;border-radius:28px;display:grid;place-items:center;font-size:36px;font-weight:800;box-shadow:0 14px 28px rgba(0,0,0,.16);margin-top:2px}
+#rnow b{font-size:19px;font-weight:700}
+#rnow .st{font-size:13px;color:#8e8e93;min-height:16px;display:flex;align-items:center;gap:5px}
+#rnow .ctl{display:flex;gap:16px;align-items:center;margin-top:2px}
+#rnow .ctl button{width:46px;height:46px;border-radius:50%;background:#f2f2f7;display:grid;place-items:center;color:#1c1c1e}
+#rnow .ctl button svg{width:20px;height:20px}
+#rnow .ctl .pp{width:60px;height:60px;background:#1c1c1e;color:#fff}
+#rnow .ctl .pp svg{width:24px;height:24px}
+#rnow .ctl button:active{transform:scale(.92)}
+.t-ent .radios{display:grid!important;grid-template-columns:repeat(3,1fr);gap:14px 8px;justify-items:center}
+.t-ent .rad{padding:0!important;background:none!important;box-shadow:none!important;border-radius:50%}
 .t-ent .rad .tx,.t-ent .rad .pb{display:none!important}
-.t-ent .rad .lg{width:60px;height:60px;border-radius:16px;font-size:17px;box-shadow:0 2px 8px rgba(0,0,0,.10)}
-.t-ent .rad.playing .lg{box-shadow:0 0 0 3px #fff,0 0 0 6px var(--ent)}
+.t-ent .rad .lg{width:58px;height:58px;border-radius:50%!important;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.t-ent .rad.playing .lg{box-shadow:0 0 0 3px #fff,0 0 0 6px #0a84ff}
 .t-ent .rad:active{transform:scale(.92)}
-.t-ent .news{grid-column:1!important;grid-row:2!important}
-.t-ent .tv>.lbl{display:none!important}.t-ent .tv{grid-template-rows:minmax(0,1fr)!important;align-items:center}.t-ent .tv .screen{align-self:center!important}
-.t-ent .news{padding-top:12px!important;padding-bottom:12px!important}
+/* noticias: la foto de fondo y el titular encima */
+.t-ent .news{grid-column:1!important;grid-row:2!important;min-height:150px!important;background:none!important;border:0!important;box-shadow:none!important;padding:0!important}
+.t-ent .news>.lbl{font-size:20px!important;font-weight:700!important;margin:0 0 10px 4px!important}
+.t-ent .ni{flex:0 0 280px!important;position:relative;border-radius:22px!important;background:#ccc!important;box-shadow:0 8px 20px rgba(0,0,0,.10)}
+.t-ent .ni .im{position:absolute!important;inset:0;min-height:0!important}
+.t-ent .ni .im::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.78))}
+.t-ent .ni .tx{position:absolute;left:0;right:0;bottom:0;padding:12px 14px!important;z-index:1}
+.t-ent .ni b{color:#fff!important;font-size:15px!important;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.t-ent .ni small{color:rgba(255,255,255,.75)!important}
 </style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
@@ -1458,7 +1488,7 @@ function fitScreen(){
   const z = Math.min(w / 1000, h / 820);
   app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px";
   // alto máximo de la tele para que siempre quepan las noticias debajo (sea cual sea el iPad o la ventana)
-  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 365) + "px");
+  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 395) + "px");
 }
 window.addEventListener("resize", fitScreen); window.addEventListener("orientationchange", () => setTimeout(fitScreen, 300)); fitScreen();
 if (window.visualViewport) window.visualViewport.addEventListener("resize", fitScreen);
@@ -2686,6 +2716,25 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     if (idle && !h.classList.contains("idlew")) h.classList.add("idlew");
     if (h.classList.contains("idlew") && (++n % 12 === 0)){ const r = () => Math.round((Math.random() * 2 - 1) * 6) + "px"; h.style.setProperty("--ix", r()); h.style.setProperty("--iy", r()); }
   }, 5000);
+})();
+</script>
+<script>
+/* Entretenimiento: reproductor de radio (emisora grande, anterior, pausa, siguiente) */
+(() => { const card = $("radios").parentElement, d = document.createElement("div"); d.id = "rnow"; card.insertBefore(d, $("radios"));
+  const ic = {prev:'<path d="M6 5v14M19 5 9 12l10 7z" fill="currentColor"/>', next:'<path d="M18 5v14M5 5l10 7-10 7z" fill="currentColor"/>', play:'<path d="M7 4.5v15l13-7.5z" fill="currentColor"/>', pause:'<path d="M7 4.5h3.6v15H7zM13.4 4.5H17v15h-3.6z" fill="currentColor"/>'};
+  const I = n => `<svg viewBox="0 0 24 24" aria-hidden="true">${ic[n]}</svg>`;
+  const cur = () => RADIOS.find(r => r.k === radioOn) || RADIOS.find(r => r.k === store.get("p3_rlast", "")) || RADIOS[0];
+  const go = k => { const el = $("radios").querySelector(`[data-r="${k}"]`); if (el) el.click(); };
+  window.renderRNow = () => { const r = cur(), on = radioOn === r.k;
+    d.innerHTML = `<small>Radio</small><div class="big" style="background:${r.bg};color:${r.fg}">${r.lg}</div><b>${r.t}</b>
+      <span class="st">${on ? '<span class="eq"><i></i><i></i><i></i></span>Sonando' : (radioErr === r.k ? "Sin señal, reintenta" : r.s)}</span>
+      <div class="ctl"><button data-rn="-1" aria-label="Emisora anterior">${I("prev")}</button><button class="pp" data-rn="0" aria-label="${on ? "Pausa" : "Escuchar"}">${I(on ? "pause" : "play")}</button><button data-rn="1" aria-label="Emisora siguiente">${I("next")}</button></div>`; };
+  d.addEventListener("click", e => { const b = e.target.closest("[data-rn]"); if (!b) return; const r = cur(), n = +b.dataset.rn;
+    if (!n){ go(r.k); return; }
+    const i = RADIOS.findIndex(x => x.k === r.k), nx = RADIOS[(i + n + RADIOS.length) % RADIOS.length];
+    if (radioOn) go(nx.k); else { store.set("p3_rlast", nx.k); renderRNow(); } });
+  const _rr = renderRadios; renderRadios = function(){ _rr(); if (radioOn) store.set("p3_rlast", radioOn); renderRNow(); };
+  renderRNow();
 })();
 </script>
 </body>
