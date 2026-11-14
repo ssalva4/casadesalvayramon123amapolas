@@ -1966,7 +1966,7 @@ function ambHTML(){
     ? `<div class="gg">${thermoTile("salon")}${clock}${wxT}${o.nt_salon || ""}${o.ac_salon || ""}${o.morning}${o.bye}${ambTvTile()}</div>`
     : `<div class="gg">${thermoTile("salon")}${clock}${wxT}${o.nt_salon || ""}${o.ac_salon || ""}${o.morning}${o.bye}${o.dh_bano || ""}${o.off}</div>`;
   const dorm = RM === "dormitorio"
-    ? `<div class="gg">${thermoTile("dormitorio")}${clock}${ambAlarmTile()}${o.nt_dormitorio || ""}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${ambRadioTile()}${G("", "moon", "Buenas noches", "Escena", 'data-bn="1"')}${wxT}</div>`
+    ? `<div class="gg"><div class="gt clock bigclk">${glassClock()}</div>${ambTempTile("dormitorio")}${ambAlarmTile()}${o.nt_dormitorio || ""}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${ambRadioTile()}${G("", "moon", "Buenas noches", "Escena", 'data-bn="1"')}${wxT}</div>`
     : `<div class="gg">${thermoTile("dormitorio")}${clock}${o.t_bano}${o.nt_dormitorio || ""}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${o.dh_bano || ""}${o.t_salon}${o.off}</div>`;
   const tiempo = w && w.current ? `<div class="gg one"><div class="gt wide"><span class="gi huge">${wx(w.current.weather_code, w.current.is_day)}</span>
       <b class="tv xl">${Math.round(w.current.temperature_2m)}°</b><b>${wxText(w.current.weather_code)} en ${PLACE}</b>
@@ -2264,6 +2264,20 @@ html.ambon.ambred,html.ambon.ambred body{background:#000!important}
 #amb .nf .nr em{font-style:normal;font-size:min(2.6vw,3.4vh);font-weight:400;color:#6a0d07}
 
 /* ---------- Inicio por estancias ---------- */
+.hg.rd .tl.clk.bigclk{grid-column:1/3;grid-row:1/4;padding:18px}
+.tl.rsm{gap:4px;background:#fff}.tl.rsm.on{background:var(--lav)}
+.tl.rsm .rlg{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:17px;font-weight:700}
+.tl.rsm b{font-size:16px}.tl.rsm small{font-size:13px}
+.tl.rsm .rctl{display:flex;gap:8px;align-items:center;margin-top:2px}
+.tl.rsm .rctl button{width:34px;height:34px;border-radius:50%;background:var(--tl);display:grid;place-items:center;color:#3a3a3c}
+.tl.rsm .rctl button svg{width:18px;height:18px}
+.tl.rsm .rctl .pp{width:42px;height:42px;background:#1c1c1e;color:#fff}.tl.rsm.on .rctl .pp{background:var(--lav-t)}
+#amb .gt.bigclk{grid-column:1/3;grid-row:1/3;padding:2.4vh}
+#amb .gt.tempg{gap:1vh}
+#amb .gt.tempg .tg{display:flex;flex-direction:column;gap:.6vh;align-items:center}
+#amb .gt.tempg .tg span{display:flex;flex-direction:column;align-items:center;font-size:min(4.6vh,40px);font-weight:400;line-height:1.05;letter-spacing:-.02em}
+#amb .gt.tempg .tg small{font-size:min(1.6vh,13px)!important;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:rgba(255,255,255,.65)!important}
+
 .hg.rs .tl.tv.big3{grid-column:1/4;grid-row:1/4;cursor:pointer}
 .hg.rs .tl.tv.big3 .tvb{margin:0 0 24px 26px}.hg.rs .tl.tv.big3 .tvb b{font-size:26px}.hg.rs .tl.tv.big3 .tvb small{font-size:16px}
 .tl.tv .chb{position:absolute;top:50%;transform:translateY(-50%);width:58px;height:58px;border-radius:50%;background:rgba(0,0,0,.38);color:#fff;display:grid;place-items:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:2}
@@ -2496,6 +2510,12 @@ function radioTileW(){ const r = radSel(), on = radioOn === r.k;
     <div class="rctl"><button data-rad="prev" aria-label="Emisora anterior">${tsvg("chev_l")}</button><button class="pp" data-rad="play" aria-label="${on ? "Parar" : "Escuchar"}">${svg(on ? "stop" : "play")}</button><button data-rad="next" aria-label="Emisora siguiente">${tsvg("chev_r")}</button></div>
     <div class="rtm">${[15, 30, 60].map(m => `<button data-rtimer="${m}" class="${sleepAt && Math.abs(sleepAt - Date.now() - m*60000) < 60000 ? "on" : ""}">${m}'</button>`).join("")}<button data-rtimer="0" aria-label="Quitar temporizador">✕</button></div>
     <small class="rsl">${sleepTxt() || "Temporizador para dormir"}</small></div>`; }
+function radioSmallW(){ const r = radSel(), on = radioOn === r.k;
+  return `<div class="tl rsm ${on ? "on" : ""}"><div class="rlg" style="background:${r.bg};color:${r.fg}">${r.lg}</div><b>${esc(r.t)}</b>
+    <small>${on ? (sleepTxt() || "● Sonando") : "Radio"}</small>
+    <div class="rctl"><button data-rad="prev" aria-label="Emisora anterior">${tsvg("chev_l")}</button><button class="pp" data-rad="play" aria-label="${on ? "Parar" : "Escuchar"}">${svg(on ? "stop" : "play")}</button><button data-rad="next" aria-label="Emisora siguiente">${tsvg("chev_r")}</button></div></div>`; }
+function ambTempTile(k){ const r = HOME_ROOMS.find(x => x.k === k), v = roomTH(r.re);
+  return `<div class="gt tempg"><b>${r.n}</b><span class="tg"><span><small>Temp.</small>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</span><span><small>Humedad</small>${!isNaN(v.h) ? Math.round(v.h) + " %" : "—"}</span></span></div>`; }
 function alarmTileW(){ const a = nextAlarm();
   return `<div class="tl ${a ? "on" : ""}"><span class="ti">${tsvg("bell")}</span><b>Alarma</b>${a ? `<span class="tv2">${a}</span>` : ""}<small>${a == null ? "sin datos del iPhone" : a ? "iPhone" : "ninguna activada"}</small></div>`; }
 function ambRadioTile(){ const r = radSel(), on = radioOn === r.k;
@@ -2537,7 +2557,7 @@ function renderDorm(box){
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
   const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
   const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
-  $("hgA").innerHTML = `${radioTileW()}<div class="tl clk">${analogClock()}</div>${o.ac_dormitorio || ""}${wxT}${o.nt_dormitorio || ""}${o.dh_dormitorio || ""}${alarmTileW()}
+  $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${radioSmallW()}${o.ac_dormitorio || ""}${wxT}${o.nt_dormitorio || ""}${o.dh_dormitorio || ""}${alarmTileW()}
     ${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
 }
 let miniMuted = true;
