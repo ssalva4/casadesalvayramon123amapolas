@@ -1433,7 +1433,11 @@ loadNews(); setInterval(loadNews, 15*60*1000);
 /* ---------- Se adapta a cualquier pantalla: el panel se diseña para 1000×820 y se escala para ocupar justo la ventana ---------- */
 document.documentElement.classList.toggle("tactil", matchMedia("(pointer: coarse)").matches);
 function fitScreen(){
-  const vv = window.visualViewport, app = document.querySelector(".app"), w = Math.round(vv ? vv.width : window.innerWidth), h = Math.round(vv ? vv.height : window.innerHeight);
+  const vv = window.visualViewport, app = document.querySelector(".app");
+  let w = Math.round(vv ? vv.width : window.innerWidth), h = Math.round(vv ? vv.height : window.innerHeight);
+  if (document.fullscreenElement || document.webkitFullscreenElement){   // en pantalla completa el iPad a veces da medidas viejas: usar las de la pantalla
+    const sw = screen.width, sh = screen.height, land = window.innerWidth > window.innerHeight;
+    w = land ? Math.max(sw, sh) : Math.min(sw, sh); h = land ? Math.min(sw, sh) : Math.max(sw, sh); }
   if (w < 900){ app.style.zoom = ""; app.style.width = ""; app.style.height = ""; return; }   // móvil: diseño en columna
   const z = Math.min(w / 1000, h / 820);
   app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px";
