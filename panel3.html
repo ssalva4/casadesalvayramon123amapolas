@@ -604,6 +604,21 @@ body.at-home #homebar{display:none}
 #amb .ahr svg{width:min(4.5vw,6vh);height:min(4.5vw,6vh)}#amb .ahr b{font-size:min(2.6vw,3.4vh);font-weight:400}
 #amb .fx{display:flex;align-items:center;gap:.25em}#amb .fx svg{width:1em;height:1em}
 </style>
+<style id="ent-v3">
+/* Entretenimiento: tele grande, radios en un lateral solo con su icono, noticias debajo */
+.t-ent.on{grid-template-columns:minmax(0,1fr) 88px!important;grid-template-rows:auto minmax(0,1fr)!important}
+.t-ent>.card:last-child{grid-column:2!important;grid-row:1/3!important;padding:12px 10px!important;align-items:center;overflow:auto}
+.t-ent>.card:last-child>.lbl,.t-ent>.card:last-child .apps{display:none!important}
+.t-ent .radios{display:flex;flex-direction:column;gap:12px;align-items:center}
+.t-ent .rad{padding:0!important;background:none!important;box-shadow:none!important;border-radius:16px}
+.t-ent .rad .tx,.t-ent .rad .pb{display:none!important}
+.t-ent .rad .lg{width:60px;height:60px;border-radius:16px;font-size:17px;box-shadow:0 2px 8px rgba(0,0,0,.10)}
+.t-ent .rad.playing .lg{box-shadow:0 0 0 3px #fff,0 0 0 6px var(--ent)}
+.t-ent .rad:active{transform:scale(.92)}
+.t-ent .news{grid-column:1!important;grid-row:2!important}
+.t-ent .tv>.lbl{display:none!important}.t-ent .tv{grid-template-rows:minmax(0,1fr)!important;align-items:center}.t-ent .tv .screen{align-self:center!important}
+.t-ent .news{padding-top:12px!important;padding-bottom:12px!important}
+</style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
 <div class="app">
@@ -1443,7 +1458,7 @@ function fitScreen(){
   const z = Math.min(w / 1000, h / 820);
   app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px";
   // alto máximo de la tele para que siempre quepan las noticias debajo (sea cual sea el iPad o la ventana)
-  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 440) + "px");
+  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 365) + "px");
 }
 window.addEventListener("resize", fitScreen); window.addEventListener("orientationchange", () => setTimeout(fitScreen, 300)); fitScreen();
 if (window.visualViewport) window.visualViewport.addEventListener("resize", fitScreen);
