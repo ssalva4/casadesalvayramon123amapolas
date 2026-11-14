@@ -724,6 +724,47 @@ body.at-home #gdock{display:none}
 #gdock button:active,.mdock button:active{transform:scale(.92)}
 body:not(.at-home) .main{padding-bottom:84px!important}
 </style>
+<style id="cfg-v3">
+/* ===== Ajustes como la app Ajustes del iPad: estancias a la izquierda, sus cosas a la derecha ===== */
+.t-cfg.on{display:grid!important;grid-template-columns:250px minmax(0,1fr)!important;gap:20px!important;min-height:0}
+#cfgside{align-self:start;background:#fff;border-radius:22px;padding:8px;box-shadow:0 6px 20px rgba(0,0,0,.04)}
+#cfgside button{display:flex;align-items:center;gap:12px;width:100%;padding:10px;border-radius:14px;font-size:16px;font-weight:500;color:#1c1c1e;background:none;text-align:left}
+#cfgside button .q{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:#fff;flex:none}
+#cfgside button .q svg{width:19px;height:19px}
+#cfgside button.on{background:#0a84ff;color:#fff}
+#cfgside .sep{height:1px;background:#e5e5ea;margin:2px 10px 2px 54px}
+#cfgside .gap{height:10px}
+#cfg.cols{display:flex!important;columns:auto!important;align-items:flex-start;gap:20px;overflow-y:auto!important;min-height:0;padding-bottom:20px;height:100%!important}
+#cfg .ccol{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}
+#cfg .card.shown{margin:0!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;grid-row:auto!important;grid-column:auto!important}
+#cfg .card{display:none!important;background:none!important;border:0!important;box-shadow:none!important;padding:0!important}
+#cfg .card.shown{display:block!important}
+#cfg .card>h3{font-size:20px!important;font-weight:700!important;margin:4px 0 10px 4px!important;display:flex;align-items:center;gap:8px}
+#cfg .card .pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:#e5e5ea;color:#3a3a3c}
+#cfg h4{font-size:13px!important;color:#6e6e73!important;text-transform:uppercase;letter-spacing:.04em;font-weight:500!important;margin:14px 0 6px 16px!important}
+#cfg .grp{background:#fff;border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,.04);overflow:hidden}
+#cfg .grp.dim{opacity:.5}
+#cfg .grp>.cf-r{min-height:50px;padding:8px 16px!important;border-bottom:1px solid #e5e5ea!important;font-size:15.5px!important;color:#1c1c1e!important}
+#cfg .grp>.cf-r:last-child{border-bottom:0!important}
+#cfg .grp>.cf-r.col{padding:12px 16px!important}
+#cfg .grp>.cf-note{padding:8px 16px;margin:0!important;font-size:12.5px!important;color:#8e8e93!important;border-bottom:1px solid #e5e5ea}
+#cfg .grp>.cf-note:last-child{border-bottom:0}
+#cfg .sw{width:51px!important;height:31px!important;border-radius:16px!important;background:#e9e9eb!important}
+#cfg .sw::after{width:27px!important;height:27px!important;top:2px!important;left:2px!important;box-shadow:0 2px 4px rgba(0,0,0,.2)!important}
+#cfg .sw.on{background:#34c759!important}#cfg .sw.on::after{left:22px!important}
+#cfg .cf-r .ctl{gap:10px!important}
+#cfg .cf-r .ctl b{font-size:16px!important;min-width:56px;text-align:right!important;font-variant-numeric:tabular-nums}
+#cfg .cf-r .ctl button{width:44px!important;height:32px!important;border-radius:0!important;background:#e9e9eb!important;font-weight:400!important;font-size:20px!important;color:#1c1c1e}
+#cfg .cf-r .ctl button:first-of-type{border-radius:9px 0 0 9px!important;margin-right:-10px;order:2;box-shadow:inset -1px 0 0 #c7c7cc}
+#cfg .cf-r .ctl button:last-of-type{border-radius:0 9px 9px 0!important;order:3}
+#cfg .cf-r .ctl b{order:1}
+#cfg .cf-r input[type=time]{background:#e9e9eb!important;border-radius:8px!important;padding:6px 12px!important;font-size:16px!important;font-weight:500!important}
+#cfg .seg{display:inline-flex!important;flex-wrap:wrap;background:#e3e3e8;border-radius:11px;padding:3px;gap:2px!important}
+#cfg .seg button{background:none!important;color:#3a3a3c!important;border-radius:9px!important;padding:7px 12px!important;font-size:13.5px!important;font-weight:600!important}
+#cfg .seg button.on{background:#fff!important;color:#1c1c1e!important;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+#cfg .cf-r a.dl,#cfg .cf-r button.dlb{background:#e9e9eb!important;color:#0a84ff!important}
+#cfg .lockrow span{color:#ff3b30}
+</style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
 <div class="app">
@@ -2671,7 +2712,7 @@ function luzTile(id, name){ const e = hst(id), st = luzPend[id] ?? (e ? e.state 
   return T(on ? "on lt" : "", "bulb", name, sub, `data-lt="${id}" data-on="${on ? 1 : 0}"`); }
 async function roomAction(b){
   if (b.dataset.lt){ const id = b.dataset.lt, on = b.dataset.on === "1"; luzPend[id] = on ? "off" : "on"; renderHome();
-    try{ await service("light", on ? "turn_off" : "turn_on", on ? {entity_id: id} : {entity_id: id, brightness_pct: 100, color_temp_kelvin: 4500}); }catch(err){ handleErr(err); }   // para trabajar: blanco neutro al máximo
+    try{ await service("light", on ? "turn_off" : "turn_on", on ? {entity_id: id} : {entity_id: id, brightness_pct: store.get("p3_lt_b", 100), color_temp_kelvin: store.get("p3_lt_k", 4500)}); }catch(err){ handleErr(err); }   // para trabajar (se cambia en Ajustes · Despacho)
     setTimeout(async () => { await refreshHA(); delete luzPend[id]; renderHome(); }, 1500); return; }
   if (b.dataset.rad === "play"){ if (radioOn) radStop(); else await radPlay(radSel().k); }
   else if (b.dataset.rad === "prev") radStep(-1);
@@ -2916,6 +2957,52 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
   const mark = () => d.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.gd === tab));
   d.addEventListener("click", e => { const b = e.target.closest("[data-gd]"); if (b) show(b.dataset.gd); });
   const _s = show; show = function(t){ _s(t); mark(); }; mark();
+})();
+</script>
+<script>
+/* ===== Ajustes por estancias ===== */
+(() => {
+  const ROOMS = [["salon", "Salón", "#ff9500", "sofa"], ["dormitorio", "Dormitorio", "#5856d6", "moon"], ["bano", "Baño", "#0a84ff", "drop"], ["despacho", "Despacho", "#ffcc00", "bulb"],
+    null, ["casa", "Toda la casa", "#34c759", "home"], ["ipad", "Este iPad", "#8e8e93", "ipad"]];
+  const IC = {sofa:'<path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M3 17v-4a2 2 0 0 1 4 0v1h10v-1a2 2 0 0 1 4 0v4H3zM5 17v2M19 17v2"/>', ipad:'<rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M11 18.5h2"/>'};
+  const icon = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[n] || TI[n] || ""}</svg>`;
+  let sel = store.get("p3_cfg_room", "salon");
+  const sec = $("t-cfg"), side = document.createElement("nav"); side.id = "cfgside"; side.setAttribute("aria-label", "Estancias");
+  sec.insertBefore(side, sec.firstChild);
+  const drawSide = () => { side.innerHTML = ROOMS.map((r, i) => r ? `${i && ROOMS[i - 1] ? '<div class="sep"></div>' : ""}<button class="${r[0] === sel ? "on" : ""}" data-cr="${r[0]}"><span class="q" style="background:${r[2]}">${icon(r[3])}</span>${r[1]}</button>` : '<div class="gap"></div>').join(""); };
+  side.addEventListener("click", e => { const b = e.target.closest("[data-cr]"); if (!b) return; sel = b.dataset.cr; store.set("p3_cfg_room", sel); drawSide(); renderCfg(true); $("cfg").scrollTop = 0; });
+  const roomOfCard = t => /Deshumidificador · Dormitorio/.test(t) ? "dormitorio" : /Deshumidificador · Ba/.test(t) ? "bano" : /Aire del sal/i.test(t) ? "salon" : /Aire del dormitorio/i.test(t) ? "dormitorio"
+    : /despacho/i.test(t) ? "despacho" : /Modo Noche|Termostato/.test(t) ? "casa" : /aparato|reposo|descanso|Pantalla completa|iPad/i.test(t) ? "ipad" : "casa";
+  const despachoCard = () => { const k = store.get("p3_lt_k", 4500), bb = store.get("p3_lt_b", 100), e = hst("light.luz_despacho");
+    const seg = (lab, cur, opts, attr) => `<div class="cf-r col"><span>${lab}</span><div class="seg">${opts.map(o => `<button class="${o[0] === cur ? "on" : ""}" ${attr}="${o[0]}">${o[1]}</button>`).join("")}</div></div>`;
+    return `<div class="card"><h3>💡 Luz del despacho <span class="pill">${!e || e.state === "unavailable" ? "sin conexión" : e.state === "on" ? "encendida" : "apagada"}</span></h3>
+      <h4>Al encenderla desde el panel (para trabajar)</h4>
+      ${seg("Tono de blanco", k, [[2700, "Cálido"], [3500, "Suave"], [4500, "Neutro"], [5500, "Frío"], [6500, "Luz día"]], "data-ltk")}
+      ${seg("Brillo", bb, [[40, "40 %"], [60, "60 %"], [80, "80 %"], [100, "100 %"]], "data-ltb")}
+      <div class="cf-note">Buenos días la enciende aparte, tenue en Relax. El interruptor de la pared tiene que estar siempre encendido.</div></div>`; };
+  const group = (card) => {   // filas sueltas → grupos blancos, cada «h4» abre uno nuevo
+    const out = document.createDocumentFragment(); let g = null, dim = false;
+    const add = el => { if (!g){ g = document.createElement("div"); g.className = "grp" + (dim ? " dim" : ""); out.appendChild(g); } g.appendChild(el); };
+    const walk = nodes => [...nodes].forEach(n => { if (n.nodeType !== 1) return;
+      if (n.tagName === "H3"){ out.appendChild(n); g = null; return; }
+      if (n.tagName === "H4"){ out.appendChild(n); g = null; return; }
+      if (n.tagName === "DIV" && !n.classList.contains("cf-r") && !n.classList.contains("cf-note") && !n.classList.contains("seg") && n.querySelector(".cf-r")){
+        const was = dim; dim = dim || n.classList.contains("dim"); g = null; walk(n.childNodes); dim = was; g = null; return; }
+      if (/Bloqueado/.test(n.textContent) && n.classList.contains("cf-r")){ n.classList.add("lockrow"); }
+      add(n); });
+    walk(card.childNodes); card.innerHTML = ""; card.appendChild(out); };
+  const _r = renderCfg;
+  renderCfg = function(force){ _r(force); const box = $("cfg"); if (!box || tab !== "cfg" || !box.querySelector(".card h3")) { drawSide(); return; }
+    if (!box.querySelector("[data-ltk]")) box.insertAdjacentHTML("beforeend", despachoCard());
+    box.querySelectorAll(".ccol").forEach(col => { while (col.firstChild) box.appendChild(col.firstChild); col.remove(); });
+    const cols = [document.createElement("div"), document.createElement("div")]; cols.forEach(c => { c.className = "ccol"; box.insertBefore(c, box.firstChild); });
+    let n = 0; box.querySelectorAll(":scope > .card").forEach(c => { const h = c.querySelector("h3"); const r = roomOfCard(h ? h.textContent : "");
+      if (!c.querySelector(".grp")) group(c); const on = r === sel; c.classList.toggle("shown", on); if (on) cols[n++ % 2].appendChild(c); });
+    if (cols[1].children.length === 0) cols[1].remove();
+    drawSide(); };
+  $("cfg").addEventListener("click", e => { const b = e.target.closest("[data-ltk],[data-ltb]"); if (!b) return; e.stopImmediatePropagation();
+    if (b.dataset.ltk) store.set("p3_lt_k", +b.dataset.ltk); else store.set("p3_lt_b", +b.dataset.ltb); renderCfg(true); }, true);
+  drawSide();
 })();
 </script>
 </body>
