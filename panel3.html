@@ -2240,6 +2240,7 @@ body{background:var(--bgp)!important}
 #amb.redface .nf{opacity:var(--nb,.4)}
 html,body{overscroll-behavior:none}
 html.isfs .main{padding-top:52px!important}
+html.isfs.room-dormitorio .main{padding-top:84px!important}
 html.isfs .top .back{margin-left:56px}
 html.isfs .h3t{padding-left:64px!important}
 html.ambon,html.ambon body{background:#0a1157!important}
@@ -2534,8 +2535,8 @@ function renderDorm(box){
 let miniMuted = true;
 const _renderHomeCasa = renderHome;
 renderHome = function(){
+  const rm = roomOf(); ["casa", "salon", "dormitorio"].forEach(r => document.documentElement.classList.toggle("room-" + r, r === rm));
   const box = $("home"); if (!box || tab !== "hom") return;
-  const rm = roomOf();
   if (rm === "salon") return renderSalon(box);
   if (rm === "dormitorio") return renderDorm(box);
   if (box.dataset.layout){ delete box.dataset.layout; box.innerHTML = ""; }
