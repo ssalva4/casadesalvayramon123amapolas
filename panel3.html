@@ -2111,7 +2111,7 @@ show("hom");
 html,body{background:var(--bgp)!important}
 body{background:var(--bgp)!important}
 .card,.hw{background:#fff!important;border:0!important;box-shadow:none!important;border-radius:28px!important}
-.main{padding:22px 30px 30px!important}
+.main{padding:calc(22px + env(safe-area-inset-top)) 30px calc(30px + env(safe-area-inset-bottom))!important}
 /* cabecera de cada pantalla: título grande y negrita, hora a la derecha */
 .top{align-items:center!important}
 .top h1{font-size:44px!important;font-weight:700!important;letter-spacing:-.025em;color:#000}
@@ -2417,10 +2417,11 @@ $("cfg").addEventListener("change", ev => { const i = ev.target.closest("[data-r
 </script>
 <script>
 /* Pantalla completa: esconde la hora y la batería del iPad. El navegador solo deja hacerlo tras un toque, así que se activa con el primer toque. */
-const fsOn = () => store.get("p3_fs", true);
+const fsOn = () => store.get("p3_fs2", false);   // desactivada: en el iPad la hora y la batería siguen saliendo encima y descuadran
 const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 function goFs(){ if (!fsOn() || isFs()) return; const el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
   if (f){ try{ const r = f.call(el, {navigationUI: "hide"}); if (r && r.catch) r.catch(() => {}); }catch(e){} } }
+if (!fsOn() && isFs()){ const x = document.exitFullscreen || document.webkitExitFullscreen; if (x) try{ x.call(document); }catch(e){} }
 document.addEventListener("click", goFs, true);
 document.addEventListener("touchend", goFs, true);
 const _ambCfgCard2 = ambCfgCard;
@@ -2429,7 +2430,7 @@ ambCfgCard = function(){ const on = fsOn(), can = !!(document.documentElement.re
     <div class="cf-r"><span>Esconder la hora y la batería del iPad</span><button class="sw ${on ? "on" : ""}" data-fs="1" role="switch" aria-checked="${on}" aria-label="Pantalla completa"></button></div>
     <div class="cf-note">${can ? "Se activa con el primer toque en la pantalla. Para salir, desliza desde arriba." : "Este navegador no permite la pantalla completa."}</div></div>`; };
 $("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-fs]"); if (!b) return; ev.stopImmediatePropagation();
-  const on = !fsOn(); store.set("p3_fs", on);
+  const on = !fsOn(); store.set("p3_fs2", on);
   if (!on && isFs()){ const x = document.exitFullscreen || document.webkitExitFullscreen; if (x) try{ x.call(document); }catch(e){} }
   renderCfg(true); }, true);
 </script>
