@@ -713,6 +713,7 @@ body.at-home #homebar{display:none}
 #h24 .plot svg path{stroke-width:2.6px}
 </style>
 <style id="gdock-v3">
+.tl.dclk{background:#fff}.tl.dclk b{font-family:var(--head);font-size:96px;font-weight:700;letter-spacing:-.03em;color:#1c1c1e;font-variant-numeric:tabular-nums;line-height:1}
 .tl.rsm{gap:10px!important;padding:10px 12px!important}
 .tl.rsm .rtop{display:flex;align-items:center;gap:10px;width:100%;min-width:0;justify-content:center}
 .tl.rsm .rtop .rlg{width:42px;height:42px;flex:none;font-size:15px}
@@ -2792,7 +2793,7 @@ function renderSalon(box){
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
   $("h3date").textContent = fechaLarga(d);
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
-  $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${o.ac_salon || ""}${dualTH(w, v)}${o.nt_salon || ""}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
+  $("hgA").innerHTML = `<div class="tl clk bigclk dclk"><b>${pad(d.getHours())}:${pad(d.getMinutes())}</b></div>${o.ac_salon || ""}${dualTH(w, v)}${o.nt_salon || ""}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
   syncMini();
 }
 /* recuadro doble: exterior (tiempo) y casa (sensor de la estancia) */
