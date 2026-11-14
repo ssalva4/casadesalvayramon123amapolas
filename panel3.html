@@ -1433,7 +1433,7 @@ loadNews(); setInterval(loadNews, 15*60*1000);
 /* ---------- Se adapta a cualquier pantalla: el panel se diseña para 1000×820 y se escala para ocupar justo la ventana ---------- */
 document.documentElement.classList.toggle("tactil", matchMedia("(pointer: coarse)").matches);
 function fitScreen(){
-  const app = document.querySelector(".app"), w = window.innerWidth, h = window.innerHeight;
+  const vv = window.visualViewport, app = document.querySelector(".app"), w = Math.round(vv ? vv.width : window.innerWidth), h = Math.round(vv ? vv.height : window.innerHeight);
   if (w < 900){ app.style.zoom = ""; app.style.width = ""; app.style.height = ""; return; }   // móvil: diseño en columna
   const z = Math.min(w / 1000, h / 820);
   app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px";
@@ -1441,6 +1441,9 @@ function fitScreen(){
   document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 440) + "px");
 }
 window.addEventListener("resize", fitScreen); window.addEventListener("orientationchange", () => setTimeout(fitScreen, 300)); fitScreen();
+if (window.visualViewport) window.visualViewport.addEventListener("resize", fitScreen);
+/* al entrar o salir de pantalla completa el iPad cambia el alto: reencuadrar y volver arriba */
+["fullscreenchange", "webkitfullscreenchange"].forEach(t => document.addEventListener(t, () => { [50, 300, 800].forEach(ms => setTimeout(() => { fitScreen(); window.scrollTo(0, 0); }, ms)); }));
 
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 const DEV_COL = ["#1f9e91", "#3b7fc4", "#8a6fd1", "#d68c28", "#c2507a"];
@@ -2231,6 +2234,7 @@ body{background:var(--bgp)!important}
 /* ---------- Modo descanso nocturno: negro y rojo, poco brillo ---------- */
 #amb.redface{background:#000!important;filter:none!important}
 #amb.redface .nf{opacity:var(--nb,.4)}
+html,body{overscroll-behavior:none}
 html.ambon,html.ambon body{background:#0a1157!important}
 html.ambon.ambred,html.ambon.ambred body{background:#000!important}
 #amb .nf{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#b3170d;text-align:center;font-family:var(--font)}
