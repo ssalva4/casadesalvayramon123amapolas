@@ -2244,6 +2244,7 @@ body{background:var(--bgp)!important}
 html,body{overscroll-behavior:none}
 html.isfs .main{padding-top:52px!important}
 html.isfs.room-dormitorio .main{padding-top:116px!important}
+html.room-dormitorio:not(.isfs) .main{padding-top:calc(64px + env(safe-area-inset-top))!important}
 html.isfs.room-dormitorio #amb .face{padding-top:calc(4vh + 120px)}
 html.isfs.room-dormitorio #amb .gg{height:min(calc(86vh - 120px),68vw)}
 html.isfs.room-dormitorio #amb .nf{padding-top:120px;box-sizing:border-box}
@@ -2468,7 +2469,7 @@ $("cfg").addEventListener("change", ev => { const i = ev.target.closest("[data-r
 </script>
 <script>
 /* Pantalla completa: esconde la hora y la batería del iPad. El navegador solo deja hacerlo tras un toque, así que se activa con el primer toque. */
-const fsOn = () => store.get("p3_fs3", true);
+const fsOn = () => store.get("p3_fs4", false);   // sin pantalla completa: así no sale la X de Safari
 const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 function goFs(){ if (!fsOn() || isFs()) return; const el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
   if (f){ try{ const r = f.call(el, {navigationUI: "hide"}); if (r && r.catch) r.catch(() => {}); }catch(e){} } }
@@ -2481,7 +2482,7 @@ ambCfgCard = function(){ const on = fsOn(), can = !!(document.documentElement.re
     <div class="cf-r"><span>Esconder la hora y la batería del iPad</span><button class="sw ${on ? "on" : ""}" data-fs="1" role="switch" aria-checked="${on}" aria-label="Pantalla completa"></button></div>
     <div class="cf-note">${can ? "Se activa con el primer toque en la pantalla. Para salir, desliza desde arriba." : "Este navegador no permite la pantalla completa."}</div></div>`; };
 $("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-fs]"); if (!b) return; ev.stopImmediatePropagation();
-  const on = !fsOn(); store.set("p3_fs3", on);
+  const on = !fsOn(); store.set("p3_fs4", on);
   if (!on && isFs()){ const x = document.exitFullscreen || document.webkitExitFullscreen; if (x) try{ x.call(document); }catch(e){} }
   renderCfg(true); }, true);
 </script>
