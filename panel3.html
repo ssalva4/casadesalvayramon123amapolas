@@ -2579,7 +2579,7 @@ function homeTiles(){
     if (r.nt && hst(r.nt)){ const on = hs(r.nt) === "on"; out["nt_" + r.k] = T(on ? "on" : "", "moon", "Modo noche", r.n, `data-hnt="${r.nt}" data-on="${on ? 1 : 0}"`); }
     if (r.dh && hst(r.lk)){ const F = FORCE_ID(r.k), lk = hs(r.lk) === "on", fz = hs(F) === "on", sw = hst(r.dh), run = sw && sw.state === "on";
       out["dh_" + r.k] = T(fz ? "fz" : lk ? "lk" : run ? "on" : "", fz ? "bolt" : lk ? "lock" : "drop", "Deshumidificador",
-        `${r.n} · ${fz ? "forzado" : lk ? "bloqueado" : run ? "secando" : "automático"}`, `data-hdh="${r.k}" data-mode="${fz ? "fz" : lk ? "lk" : "auto"}"`, (h => !isNaN(h) ? Math.round(h) + " %" : "")(roomTH(r.re).h)); }
+        `${r.n} · ${fz ? "forzado" : lk ? "bloqueado" : run ? "secando" : "automático"}`, `data-hdh="${r.k}" data-mode="${fz ? "fz" : lk ? "lk" : "auto"}"`, (v => !isNaN(v) ? "&gt;" + Math.round(v) + " %" : "")(parseFloat(hv(`input_number.deshum_${r.k}_enciende`, NaN)))); }   // umbral de encendido
   });
   return out;
 }
@@ -2810,8 +2810,10 @@ function renderDorm(box){
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
   const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
   const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
-  $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${radioSmallW()}${o.ac_dormitorio || ""}${dualTH(w, v)}${o.nt_dormitorio || ""}${o.dh_dormitorio || ""}${alarmTileW()}
-    ${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${luzTile("light.luz_despacho", "Despacho")}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
+  $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${dualTH(w, v)}
+    ${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${o.nt_dormitorio || ""}
+    ${radioSmallW()}${luzTile("light.luz_despacho", "Despacho")}${alarmTileW()}
+    ${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;   // fila 1: clima · fila 2: radio, luz y alarma · fila 3: escenas
 }
 let miniMuted = true;
 const _renderHomeCasa = renderHome;
