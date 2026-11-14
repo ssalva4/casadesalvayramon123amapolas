@@ -2116,7 +2116,7 @@ function ambTiles(){   // los mismos mosaicos que el Inicio, en cristal
     if (r.ac){ const e = hst(r.ac); if (e){ const st = hPend[r.ac] ?? e.state, on = st !== "off" && st !== "unavailable";
       const want = parseFloat(hPend[`input_number.temp_deseada_${r.k}`] ?? hv(`input_number.temp_deseada_${r.k}`, e.attributes.temperature));
       o["ac_" + r.k] = G(on ? "on" : "", st === "cool" ? "fan" : "therm", "Aire", `${r.n}${on ? " · " + (MODE_TXT[st] || st) : " · apagado"}`, `data-hac="${r.ac}" data-on="${on ? 1 : 0}"`, !isNaN(want) ? fmt1(want).replace(",0", "") + "°" : ""); } }
-    if (r.nt && hst(r.nt)){ const on = hs(r.nt) === "on"; o["nt_" + r.k] = G(on ? "on" : "", "moon", "Noche", r.n, `data-hnt="${r.nt}" data-on="${on ? 1 : 0}"`); }
+    if (r.nt && hst(r.nt)){ const on = hs(r.nt) === "on"; o["nt_" + r.k] = G(on ? "on" : "", "moon", "Modo noche", r.n, `data-hnt="${r.nt}" data-on="${on ? 1 : 0}"`); }
     if (r.dh && hst(r.lk)){ const F = FORCE_ID(r.k), lk = hs(r.lk) === "on", fz = hs(F) === "on", sw = hst(r.dh), run = sw && sw.state === "on";
       o["dh_" + r.k] = G(fz ? "fz" : lk ? "lk" : run ? "on" : "", fz ? "bolt" : lk ? "lock" : "drop", "Deshumidificador", `${r.n} · ${fz ? "forzado" : lk ? "bloqueado" : run ? "secando" : "automático"}`, `data-hdh="${r.k}" data-mode="${fz ? "fz" : lk ? "lk" : "auto"}"`, (h => !isNaN(h) ? Math.round(h) + " %" : "")(roomTH(r.re).h)); }
     const v = roomTH(r.re); o["t_" + r.k] = `<div class="gt temp"><b class="tv">${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><b>${r.n}</b><small>${!isNaN(v.h) ? Math.round(v.h) + " % humedad" : ""}</small></div>`;
@@ -2570,7 +2570,7 @@ function homeTiles(){
     if (r.ac){ const e = hst(r.ac); if (e){ const st = hPend[r.ac] ?? e.state, on = st !== "off" && st !== "unavailable";
       const want = parseFloat(hv(`input_number.temp_deseada_${r.k}`, e.attributes.temperature));
       out["ac_" + r.k] = T(on ? "on" : "", st === "cool" ? "fan" : "therm", "Aire", `${r.n}${on ? " · " + (MODE_TXT[st] || st) : " · apagado"}`, `data-hac="${r.ac}" data-on="${on ? 1 : 0}"`, !isNaN(want) ? fmt1(want).replace(",0", "") + "°" : ""); } }
-    if (r.nt && hst(r.nt)){ const on = hs(r.nt) === "on"; out["nt_" + r.k] = T(on ? "on" : "", "moon", "Noche", r.n, `data-hnt="${r.nt}" data-on="${on ? 1 : 0}"`); }
+    if (r.nt && hst(r.nt)){ const on = hs(r.nt) === "on"; out["nt_" + r.k] = T(on ? "on" : "", "moon", "Modo noche", r.n, `data-hnt="${r.nt}" data-on="${on ? 1 : 0}"`); }
     if (r.dh && hst(r.lk)){ const F = FORCE_ID(r.k), lk = hs(r.lk) === "on", fz = hs(F) === "on", sw = hst(r.dh), run = sw && sw.state === "on";
       out["dh_" + r.k] = T(fz ? "fz" : lk ? "lk" : run ? "on" : "", fz ? "bolt" : lk ? "lock" : "drop", "Deshumidificador",
         `${r.n} · ${fz ? "forzado" : lk ? "bloqueado" : run ? "secando" : "automático"}`, `data-hdh="${r.k}" data-mode="${fz ? "fz" : lk ? "lk" : "auto"}"`, (h => !isNaN(h) ? Math.round(h) + " %" : "")(roomTH(r.re).h)); }
