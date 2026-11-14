@@ -1903,6 +1903,8 @@ const AMB_BG = "url(\"data:image/svg+xml," + encodeURIComponent(`<svg xmlns='htt
 <path d='M560 1000 C 760 690 1110 640 1420 760 S 1760 1000 1760 1000Z' fill='#7a8fff' opacity='.25'/>
 <path d='M1000 -50 C 1150 200 1450 260 1650 180 L1650 -50Z' fill='#93a3ff' opacity='.22'/>
 <ellipse cx='300' cy='880' rx='420' ry='160' fill='#0a1157' opacity='.45'/></svg>`) + "\")";
+/* ¿está sonando la tele pequeña del Inicio? entonces no se pasa a la pantalla en reposo */
+const miniSound = () => { const v = document.getElementById("tvMini"); return !!(v && v.dataset.src && !v.muted && !v.paused); };
 const AMB_FACES = [["salon", "Salón"], ["dormitorio", "Dormitorio"], ["tiempo", "Tiempo"], ["agenda", "Agenda"]];
 const ambCfg = () => ({on: store.get("p2_amb_on", true), min: store.get("p2_amb_min", 2), face: store.get("p2_amb_face", "salon")});
 let ambFace = 0, ambOpen = false, lastAct = Date.now();
@@ -2007,7 +2009,7 @@ function closeAmb(){ ambOpen = false; $("amb").classList.remove("on"); ambChrome
   setInterval(() => {
     const c = ambCfg();
     if (ambOpen){ renderAmb(); return; }
-    if (!c.on || document.hidden || tvOn || ytOn || $("sheet") && !$("sheet").hidden) return;
+    if (!c.on || document.hidden || tvOn || ytOn || miniSound() || $("sheet") && !$("sheet").hidden) return;
     if (Date.now() - lastAct > c.min * 60000) openAmb();
   }, 5000);
 })();
@@ -2353,7 +2355,7 @@ const inRed = () => { const c = redCfg(); if (!c.on) return false; const d = new
 let wasRed = null;
 function syncRed(){
   const r = inRed(); document.documentElement.classList.toggle("redn", r);
-  if (r && wasRed === false && !tvOn && !ytOn) openAmb();   // al empezar la franja, a la pantalla en reposo
+  if (r && wasRed === false && !tvOn && !ytOn && !miniSound()) openAmb();   // al empezar la franja, a la pantalla en reposo
   if (wasRed !== null && r !== wasRed) renderAmb();
   wasRed = r;
 }
