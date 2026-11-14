@@ -2137,6 +2137,10 @@ body{background:var(--bgp)!important}
 .tl .ti svg{width:100%;height:100%}
 .tl b{font-size:19px;font-weight:600;line-height:1.15;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .tl small{font-size:16px;color:var(--tl-s);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tl.hasv{gap:2px}.tl.hasv .ti{width:34px;height:34px;margin-bottom:4px}
+.tl .tv2{font-size:40px;font-weight:500;letter-spacing:-.03em;line-height:1.05;color:#000;font-variant-numeric:tabular-nums}
+.tl.on .tv2{color:var(--lav-t)}.tl.fz .tv2{color:#9a5b00}.tl.lk .tv2{color:#b0372c}
+#cc .tl .tv2{font-size:24px}#cc .tl.hasv .ti{width:24px;height:24px}
 .tl.on{background:var(--lav);color:var(--lav-t)}.tl.on .ti{color:var(--lav-t)}.tl.on small{color:var(--lav-s)}
 .tl.fz{background:#f8dfb1;color:#9a5b00}.tl.fz .ti{color:#c77a00}.tl.fz small{color:#c28a3a}
 .tl.lk{background:#f6d2d0;color:#b0372c}.tl.lk .ti{color:#c0392b}.tl.lk small{color:#d0786f}
@@ -2260,16 +2264,17 @@ function analogClock(){
     <g class="sec" style="transform-origin:50px 50px;animation:secs 60s linear infinite;animation-delay:-${s}s"><line x1="50" y1="58" x2="50" y2="10" stroke="#8f80dd" stroke-width=".9" stroke-linecap="round"/></g>
     <circle cx="50" cy="50" r="2.4" fill="#8f80dd"/><circle cx="50" cy="50" r="1" fill="#fff"/></svg>`;
 }
-const T = (cls, ic, name, sub, attrs) => `<button class="tl ${cls}" ${attrs || ""}><span class="ti">${tsvg(ic)}</span><b>${name}</b><small>${sub}</small></button>`;
+const T = (cls, ic, name, sub, attrs, big) => `<button class="tl ${cls}${big ? " hasv" : ""}" ${attrs || ""}><span class="ti">${tsvg(ic)}</span><b>${name}</b>${big ? `<span class="tv2">${big}</span>` : ""}<small>${sub}</small></button>`;
 function homeTiles(){
   const out = {};
   HOME_ROOMS.forEach(r => {
     if (r.ac){ const e = hst(r.ac); if (e){ const st = hPend[r.ac] ?? e.state, on = st !== "off" && st !== "unavailable";
-      out["ac_" + r.k] = T(on ? "on" : "", st === "cool" ? "fan" : "therm", "Aire", `${r.n}${on ? " · " + (MODE_TXT[st] || st) : ""}`, `data-hac="${r.ac}" data-on="${on ? 1 : 0}"`); } }
+      const want = parseFloat(hv(`input_number.temp_deseada_${r.k}`, e.attributes.temperature));
+      out["ac_" + r.k] = T(on ? "on" : "", st === "cool" ? "fan" : "therm", "Aire", `${r.n}${on ? " · " + (MODE_TXT[st] || st) : " · apagado"}`, `data-hac="${r.ac}" data-on="${on ? 1 : 0}"`, !isNaN(want) ? fmt1(want).replace(",0", "") + "°" : ""); } }
     if (r.nt && hst(r.nt)){ const on = hs(r.nt) === "on"; out["nt_" + r.k] = T(on ? "on" : "", "moon", "Noche", r.n, `data-hnt="${r.nt}" data-on="${on ? 1 : 0}"`); }
     if (r.dh && hst(r.lk)){ const F = FORCE_ID(r.k), lk = hs(r.lk) === "on", fz = hs(F) === "on", sw = hst(r.dh), run = sw && sw.state === "on";
       out["dh_" + r.k] = T(fz ? "fz" : lk ? "lk" : run ? "on" : "", fz ? "bolt" : lk ? "lock" : "drop", "Deshumidificador",
-        `${r.n} · ${fz ? "forzado" : lk ? "bloqueado" : run ? "secando" : "automático"}`, `data-hdh="${r.k}" data-mode="${fz ? "fz" : lk ? "lk" : "auto"}"`); }
+        `${r.n} · ${fz ? "forzado" : lk ? "bloqueado" : run ? "secando" : "automático"}`, `data-hdh="${r.k}" data-mode="${fz ? "fz" : lk ? "lk" : "auto"}"`, (h => !isNaN(h) ? Math.round(h) + " %" : "")(roomTH(r.re).h)); }
   });
   return out;
 }
