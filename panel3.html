@@ -2785,10 +2785,10 @@ function renderSalon(box){
   $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${o.ac_salon || ""}${dualTH(w, v)}${o.nt_salon || ""}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
   syncMini();
 }
-/* recuadro doble: fuera (tiempo) y dentro (sensor del salón) */
+/* recuadro doble: exterior (tiempo) y casa (sensor de la estancia) */
 function dualTH(w, v){ const c = w && w.current;
-  return `<button class="tl dual" data-go="cli"><span class="half"><small>Fuera</small>${c ? `<span class="ti">${wx(c.weather_code, c.is_day)}</span><b>${Math.round(c.temperature_2m)}°</b><em>💧 ${Math.round(c.relative_humidity_2m)} %</em>` : "<b>—</b>"}</span>
-    <i class="dv"></i><span class="half"><small>Dentro</small><span class="ti">${tsvg("home")}</span><b>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><em class="${!isNaN(v.h) && v.h >= 70 ? "w" : ""}">💧 ${!isNaN(v.h) ? Math.round(v.h) + " %" : "—"}</em></span></button>`; }
+  return `<button class="tl dual" data-go="cli"><span class="half"><small>Exterior</small>${c ? `<span class="ti">${wx(c.weather_code, c.is_day)}</span><b>${Math.round(c.temperature_2m)}°</b><em>💧 ${Math.round(c.relative_humidity_2m)} %</em>` : "<b>—</b>"}</span>
+    <i class="dv"></i><span class="half"><small>Casa</small><span class="ti">${tsvg("home")}</span><b>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><em class="${!isNaN(v.h) && v.h >= 70 ? "w" : ""}">💧 ${!isNaN(v.h) ? Math.round(v.h) + " %" : "—"}</em></span></button>`; }
 /* --- Inicio del dormitorio: descanso y radio --- */
 function renderDorm(box){
   if (box.dataset.layout !== "dormitorio"){ box.dataset.layout = "dormitorio"; stopMini();
