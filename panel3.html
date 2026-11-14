@@ -2015,7 +2015,14 @@ function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return; ambChrome(
 function openAmb(){ if (ambOpen) return; ambOpen = true; if (typeof stopMini === "function") stopMini();
   const RM = typeof roomOf === "function" ? roomOf() : "casa";
   ambFace = RM === "salon" ? 0 : RM === "dormitorio" ? 1 : Math.max(0, AMB_FACES.findIndex(f => f[0] === ambCfg().face)); $("amb").classList.add("on"); renderAmb(); }
-function closeAmb(){ ambOpen = false; try{ if (store.get("p3_red_force", 0) && typeof redCfg === "function"){ const c = redCfg(), d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes()); const win = c.from > c.to ? (n >= c.from || n < c.to) : (n >= c.from && n < c.to); if (!win) store.set("p3_red_force", 0); } }catch(_){}   /* de día, al tocar el rojo se quita */ $("amb").classList.remove("on"); ambChrome(); lastAct = Date.now(); if (tab !== "ent" && tab !== "cfg") show("hom"); }
+async function bnUndo(){   // deshace Buenas noches: quita Noche y deja los aires como estaban (el deshumidificador vuelve solo a automático)
+  store.set("p3_bn_undo", 0);
+  try{ await service("input_boolean", "turn_off", {entity_id: "input_boolean.noche_dormitorio"});
+    setTimeout(async () => { try{ await service("scene", "turn_on", {entity_id: "scene.antes_buenas_noches"}); }catch(_){} setTimeout(refreshHA, 2000); }, 4000);
+    if (store.get("p3_bn_sc", false)) setTimeout(() => { location.href = "shortcuts://x-callback-url/run-shortcut?name=" + encodeURIComponent("Brillo dia") + "&x-success=" + encodeURIComponent(location.href); }, 800);
+  }catch(err){ handleErr(err); }
+}
+function closeAmb(){ ambOpen = false; try{ if (store.get("p3_red_force", 0) && typeof redCfg === "function"){ const c = redCfg(), d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes()); const win = c.from > c.to ? (n >= c.from || n < c.to) : (n >= c.from && n < c.to); if (!win){ store.set("p3_red_force", 0); if (store.get("p3_bn_undo", 0)) bnUndo(); } } }catch(_){}   /* de día, al tocar el rojo se quita todo el modo noche */ $("amb").classList.remove("on"); ambChrome(); lastAct = Date.now(); if (tab !== "ent" && tab !== "cfg") show("hom"); }
 (() => {
   const a = document.createElement("div"); a.id = "amb"; a.setAttribute("role", "dialog"); a.setAttribute("aria-label", "Pantalla en reposo"); document.body.appendChild(a);
   let x0 = null, y0 = null;
@@ -2244,11 +2251,11 @@ body{background:var(--bgp)!important}
 html,body{overscroll-behavior:none}
 html.isfs .main{padding-top:52px!important}
 html.isfs.room-dormitorio .main{padding-top:116px!important}
-html.room-dormitorio:not(.isfs) .main{padding-top:calc(34px + env(safe-area-inset-top))!important}
-html.room-dormitorio .h3t{flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0}
-html.room-dormitorio .h3t h2{line-height:1}
-html.room-dormitorio #h3date{font-size:38px!important;color:#6e6e73}
-html.room-dormitorio #ccgrab i{background:transparent}
+html.room-salon:not(.isfs) .main,html.room-dormitorio:not(.isfs) .main{padding-top:calc(34px + env(safe-area-inset-top))!important}
+html.room-salon .h3t,html.room-dormitorio .h3t{flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0}
+html.room-salon .h3t h2,html.room-dormitorio .h3t h2{line-height:1}
+html.room-salon #h3date,html.room-dormitorio #h3date{font-size:38px!important;color:#6e6e73}
+html.room-salon #ccgrab i,html.room-dormitorio #ccgrab i{background:transparent}
 html.isfs.room-dormitorio #amb .face{padding-top:calc(4vh + 120px)}
 html.isfs.room-dormitorio #amb .gg{height:min(calc(86vh - 120px),68vw)}
 html.isfs.room-dormitorio #amb .nf{padding-top:120px;box-sizing:border-box}
@@ -2309,7 +2316,9 @@ html.idlew .app{translate:var(--ix,0px) var(--iy,0px);transition:translate 6s ea
 #amb .gt.tempg .tg span{display:flex;flex-direction:column;align-items:center;font-size:min(4.6vh,40px);font-weight:400;line-height:1.05;letter-spacing:-.02em}
 #amb .gt.tempg .tg small{font-size:min(1.6vh,13px)!important;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:rgba(255,255,255,.65)!important}
 
-.hg.rs .tl.tv.big3{grid-column:1/4;grid-row:1/4;cursor:pointer}
+.hg.rs{grid-template-rows:repeat(4,minmax(0,1fr))}
+.hg.rs .tl{padding:6px;gap:0;border-radius:26px}.hg.rs .tl .ti{width:32px;height:32px;margin-bottom:4px}.hg.rs .tl.hasv .ti{display:none}.hg.rs .tl .tv2{font-size:34px;line-height:1.05}.hg.rs .tl b{font-size:16px}.hg.rs .tl small{font-size:13px}.hg.rs .tl.wxt .ti{width:44px;height:44px}.hg.rs .tl.wxt b{font-size:28px}
+.hg.rs .tl.tv.big3{grid-column:1/4;grid-row:1/5;cursor:pointer}
 .hg.rs .tl.tv.big3 .tvb{margin:0 0 24px 26px}.hg.rs .tl.tv.big3 .tvb b{font-size:26px}.hg.rs .tl.tv.big3 .tvb small{font-size:16px}
 .tl.tv .chb{position:absolute;top:50%;transform:translateY(-50%);width:58px;height:58px;border-radius:50%;background:rgba(0,0,0,.38);color:#fff;display:grid;place-items:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:2}
 .tl.tv .chb svg{width:28px;height:28px}.tl.tv .chb.l{left:16px}.tl.tv .chb.r{right:16px}
@@ -2528,7 +2537,9 @@ async function roomAction(b){
     if (redCfg().on){ const t = new Date(); t.setHours(7, 0, 0, 0); if (t <= new Date()) t.setDate(t.getDate() + 1); store.set("p3_red_force", t.getTime());   // modo descanso hasta las 7:00
       setTimeout(() => { if (typeof syncRed === "function") syncRed(); if (ambOpen) renderAmb(); else if (inRed()) openAmb(); }, 400); }
     if (store.get("p3_bn_sc", false)) setTimeout(() => { location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent("Brillo noche"); }, 1200);   // el atajo baja el brillo y vuelve al panel
-    try{ await service("climate", "set_hvac_mode", {entity_id: "climate.aire_salon", hvac_mode: "off"});
+    try{ store.set("p3_bn_undo", 1);
+      await service("scene", "create", {scene_id: "antes_buenas_noches", snapshot_entities: ["climate.aire_salon", "climate.aire_dormitorio"]}).catch(() => {});   // para dejarlo luego como estaba
+      await service("climate", "set_hvac_mode", {entity_id: "climate.aire_salon", hvac_mode: "off"});
       await service("input_boolean", "turn_on", {entity_id: "input_boolean.noche_dormitorio"}); setTimeout(refreshHA, 1500); }catch(err){ handleErr(err); } }
   else if (b.dataset.chs){ const hls = CHANNELS.filter(c => c.u), i = Math.max(0, hls.findIndex(c => c.k === ch)), n = hls[(i + (+b.dataset.chs) + hls.length) % hls.length];
     ch = n.k; store.set("p2_ch", ch); renderTV(); const v = $("tvMini"); if (v){ delete v.dataset.err; } syncMini(); }
@@ -2561,21 +2572,21 @@ function ambTvTile(){ const c = CHANNELS.find(x => x.k === ch) || CHANNELS[0];
 /* --- Inicio del salón: la tele manda --- */
 function renderSalon(box){
   if (box.dataset.layout !== "salon"){ box.dataset.layout = "salon";
-    box.innerHTML = `<div class="h3t"><h2>Salón</h2><span id="h3time"></span></div><div id="h3pills"></div>
+    box.innerHTML = `<div class="h3t"><h2>Salón</h2><span id="h3date"></span><span id="h3time" style="display:none"></span></div>
       <div class="hg rs"><div class="tl tv big3" id="tvTile" role="button" tabindex="0" aria-label="Tele: toca para el sonido"><video id="tvMini" muted playsinline autoplay preload="none"></video><img id="tvMiniLogo" alt="">
         <button class="chb l" data-chs="-1" aria-label="Canal anterior">${tsvg("chev_l")}</button><button class="chb r" data-chs="1" aria-label="Canal siguiente">${tsvg("chev_r")}</button>
-        <span class="tvb"><b id="tvMiniN"></b><small id="tvMiniS"></small></span></div><div id="hgA" style="display:contents"></div></div>`;
+        <span class="tvb"><b id="tvMiniN"></b><small id="tvMiniS"></small></span></div><div id="hgA" style="display:contents"></div></div>
+      <div class="mdock"><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="pla" aria-label="Agenda">${tsvg("cal")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
     $("tvTile").addEventListener("click", ev => { const c = ev.target.closest("[data-chs]"); if (c){ ev.stopPropagation(); roomAction(c); return; }
       const v = $("tvMini"); if (v && v.dataset.src && !v.dataset.err){ v.muted = !v.muted; miniMuted = v.muted; if (!v.muted){ const pr = v.play(); if (pr) pr.catch(() => {}); } syncMini(); return; }
       show("ent"); setTimeout(() => { const pb = $("screen").querySelector("[data-play]"); if (pb && !tvOn && !ytOn) pb.click(); }, 300); });
   }
   const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), v = roomTH(HOME_ROOMS[0].re);
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
-  $("h3pills").innerHTML = `<div class="pills"><button class="pl" data-go="cli">${tsvg("therm", "#4aa3f0")}<span style="color:#4aa3f0">${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</span></button>
-    <button class="pl" data-go="cli">${tsvg("hum", "#3b7fc4")}<span style="color:#3b7fc4">${!isNaN(v.h) ? Math.round(v.h) + " %" : "—"}</span></button>
-    <button class="pl" data-go="ent">${tsvg("tv", "#636366")}</button><button class="pl" data-go="pla">${tsvg("cal", "#ff453a")}</button><button class="pl" data-go="cfg">${tsvg("gear", "#636366")}</button></div>`;
+  $("h3date").textContent = fechaLarga(d);
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
-  $("hgA").innerHTML = `<div class="tl clk">${analogClock()}</div>${o.ac_salon || ""}${o.nt_salon || ""}${wxT}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}`;
+  $("hgA").innerHTML = `<div class="tl clk">${analogClock()}</div>${o.ac_salon || ""}${o.nt_salon || ""}${wxT}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}
+    ${T("", "therm", "Salón", !isNaN(v.h) ? Math.round(v.h) + " % humedad" : "Ahora", 'data-go="cli"', !isNaN(v.t) ? fmt1(v.t) + "°" : "—")}`;
   syncMini();
 }
 /* --- Inicio del dormitorio: descanso y radio --- */
