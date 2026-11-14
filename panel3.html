@@ -2263,6 +2263,17 @@ html.ambon.ambred,html.ambon.ambred body{background:#000!important}
 #amb .nf .nal.off{color:#5e0b05;border-color:#2a0502}
 #amb .nf .nr em{font-style:normal;font-size:min(2.6vw,3.4vh);font-weight:400;color:#6a0d07}
 
+
+/* ---------- Reposo: ondas suaves y desplazamiento lento contra marcas en la pantalla ---------- */
+#amb::before{content:"";position:absolute;inset:-25%;pointer-events:none;z-index:0;opacity:.55;
+  background:radial-gradient(40% 30% at 30% 40%,rgba(140,160,255,.35),transparent 70%),radial-gradient(35% 28% at 70% 65%,rgba(90,200,255,.25),transparent 70%),radial-gradient(30% 25% at 55% 20%,rgba(190,140,255,.22),transparent 70%);
+  animation:ambwave 46s ease-in-out infinite alternate;will-change:transform}
+@keyframes ambwave{0%{transform:translate3d(-4%,-3%,0) rotate(0deg) scale(1)}50%{transform:translate3d(3%,4%,0) rotate(8deg) scale(1.08)}100%{transform:translate3d(5%,-2%,0) rotate(-6deg) scale(1.02)}}
+#amb.redface::before{display:none}
+#amb .faces{position:relative;z-index:1}#amb .dots{z-index:2}
+#amb .face > *{translate:var(--sx,0px) var(--sy,0px);transition:translate 6s ease-in-out}
+#amb .nf{translate:var(--sx,0px) var(--sy,0px);transition:translate 8s ease-in-out}
+@media (prefers-reduced-motion:reduce){#amb::before{animation:none}}
 /* ---------- Inicio por estancias ---------- */
 .hg.rd .tl.clk.bigclk{grid-column:1/3;grid-row:1/4;padding:18px}
 .tl.rsm{gap:4px;background:#fff}.tl.rsm.on{background:var(--lav)}
@@ -2595,6 +2606,12 @@ $("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-bn
 $("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-room]"); if (!b) return; ev.stopImmediatePropagation();
   store.set("p3_room", b.dataset.room); renderCfg(true); }, true);
 renderHome();
+</script>
+<script>
+/* cada minuto mueve un poco el contenido de la pantalla en reposo (unos píxeles) */
+setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.classList.contains("on")) return;
+  const r = a.classList.contains("redface") ? 18 : 8, rnd = () => Math.round((Math.random() * 2 - 1) * r) + "px";
+  a.style.setProperty("--sx", rnd()); a.style.setProperty("--sy", rnd()); }, 60000);
 </script>
 </body>
 </html>
