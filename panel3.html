@@ -2309,6 +2309,9 @@ html.ambon.ambred,html.ambon.ambred body{background:#000!important}
   background:radial-gradient(38% 30% at 30% 40%,rgba(143,128,221,.16),transparent 70%),radial-gradient(34% 28% at 70% 62%,rgba(74,163,240,.14),transparent 70%),radial-gradient(30% 24% at 52% 18%,rgba(255,170,120,.12),transparent 70%)}
 html.idlew #waves{opacity:1;animation:ambwave 46s ease-in-out infinite alternate}
 html.idlew .app{translate:var(--ix,0px) var(--iy,0px);transition:translate 6s ease-in-out}
+/* salón: en reposo la pantalla se oscurece casi del todo (toca para volver) */
+#dimv{position:fixed;inset:0;z-index:41;pointer-events:none;background:#000;opacity:0;transition:opacity 3s ease}
+html.idlew.room-salon #dimv{opacity:.93;pointer-events:auto}
 /* ---------- Inicio por estancias ---------- */
 .mdock{align-self:center;display:flex;gap:26px;padding:10px 26px;border-radius:24px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.7);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);flex:none}
 .mdock button{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;color:#8e8e93;background:rgba(120,120,128,.12)}
@@ -2331,11 +2334,12 @@ html.idlew .app{translate:var(--ix,0px) var(--iy,0px);transition:translate 6s ea
 #amb .gt.tempg .tg span{display:flex;flex-direction:column;align-items:center;font-size:min(4.6vh,40px);font-weight:400;line-height:1.05;letter-spacing:-.02em}
 #amb .gt.tempg .tg small{font-size:min(1.6vh,13px)!important;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:rgba(255,255,255,.65)!important}
 
-.hg.rs .tl.clk.bigclk{grid-column:1/3;grid-row:1/4;padding:18px}
-.hg.rs .tl.tv.tvs{grid-column:3/5;grid-row:1;cursor:pointer}
+.hg.rs .tl.clk.bigclk{grid-column:3/5;grid-row:1;padding:10px}
+.hg.rs .tl.tv.tvs{grid-column:1/3;grid-row:1/4;cursor:pointer}
+.hg.rs .tl.tv.tvs .tvb{margin:0 0 22px 24px}.hg.rs .tl.tv.tvs .tvb b{font-size:24px}.hg.rs .tl.tv.tvs .tvb small{font-size:15px}
 
-.tl.tv .tvbig{display:none}.tl.tv.off .tvbig{display:grid;position:absolute;inset:0;place-items:center;font-size:84px;padding-bottom:28px;font-weight:700;letter-spacing:-.04em;color:#636366;background:#1c1c1e}.tl.tv.off video{visibility:hidden}
-.hg.rs .tl.tv .chb{width:44px;height:44px}.hg.rs .tl.tv .chb svg{width:22px;height:22px}.hg.rs .tl.tv .chb.l{left:10px}.hg.rs .tl.tv .chb.r{right:10px}
+.tl.tv .tvbig{display:none}.tl.tv.off .tvbig{display:grid;position:absolute;inset:0;place-items:center;font-size:150px;padding-bottom:30px;font-weight:700;letter-spacing:-.04em;color:#636366;background:#1c1c1e}.tl.tv.off video{visibility:hidden}
+
 .tl.tv .chb{position:absolute;top:50%;transform:translateY(-50%);width:58px;height:58px;border-radius:50%;background:rgba(0,0,0,.38);color:#fff;display:grid;place-items:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:2}
 .tl.tv .chb svg{width:28px;height:28px}.tl.tv .chb.l{left:16px}.tl.tv .chb.r{right:16px}
 .hg.rd .tl.radio2{grid-column:1/3;grid-row:1/4}
@@ -2673,12 +2677,12 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 </script>
 <script>
 /* a los 2 minutos sin tocar (de día), ondas muy suaves y el contenido se mueve unos píxeles cada minuto */
-(() => { const w = document.createElement("div"); w.id = "waves"; w.setAttribute("aria-hidden", "true"); document.body.appendChild(w);
+(() => { const w = document.createElement("div"); w.id = "waves"; w.setAttribute("aria-hidden", "true"); document.body.appendChild(w); const dv = document.createElement("div"); dv.id = "dimv"; dv.setAttribute("aria-hidden", "true"); document.body.appendChild(dv); dv.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); });
   let last = Date.now(); const h = document.documentElement;
-  const wake = () => { last = Date.now(); if (h.classList.contains("idlew")){ h.classList.remove("idlew"); h.style.removeProperty("--ix"); h.style.removeProperty("--iy"); } };
+  const wake = e => { last = Date.now(); if (e && e.target && e.target.id === "dimv"){ setTimeout(wake, 450); return; } if (h.classList.contains("idlew")){ h.classList.remove("idlew"); h.style.removeProperty("--ix"); h.style.removeProperty("--iy"); } };
   ["pointerdown", "keydown", "wheel", "touchstart"].forEach(t => document.addEventListener(t, wake, {passive: true, capture: true}));
   let n = 0;
-  setInterval(() => { const idle = Date.now() - last > 2 * 60000 && !ambOpen && !document.hidden;
+  setInterval(() => { const idle = Date.now() - last > 2 * 60000 && !ambOpen && !document.hidden && !(typeof miniSound === "function" && miniSound()) && !tvOn && !ytOn;
     if (idle && !h.classList.contains("idlew")) h.classList.add("idlew");
     if (h.classList.contains("idlew") && (++n % 12 === 0)){ const r = () => Math.round((Math.random() * 2 - 1) * 6) + "px"; h.style.setProperty("--ix", r()); h.style.setProperty("--iy", r()); }
   }, 5000);
