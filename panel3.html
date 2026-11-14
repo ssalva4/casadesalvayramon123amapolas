@@ -1447,7 +1447,7 @@ function fitScreen(){
 window.addEventListener("resize", fitScreen); window.addEventListener("orientationchange", () => setTimeout(fitScreen, 300)); fitScreen();
 if (window.visualViewport) window.visualViewport.addEventListener("resize", fitScreen);
 /* al entrar o salir de pantalla completa el iPad cambia el alto: reencuadrar y volver arriba */
-["fullscreenchange", "webkitfullscreenchange"].forEach(t => document.addEventListener(t, () => { [50, 300, 800].forEach(ms => setTimeout(() => { fitScreen(); window.scrollTo(0, 0); }, ms)); }));
+["fullscreenchange", "webkitfullscreenchange"].forEach(t => document.addEventListener(t, () => { document.documentElement.classList.toggle("isfs", !!(document.fullscreenElement || document.webkitFullscreenElement)); [50, 300, 800].forEach(ms => setTimeout(() => { fitScreen(); window.scrollTo(0, 0); }, ms)); }));
 
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 const DEV_COL = ["#1f9e91", "#3b7fc4", "#8a6fd1", "#d68c28", "#c2507a"];
@@ -2239,6 +2239,9 @@ body{background:var(--bgp)!important}
 #amb.redface{background:#000!important;filter:none!important}
 #amb.redface .nf{opacity:var(--nb,.4)}
 html,body{overscroll-behavior:none}
+html.isfs .main{padding-top:52px!important}
+html.isfs .top .back{margin-left:56px}
+html.isfs .h3t{padding-left:64px!important}
 html.ambon,html.ambon body{background:#0a1157!important}
 html.ambon.ambred,html.ambon.ambred body{background:#000!important}
 #amb .nf{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#b3170d;text-align:center;font-family:var(--font)}
@@ -2417,7 +2420,7 @@ $("cfg").addEventListener("change", ev => { const i = ev.target.closest("[data-r
 </script>
 <script>
 /* Pantalla completa: esconde la hora y la batería del iPad. El navegador solo deja hacerlo tras un toque, así que se activa con el primer toque. */
-const fsOn = () => store.get("p3_fs2", false);   // desactivada: en el iPad la hora y la batería siguen saliendo encima y descuadran
+const fsOn = () => store.get("p3_fs3", true);
 const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 function goFs(){ if (!fsOn() || isFs()) return; const el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
   if (f){ try{ const r = f.call(el, {navigationUI: "hide"}); if (r && r.catch) r.catch(() => {}); }catch(e){} } }
@@ -2430,7 +2433,7 @@ ambCfgCard = function(){ const on = fsOn(), can = !!(document.documentElement.re
     <div class="cf-r"><span>Esconder la hora y la batería del iPad</span><button class="sw ${on ? "on" : ""}" data-fs="1" role="switch" aria-checked="${on}" aria-label="Pantalla completa"></button></div>
     <div class="cf-note">${can ? "Se activa con el primer toque en la pantalla. Para salir, desliza desde arriba." : "Este navegador no permite la pantalla completa."}</div></div>`; };
 $("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-fs]"); if (!b) return; ev.stopImmediatePropagation();
-  const on = !fsOn(); store.set("p3_fs2", on);
+  const on = !fsOn(); store.set("p3_fs3", on);
   if (!on && isFs()){ const x = document.exitFullscreen || document.webkitExitFullscreen; if (x) try{ x.call(document); }catch(e){} }
   renderCfg(true); }, true);
 </script>
