@@ -713,6 +713,12 @@ body.at-home #homebar{display:none}
 #h24 .plot svg path{stroke-width:2.6px}
 </style>
 <style id="gdock-v3">
+/* salón en reposo de noche: la misma pantalla, en negro y rojo tenue */
+html.salonred,html.salonred body{background:#000!important}
+html.salonred .app{filter:invert(1) grayscale(1) brightness(.75);transition:filter 1.5s}
+html.salonred .tl.tv{background:#fff!important}html.salonred .tl.tv .tvbig{background:#fff!important;color:#d0d0d0!important}html.salonred .tl.tv .tvb b{color:#000!important}
+html.salonred #waves{opacity:0!important}
+html.salonred #dimv{pointer-events:auto;opacity:1!important;background:#ff3b30;mix-blend-mode:multiply}   /* tiñe de rojo: lo claro queda rojo y lo oscuro, negro */
 .tl.dclk{background:#fff}.tl.dclk b{font-family:var(--head);font-size:96px;font-weight:500;letter-spacing:-.03em;color:#1c1c1e;font-variant-numeric:tabular-nums;line-height:1}
 .tl.rsm{gap:10px!important;padding:10px 12px!important}
 .tl.rsm .rtop{display:flex;align-items:center;gap:10px;width:100%;min-width:0;justify-content:center}
@@ -2872,11 +2878,15 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 /* a los 2 minutos sin tocar (de día), ondas muy suaves y el contenido se mueve unos píxeles cada minuto */
 (() => { const w = document.createElement("div"); w.id = "waves"; w.setAttribute("aria-hidden", "true"); document.body.appendChild(w); const dv = document.createElement("div"); dv.id = "dimv"; dv.setAttribute("aria-hidden", "true"); document.body.appendChild(dv); dv.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); });
   let last = Date.now(); const h = document.documentElement;
-  const wake = e => { last = Date.now(); if (e && e.target && e.target.id === "dimv"){ setTimeout(wake, 450); return; } if (h.classList.contains("idlew")){ h.classList.remove("idlew"); h.style.removeProperty("--ix"); h.style.removeProperty("--iy"); } };
+  const wake = e => { last = Date.now(); if (e && e.target && e.target.id === "dimv"){ setTimeout(wake, 450); return; } if (h.classList.contains("idlew")){ h.classList.remove("idlew", "salonred"); h.style.removeProperty("--ix"); h.style.removeProperty("--iy"); } };
   ["pointerdown", "keydown", "wheel", "touchstart"].forEach(t => document.addEventListener(t, wake, {passive: true, capture: true}));
   let n = 0;
   setInterval(() => { const idle = Date.now() - last > 2 * 60000 && !ambOpen && !document.hidden && !(typeof miniSound === "function" && miniSound()) && !tvOn && !ytOn;
     if (idle && !h.classList.contains("idlew")) h.classList.add("idlew");
+    /* salón de noche (22:00–7:00): en reposo, la misma pantalla en negro y rojo */
+    const nowM = (d => d.getHours() * 60 + d.getMinutes())(new Date()), tm = t => { const [a, b] = String(t).split(":").map(Number); return a * 60 + (b || 0); };
+    const f = tm("22:00"), t = tm("07:00"), night = nowM >= f || nowM < t;   // salón: de 22:00 a 7:00
+    h.classList.toggle("salonred", h.classList.contains("idlew") && night && typeof roomOf === "function" && roomOf() === "salon" && tab === "hom");
     if (h.classList.contains("idlew") && (++n % 12 === 0)){ const r = () => Math.round((Math.random() * 2 - 1) * 6) + "px"; h.style.setProperty("--ix", r()); h.style.setProperty("--iy", r()); }
   }, 5000);
 })();
