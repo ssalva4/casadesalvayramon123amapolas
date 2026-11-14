@@ -2299,6 +2299,7 @@ body{background:var(--bgp)!important}
 .tl .tv2{font-size:40px;font-weight:500;letter-spacing:-.03em;line-height:1.05;color:#000;font-variant-numeric:tabular-nums}
 .tl.on .tv2{color:var(--lav-t)}.tl.fz .tv2{color:#9a5b00}.tl.lk .tv2{color:#b0372c}
 #cc .tl .tv2{font-size:24px}#cc .tl.hasv .ti{width:24px;height:24px}
+.tl.on.lt{background:#fff4d6!important;color:#9a6a00!important}.tl.on.lt .ti{color:#f0a020!important}.tl.on.lt small{color:#a8700f!important}
 .tl.on{background:var(--lav);color:var(--lav-t)}.tl.on .ti{color:var(--lav-t)}.tl.on small{color:var(--lav-s)}
 .tl.fz{background:#f8dfb1;color:#9a5b00}.tl.fz .ti{color:#c77a00}.tl.fz small{color:#c28a3a}
 .tl.lk{background:#f6d2d0;color:#b0372c}.tl.lk .ti{color:#c0392b}.tl.lk small{color:#d0786f}
@@ -2477,6 +2478,7 @@ html.idlew.room-salon #dimv{opacity:.93;pointer-events:auto}
 <script>
 /* ===== V3b: Inicio en mosaicos cuadrados ===== */
 const TI = {
+  bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
   home:'<path d="M12 3.2 2.8 11h2.6v9.2h5.4v-6h2.4v6h5.4V11h2.6z" fill="currentColor" stroke="none"/>',
   fan:'<circle cx="12" cy="12" r="1.6"/><path d="M12 10.4c-.3-3 .6-6.4 3.3-6.4 2.4 0 2.6 3.2.3 4.6l-3.6 1.8M13.6 12c3-.3 6.4.6 6.4 3.3 0 2.4-3.2 2.6-4.6.3L13.6 12M12 13.6c.3 3-.6 6.4-3.3 6.4-2.4 0-2.6-3.2-.3-4.6l3.6-1.8M10.4 12c-3 .3-6.4-.6-6.4-3.3 0-2.4 3.2-2.6 4.6-.3l1.8 3.6"/>',
   moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="currentColor"/>',
@@ -2661,7 +2663,16 @@ function nextAlarm(){
 }
 
 /* --- acciones propias de las estancias (radio, temporizador, buenas noches, canales) --- */
+/* luz WiZ: un toque enciende o apaga (vuelve como estaba: brillo y modo) */
+const luzPend = {};
+function luzTile(id, name){ const e = hst(id), st = luzPend[id] ?? (e ? e.state : "unavailable"), on = st === "on";
+  const pct = on && e && e.attributes.brightness ? Math.max(10, Math.round(e.attributes.brightness / 2.55)) + " %" : "";
+  const sub = st === "unavailable" ? "Sin conexión · ¿interruptor?" : on ? `Encendida${pct ? " · " + pct : ""}` : "Apagada";
+  return T(on ? "on lt" : "", "bulb", name, sub, `data-lt="${id}" data-on="${on ? 1 : 0}"`); }
 async function roomAction(b){
+  if (b.dataset.lt){ const id = b.dataset.lt, on = b.dataset.on === "1"; luzPend[id] = on ? "off" : "on"; renderHome();
+    try{ await service("light", on ? "turn_off" : "turn_on", {entity_id: id}); }catch(err){ handleErr(err); }
+    setTimeout(async () => { await refreshHA(); delete luzPend[id]; renderHome(); }, 1500); return; }
   if (b.dataset.rad === "play"){ if (radioOn) radStop(); else await radPlay(radSel().k); }
   else if (b.dataset.rad === "prev") radStep(-1);
   else if (b.dataset.rad === "next") radStep(1);
@@ -2734,7 +2745,7 @@ function renderDorm(box){
   const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
   const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
   $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${radioSmallW()}${o.ac_dormitorio || ""}${wxT}${o.nt_dormitorio || ""}${o.dh_dormitorio || ""}${alarmTileW()}
-    ${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
+    ${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${luzTile("light.luz_despacho", "Despacho")}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
 }
 let miniMuted = true;
 const _renderHomeCasa = renderHome;
@@ -2764,7 +2775,7 @@ syncMini = function(){ const v = $("tvMini"), t = $("tvTile");
   else $("tvMiniS").textContent = "🔊 En directo · toca para parar"; };
 document.addEventListener("click", ev => { const t = ev.target.closest("#tvTile"); if (t && roomOf() === "casa"){ setTimeout(() => { const v = $("tvMini"); if (v) miniMuted = v.muted; }, 0); } }, true);
 /* clics de radio / buenas noches en el Inicio */
-$("home").addEventListener("click", ev => { const b = ev.target.closest("[data-rad],[data-bn],[data-rtimer]"); if (!b) return; ev.stopImmediatePropagation(); roomAction(b); }, true);
+$("home").addEventListener("click", ev => { const b = ev.target.closest("[data-rad],[data-bn],[data-rtimer],[data-lt]"); if (!b) return; ev.stopImmediatePropagation(); roomAction(b); }, true);
 /* la radio sonando tampoco pasa a reposo si estás en el dormitorio con temporizador: no; sí deja pasar (reloj rojo con radio de fondo) */
 
 /* --- Ajustes: dónde está este aparato --- */
