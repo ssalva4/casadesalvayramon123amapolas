@@ -2015,7 +2015,7 @@ function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return; ambChrome(
 function openAmb(){ if (ambOpen) return; ambOpen = true; if (typeof stopMini === "function") stopMini();
   const RM = typeof roomOf === "function" ? roomOf() : "casa";
   ambFace = RM === "salon" ? 0 : RM === "dormitorio" ? 1 : Math.max(0, AMB_FACES.findIndex(f => f[0] === ambCfg().face)); $("amb").classList.add("on"); renderAmb(); }
-function closeAmb(){ ambOpen = false; $("amb").classList.remove("on"); ambChrome(); lastAct = Date.now(); if (tab !== "ent" && tab !== "cfg") show("hom"); }
+function closeAmb(){ ambOpen = false; try{ if (store.get("p3_red_force", 0) && typeof redCfg === "function"){ const c = redCfg(), d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes()); const win = c.from > c.to ? (n >= c.from || n < c.to) : (n >= c.from && n < c.to); if (!win) store.set("p3_red_force", 0); } }catch(_){}   /* de día, al tocar el rojo se quita */ $("amb").classList.remove("on"); ambChrome(); lastAct = Date.now(); if (tab !== "ent" && tab !== "cfg") show("hom"); }
 (() => {
   const a = document.createElement("div"); a.id = "amb"; a.setAttribute("role", "dialog"); a.setAttribute("aria-label", "Pantalla en reposo"); document.body.appendChild(a);
   let x0 = null, y0 = null;
@@ -2445,7 +2445,7 @@ renderHome();
 <script>
 /* Modo descanso de 23:00 a 7:00 (se cambia en Ajustes): pantalla en negro y rojo, y pasa sola a la pantalla en reposo */
 const redCfg = () => ({on: store.get("p3_red_on3", true), from: store.get("p3_red_from", "23:00"), to: store.get("p3_red_to", "07:00")});
-const inRed = () => { if (!redCfg().on) return false; const hh = new Date().getHours(); if ((hh >= 18 || hh < 7) && Date.now() < store.get("p3_red_force", 0)) return true;   /* Buenas noches adelanta el rojo, pero solo de tarde-noche */ const c = redCfg(); if (!c.on) return false; const d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes());
+const inRed = () => { if (!redCfg().on) return false; const hh = new Date().getHours(); if (Date.now() < store.get("p3_red_force", 0)) return true;   /* Buenas noches pone el rojo a cualquier hora, hasta las 7:00 */ const c = redCfg(); if (!c.on) return false; const d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes());
   return c.from > c.to ? (n >= c.from || n < c.to) : (n >= c.from && n < c.to); };
 let wasRed = null;
 function syncRed(){
