@@ -2482,7 +2482,7 @@ html.idlew #waves{opacity:1;animation:ambwave 46s ease-in-out infinite alternate
 html.idlew .app{translate:var(--ix,0px) var(--iy,0px);transition:translate 6s ease-in-out}
 /* salón: en reposo la pantalla se oscurece casi del todo (toca para volver) */
 #dimv{position:fixed;inset:0;z-index:41;pointer-events:none;background:#000;opacity:0;transition:opacity 3s ease}
-html.idlew.room-salon #dimv{opacity:.93;pointer-events:auto}
+/* salón: sin oscurecer (solo las ondas suaves, como en el resto) */
 /* ---------- Inicio por estancias ---------- */
 .mdock{align-self:center;display:flex;gap:26px;padding:10px 26px;border-radius:24px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.7);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);flex:none}
 .mdock button{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;color:#8e8e93;background:rgba(120,120,128,.12)}
