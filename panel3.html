@@ -673,27 +673,27 @@ body.at-home #homebar{display:none}
 .t-cli .hr.cur{background:#f2f2f7!important;color:#1c1c1e!important;border:0!important;box-shadow:none!important;outline:0!important}
 .t-cli .hr svg.hw{width:24px!important;height:24px!important}
 #ac0{grid-column:1!important;grid-row:2!important}#ac1{grid-column:2!important;grid-row:2!important}.t-cli .bath{grid-column:3!important;grid-row:2!important}
-.t-cli .h24{grid-column:1/4!important;grid-row:3!important;height:154px;padding:12px 18px!important}
+.t-cli .h24{grid-column:1/4!important;grid-row:3!important;height:140px;padding:12px 18px!important}
 .t-cli .ac{padding:14px 18px!important;display:flex!important;flex-direction:column;min-height:0}
 .t-cli .ac>*{flex:none}
 .cv .hd{display:flex;justify-content:space-between;align-items:baseline}.cv .hd b{font-size:19px;font-weight:700}.cv .hd span{font-size:14px;font-weight:600;color:#0a84ff}.cv .hd span.w{color:#e8822f}
-.cv .dial{position:relative;width:200px;height:166px;margin:2px auto 0}
+.cv .dial{position:relative;width:180px;height:150px;margin:0 auto}
 .cv .dial svg.g{position:absolute;inset:0;width:100%;height:100%}
-.cv .dial .ctl{position:absolute;left:0;right:0;top:44px;text-align:center;display:block!important}
-.cv .dial .ctl span{display:block;font-size:50px;font-weight:300;letter-spacing:-.03em;line-height:1;font-family:var(--head)}
-.cv .dial small{position:absolute;left:0;right:0;top:104px;text-align:center;font-size:13.5px;color:#8e8e93;font-weight:600}
+.cv .dial .ctl{position:absolute;left:0;right:0;top:40px;text-align:center;display:block!important}
+.cv .dial .ctl span{display:block;font-size:46px;font-weight:300;letter-spacing:-.03em;line-height:1;font-family:var(--head)}
+.cv .dial small{position:absolute;left:0;right:0;top:94px;text-align:center;font-size:13.5px;color:#8e8e93;font-weight:600}
 .cv .dial .pm{position:absolute;bottom:2px;width:44px;height:44px;border-radius:50%;background:#f2f2f7;display:grid;place-items:center;font-size:24px;color:#3a3a3c;padding:0}
 .cv .dial .pm.m{left:-4px}.cv .dial .pm.p{right:-4px}.cv .dial .pm:active{transform:scale(.9)}
 .cv.off .dial .ctl span{color:#8e8e93}
-.cv .stx{text-align:center;font-size:13.5px;font-weight:600;margin-top:6px;min-height:17px;color:#8e8e93;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cv .stx{text-align:center;font-size:13.5px;font-weight:600;margin-top:2px;min-height:17px;color:#8e8e93;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cv .stx.heat{color:#e8822f}.cv .stx.cool{color:#0a84ff}.cv .stx.dry{color:#1f9e91}
-.cv .mbar{display:flex;justify-content:space-between;margin-top:12px;padding:5px;border-radius:18px;background:#f2f2f7}
-.cv .mbar button{flex:1;height:48px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#6e6e73;padding:0;background:none}
+.cv .mbar{display:flex;justify-content:space-between;margin-top:8px;padding:5px;border-radius:18px;background:#f2f2f7}
+.cv .mbar button{flex:1;height:46px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#6e6e73;padding:0;background:none}
 .cv .mbar button .i{width:18px;height:18px}
 .cv .mbar button span{font-size:10px;font-weight:700}
 .cv .mbar button.on{background:#fff;color:#1c1c1e;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .cv .mbar button.on.heat{color:#e8822f}.cv .mbar button.on.cool{color:#0a84ff}.cv .mbar button.on.dry{color:#1f9e91}.cv .mbar button.on.offm{color:#ff3b30}.cv .mbar button.on.night{color:#7a63d8}
-.cv .dh{margin-top:10px;display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;border-radius:18px;background:#f2f2f7}
+.cv .dh{margin-top:8px;display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;border-radius:18px;background:#f2f2f7}
 .cv .dh .di{width:34px;height:34px;border-radius:50%;background:#c7c7cc;color:#fff;display:grid;place-items:center;flex:none}
 .cv .dh .di .i{width:18px;height:18px}
 .cv .dh .dx{flex:1;min-width:0}.cv .dh .dx b{display:block;font-size:13.5px}.cv .dh .dx small{display:block;font-size:11.5px;color:#6e6e73;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -711,6 +711,18 @@ body.at-home #homebar{display:none}
 .cv .foot{font-size:11.5px;color:#8e8e93;text-align:center;margin-top:6px;font-weight:600}
 .t-cli .h24 .lbl{font-size:17px!important;font-weight:700!important;text-transform:none!important;letter-spacing:0!important;color:#1c1c1e!important}
 #h24 .plot svg path{stroke-width:2.6px}
+</style>
+<style id="gdock-v3">
+/* dock fijo en todas las secciones (sustituye a «‹ Inicio») */
+#goHome,#homebar{display:none!important}
+#gdock{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;display:flex;gap:18px;padding:8px 18px;border-radius:24px;
+  background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.8);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 6px 20px rgba(0,0,0,.08)}
+body.at-home #gdock{display:none}
+#gdock button,.mdock button{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;color:#8e8e93;background:rgba(120,120,128,.12);padding:0}
+#gdock button svg,.mdock button svg{width:25px;height:25px}
+#gdock button.on,.mdock button.on{background:#1c1c1e;color:#fff}
+#gdock button:active,.mdock button:active{transform:scale(.92)}
+body:not(.at-home) .main{padding-bottom:84px!important}
 </style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
@@ -1558,7 +1570,7 @@ function fitScreen(){
   const z = Math.min(w / 1000, h / 820);
   app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px";
   // alto máximo de la tele para que siempre quepan las noticias debajo (sea cual sea el iPad o la ventana)
-  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 395) + "px");
+  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 470) + "px");
 }
 window.addEventListener("resize", fitScreen); window.addEventListener("orientationchange", () => setTimeout(fitScreen, 300)); fitScreen();
 if (window.visualViewport) window.visualViewport.addEventListener("resize", fitScreen);
@@ -2465,6 +2477,7 @@ html.idlew.room-salon #dimv{opacity:.93;pointer-events:auto}
 <script>
 /* ===== V3b: Inicio en mosaicos cuadrados ===== */
 const TI = {
+  home:'<path d="M12 3.2 2.8 11h2.6v9.2h5.4v-6h2.4v6h5.4V11h2.6z" fill="currentColor" stroke="none"/>',
   fan:'<circle cx="12" cy="12" r="1.6"/><path d="M12 10.4c-.3-3 .6-6.4 3.3-6.4 2.4 0 2.6 3.2.3 4.6l-3.6 1.8M13.6 12c3-.3 6.4.6 6.4 3.3 0 2.4-3.2 2.6-4.6.3L13.6 12M12 13.6c.3 3-.6 6.4-3.3 6.4-2.4 0-2.6-3.2-.3-4.6l3.6-1.8M10.4 12c-3 .3-6.4-.6-6.4-3.3 0-2.4 3.2-2.6 4.6-.3l1.8 3.6"/>',
   moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="currentColor"/>',
   drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z" fill="currentColor"/>',
@@ -2696,7 +2709,7 @@ function renderSalon(box){
       <div class="hg rs"><div class="tl tv tvs" id="tvTile" role="button" tabindex="0" aria-label="Tele: toca para el sonido"><video id="tvMini" muted playsinline autoplay preload="none"></video><img id="tvMiniLogo" alt="">
         <button class="chb l" data-chs="-1" aria-label="Canal anterior">${tsvg("chev_l")}</button><button class="chb r" data-chs="1" aria-label="Canal siguiente">${tsvg("chev_r")}</button>
         <span class="tvbig">TV</span><span class="tvb"><b id="tvMiniN"></b><small id="tvMiniS"></small></span></div><div id="hgA" style="display:contents"></div></div>
-      <div class="mdock"><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="pla" aria-label="Agenda">${tsvg("cal")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
+      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="pla" aria-label="Agenda">${tsvg("cal")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
     $("tvTile").addEventListener("click", ev => { const c = ev.target.closest("[data-chs]"); if (c){ ev.stopPropagation(); roomAction(c); return; }
       const chn = CHANNELS.find(x => x.k === ch) || CHANNELS[0];
       if (salonTv || (chn.u && !$("tvMini").dataset.err)){ salonTv = !salonTv; miniMuted = !salonTv; if (salonTv) syncMini(); else stopMini(); syncMini(); return; }   // un toque: se ve y se oye; otro: se para
@@ -2713,7 +2726,7 @@ function renderSalon(box){
 function renderDorm(box){
   if (box.dataset.layout !== "dormitorio"){ box.dataset.layout = "dormitorio"; stopMini();
     box.innerHTML = `<div class="h3t"><h2>Dormitorio</h2><span id="h3date"></span><span id="h3time" style="display:none"></span></div><div class="hg rd"><div id="hgA" style="display:contents"></div></div>
-      <div class="mdock"><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="pla" aria-label="Agenda">${tsvg("cal")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`; }
+      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="pla" aria-label="Agenda">${tsvg("cal")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`; }
   const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), v = roomTH(HOME_ROOMS[1].re);
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()); $("h3date").textContent = fechaLarga(d);
   /* sin píldoras: la temperatura y la humedad ya están en los mosaicos */
@@ -2882,6 +2895,16 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
   };
   try{ const o = store.get("p2_wx", null); if (o) renderWeather(o); }catch(_){}
   if (typeof renderACs === "function" && climates.length) renderACs();
+})();
+</script>
+<script>
+/* dock fijo: Inicio, Clima, Tele, Agenda y Ajustes; la sección actual en negro */
+(() => { const app = document.querySelector(".app") || document.body, d = document.createElement("nav"); d.id = "gdock"; d.setAttribute("aria-label", "Secciones");
+  const IT = [["hom", "home", "Inicio"], ["cli", "therm", "Clima"], ["ent", "tv", "Tele y radio"], ["pla", "cal", "Agenda"], ["cfg", "gear", "Ajustes"]];
+  d.innerHTML = IT.map(x => `<button data-gd="${x[0]}" aria-label="${x[2]}">${tsvg(x[1])}</button>`).join(""); app.appendChild(d);
+  const mark = () => d.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.gd === tab));
+  d.addEventListener("click", e => { const b = e.target.closest("[data-gd]"); if (b) show(b.dataset.gd); });
+  const _s = show; show = function(t){ _s(t); mark(); }; mark();
 })();
 </script>
 </body>
