@@ -2478,8 +2478,7 @@ async function roomAction(b){
   else if (b.dataset.rad === "prev") radStep(-1);
   else if (b.dataset.rad === "next") radStep(1);
   else if (b.dataset.rtimer){ const m = +b.dataset.rtimer; sleepAt = m ? Date.now() + m * 60000 : 0; if (m && !radioOn) await radPlay(radSel().k); }
-  else if (b.dataset.bn){   // Buenas noches: aire del salón apagado, Noche en el dormitorio, radio relajante 30 min
-    sleepAt = Date.now() + 30 * 60000; await radPlay(store.get("p3_rad_relax", "dz"));
+  else if (b.dataset.bn){   // Buenas noches: aire del salón apagado, Noche en el dormitorio y reloj rojo (sin radio)
     { const t = new Date(); t.setHours(7, 0, 0, 0); if (t <= new Date()) t.setDate(t.getDate() + 1); store.set("p3_red_force", t.getTime()); }   // modo descanso hasta las 7:00
     setTimeout(() => { if (typeof syncRed === "function") syncRed(); if (ambOpen) renderAmb(); else openAmb(); }, 400);
     if (store.get("p3_bn_sc", false)) setTimeout(() => { location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent("Brillo noche"); }, 1200);   // el atajo baja el brillo y vuelve al panel
@@ -2539,7 +2538,7 @@ function renderDorm(box){
   const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
   const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
   $("hgA").innerHTML = `${radioTileW()}<div class="tl clk">${analogClock()}</div>${o.ac_dormitorio || ""}${wxT}${o.nt_dormitorio || ""}${o.dh_dormitorio || ""}${alarmTileW()}
-    ${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "moon", "Buenas noches", "Radio 30' y Noche", 'data-bn="1"')}`;
+    ${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
 }
 let miniMuted = true;
 const _renderHomeCasa = renderHome;
