@@ -2811,9 +2811,9 @@ function renderDorm(box){
   const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
   const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
   $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${dualTH(w, v)}
-    ${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${o.nt_dormitorio || ""}
-    ${radioSmallW()}${luzTile("light.luz_despacho", "Despacho")}${alarmTileW()}
-    ${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;   // fila 1: clima · fila 2: radio, luz y alarma · fila 3: escenas
+    ${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${luzTile("light.luz_despacho", "Despacho")}
+    ${o.nt_dormitorio || ""}${T("", "moon", "Buenas noches", "Noche y descanso", 'data-bn="1"')}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}
+    ${radioSmallW()}${alarmTileW()}`;   // fila 1: aire, deshumidificador y luz · fila 2: noche y escenas · fila 3: radio y alarma
 }
 let miniMuted = true;
 const _renderHomeCasa = renderHome;
