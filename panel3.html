@@ -2400,7 +2400,7 @@ renderHome();
 <script>
 /* Modo descanso de 23:00 a 7:00 (se cambia en Ajustes): pantalla en negro y rojo, y pasa sola a la pantalla en reposo */
 const redCfg = () => ({on: store.get("p3_red_on", true), from: store.get("p3_red_from", "23:00"), to: store.get("p3_red_to", "07:00")});
-const inRed = () => { const hh = new Date().getHours(); if ((hh >= 18 || hh < 7) && Date.now() < store.get("p3_red_force", 0)) return true;   // Buenas noches adelanta el rojo, pero solo de tarde-noche const c = redCfg(); if (!c.on) return false; const d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes());
+const inRed = () => { const hh = new Date().getHours(); if ((hh >= 18 || hh < 7) && Date.now() < store.get("p3_red_force", 0)) return true;   /* Buenas noches adelanta el rojo, pero solo de tarde-noche */ const c = redCfg(); if (!c.on) return false; const d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes());
   return c.from > c.to ? (n >= c.from || n < c.to) : (n >= c.from && n < c.to); };
 let wasRed = null;
 function syncRed(){
