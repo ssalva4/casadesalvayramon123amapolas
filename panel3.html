@@ -713,6 +713,12 @@ body.at-home #homebar{display:none}
 #h24 .plot svg path{stroke-width:2.6px}
 </style>
 <style id="gdock-v3">
+.tl.rsm{gap:10px!important;padding:10px 12px!important}
+.tl.rsm .rtop{display:flex;align-items:center;gap:10px;width:100%;min-width:0;justify-content:center}
+.tl.rsm .rtop .rlg{width:42px;height:42px;flex:none;font-size:15px}
+.tl.rsm .rtx{display:flex;flex-direction:column;align-items:flex-start;min-width:0;text-align:left}
+.tl.rsm .rtx b{font-size:16px!important;line-height:1.15;color:#1c1c1e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tl.rsm .rtx small{font-size:12.5px!important;line-height:1.2;white-space:nowrap}
 @media (min-width:900px){html,body{overflow:hidden!important;overscroll-behavior:none}}
 .hg.rd .tl.hasv,.hg.rs .tl.hasv{gap:0;padding:6px}.hg.rd .tl.hasv .ti,.hg.rs .tl.hasv .ti{width:28px;height:28px;margin-bottom:2px}.hg.rd .tl .tv2,.hg.rs .tl .tv2{font-size:34px;line-height:1.05}
 .hg.rd .tl.clk.bigclk{grid-row:1/3!important}.hg.rd .tl.dual{grid-column:1/3;grid-row:3}
@@ -2754,8 +2760,8 @@ function radioTileW(){ const r = radSel(), on = radioOn === r.k;
     <div class="rtm">${[15, 30, 60].map(m => `<button data-rtimer="${m}" class="${sleepAt && Math.abs(sleepAt - Date.now() - m*60000) < 60000 ? "on" : ""}">${m}'</button>`).join("")}<button data-rtimer="0" aria-label="Quitar temporizador">✕</button></div>
     <small class="rsl">${sleepTxt() || "Temporizador para dormir"}</small></div>`; }
 function radioSmallW(){ const r = radSel(), on = radioOn === r.k;
-  return `<div class="tl rsm ${on ? "on" : ""}"><div class="rlg" style="background:${r.bg};color:${r.fg}">${r.lg}</div><b>${esc(r.t)}</b>
-    <small>${on ? (sleepTxt() || "● Sonando") : "Radio"}</small>
+  return `<div class="tl rsm ${on ? "on" : ""}"><div class="rtop"><div class="rlg" style="background:${r.bg};color:${r.fg}">${r.lg}</div><div class="rtx"><b>${esc(r.t)}</b>
+    <small>${on ? (sleepTxt() || "● Sonando") : "Radio"}</small></div></div>
     <div class="rctl"><button data-rad="prev" aria-label="Emisora anterior">${tsvg("chev_l")}</button><button class="pp" data-rad="play" aria-label="${on ? "Parar" : "Escuchar"}">${svg(on ? "stop" : "play")}</button><button data-rad="next" aria-label="Emisora siguiente">${tsvg("chev_r")}</button></div></div>`; }
 const fechaLarga = d => { const t = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"}); return t[0].toUpperCase() + t.slice(1); };
 function ambTempTile(k){ const r = HOME_ROOMS.find(x => x.k === k), v = roomTH(r.re);
