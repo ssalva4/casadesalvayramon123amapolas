@@ -2481,6 +2481,7 @@ async function roomAction(b){
     sleepAt = Date.now() + 30 * 60000; await radPlay(store.get("p3_rad_relax", "dz"));
     { const t = new Date(); t.setHours(7, 0, 0, 0); if (t <= new Date()) t.setDate(t.getDate() + 1); store.set("p3_red_force", t.getTime()); }   // modo descanso hasta las 7:00
     setTimeout(() => { if (typeof syncRed === "function") syncRed(); if (ambOpen) renderAmb(); else openAmb(); }, 400);
+    if (store.get("p3_bn_sc", false)) setTimeout(() => { location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent("Brillo noche"); }, 1200);   // el atajo baja el brillo y vuelve al panel
     try{ await service("climate", "set_hvac_mode", {entity_id: "climate.aire_salon", hvac_mode: "off"});
       await service("input_boolean", "turn_on", {entity_id: "input_boolean.noche_dormitorio"}); setTimeout(refreshHA, 1500); }catch(err){ handleErr(err); } }
   else if (b.dataset.chs){ const hls = CHANNELS.filter(c => c.u), i = Math.max(0, hls.findIndex(c => c.k === ch)), n = hls[(i + (+b.dataset.chs) + hls.length) % hls.length];
@@ -2563,8 +2564,11 @@ $("home").addEventListener("click", ev => { const b = ev.target.closest("[data-r
 /* --- Ajustes: dónde está este aparato --- */
 const _ambCfgCard3 = ambCfgCard;
 ambCfgCard = function(){ const rm = roomOf();
+  const sc = store.get("p3_bn_sc", false);
   return `<div class="card"><h3>📍 Este aparato está en</h3>${cSeg("Estancia", rm, Object.entries(ROOMS_T), v => `data-room="${v}" data-v="${v}"`)}
-    <div class="cf-note">Cambia el Inicio y la pantalla en reposo: el Salón da protagonismo a la tele y el Dormitorio a la radio y el descanso. Se guarda solo en este aparato.</div></div>` + _ambCfgCard3(); };
+    <div class="cf-note">Cambia el Inicio y la pantalla en reposo: el Salón da protagonismo a la tele y el Dormitorio a la radio y el descanso. Se guarda solo en este aparato.</div>
+    <div class="cf-r"><span>Buenas noches baja el brillo (atajo «Brillo noche»)</span><button class="sw ${sc ? "on" : ""}" data-bnsc="1" role="switch" aria-checked="${sc}" aria-label="Buenas noches baja el brillo"></button></div></div>` + _ambCfgCard3(); };
+$("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-bnsc]"); if (!b) return; ev.stopImmediatePropagation(); store.set("p3_bn_sc", !store.get("p3_bn_sc", false)); renderCfg(true); }, true);
 $("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-room]"); if (!b) return; ev.stopImmediatePropagation();
   store.set("p3_room", b.dataset.room); renderCfg(true); }, true);
 renderHome();
