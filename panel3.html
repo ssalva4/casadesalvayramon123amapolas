@@ -2669,13 +2669,14 @@ $("cfg").addEventListener("change", ev => { const i = ev.target.closest("[data-r
 </script>
 <script>
 /* Pantalla completa: esconde la hora y la batería del iPad. El navegador solo deja hacerlo tras un toque, así que se activa con el primer toque. */
-const fsOn = () => store.get("p3_fs4", false);   // sin pantalla completa: así no sale la X de Safari
+const fsOn = () => false;   // la pantalla completa de Safari descoloca el panel en el iPad: desactivada (para verlo a pantalla completa, abrirlo desde el icono de la pantalla de inicio)
 const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 function goFs(){ if (!fsOn() || isFs()) return; const el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
   if (f){ try{ const r = f.call(el, {navigationUI: "hide"}); if (r && r.catch) r.catch(() => {}); }catch(e){} } }
 if (!fsOn() && isFs()){ const x = document.exitFullscreen || document.webkitExitFullscreen; if (x) try{ x.call(document); }catch(e){} }
 document.addEventListener("click", goFs, true);
 document.addEventListener("touchend", goFs, true);
+setInterval(() => { if (isFs()){ const x = document.exitFullscreen || document.webkitExitFullscreen; if (x) try{ x.call(document); }catch(e){} } }, 2000);
 const _ambCfgCard2 = ambCfgCard;
 ambCfgCard = function(){ const on = fsOn(), can = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
   return _ambCfgCard2() + `<div class="card"><h3>⛶ Pantalla completa (este aparato)</h3>
@@ -2997,7 +2998,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
   const drawSide = () => { side.innerHTML = ROOMS.map((r, i) => r ? `${i && ROOMS[i - 1] ? '<div class="sep"></div>' : ""}<button class="${r[0] === sel ? "on" : ""}" data-cr="${r[0]}"><span class="q" style="background:${r[2]}">${icon(r[3])}</span>${r[1]}</button>` : '<div class="gap"></div>').join(""); };
   side.addEventListener("click", e => { const b = e.target.closest("[data-cr]"); if (!b) return; sel = b.dataset.cr; store.set("p3_cfg_room", sel); drawSide(); renderCfg(true); $("cfg").scrollTop = 0; });
   const roomOfCard = t => /Deshumidificador · Dormitorio/.test(t) ? "dormitorio" : /Deshumidificador · Ba/.test(t) ? "bano" : /Aire del sal/i.test(t) ? "salon" : /Aire del dormitorio/i.test(t) ? "dormitorio"
-    : /despacho/i.test(t) ? "despacho" : /Modo Noche|Termostato/.test(t) ? "casa" : /aparato|reposo|descanso|Pantalla completa|iPad/i.test(t) ? "ipad" : "casa";
+    : /despacho/i.test(t) ? "despacho" : /Modo Noche|Termostato/.test(t) ? "casa" : /Pantalla completa/i.test(t) ? "oculta" : /aparato|reposo|descanso|iPad/i.test(t) ? "ipad" : "casa";
   const MODO_T = {"Relax":"Relax", "Warm white":"Blanco cálido", "Cozy":"Acogedor", "Candlelight":"Vela", "Night light":"Luz nocturna", "Wake-up":"Despertar", "Sunset":"Atardecer", "Daylight":"Luz de día", "Focus":"Concentración", "Cool white":"Blanco frío"};
   const despachoCard = () => { const k = Math.round(parseFloat(cv("input_number.despacho_trabajo_tono", 4500))), bb = Math.round(parseFloat(cv("input_number.despacho_trabajo_brillo", 100))), e = hst("light.luz_despacho");
     const bdOn = cv("input_boolean.despacho_buenos_dias", "on") === "on", bdB = Math.round(parseFloat(cv("input_number.despacho_buenos_dias_brillo", 10))), sel = hst("input_select.despacho_buenos_dias_modo");
