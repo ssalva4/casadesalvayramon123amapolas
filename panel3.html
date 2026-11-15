@@ -936,7 +936,7 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 .tl.on.vent{background:#dcefff!important;color:#0a5fb4!important}.tl.on.vent .ti{color:#0a84ff!important}.tl.on.vent small{color:#2f6fae!important}
 @media (max-width:900px){ .hg.rs .row4{grid-column:1/-1;grid-row:auto} }
 .hg.rd .tl.dclk{padding:0!important;overflow:hidden;flex-direction:column;justify-content:center;align-items:center;gap:0}.hg.rd .tl.dclk b{font-size:150px;font-weight:600;letter-spacing:-.03em;line-height:.86;white-space:nowrap;overflow:visible;text-overflow:clip;max-width:none}.hg.rd .tl.dclk b+b{color:#8f80dd}   /* dormitorio: horas arriba, minutos abajo en lila */
-#cliext .xs.xsi{display:flex;align-items:center;gap:12px}#cliext .xsic{width:34px;height:34px;flex:none;display:grid;place-items:center}#cliext .xsic svg{width:34px;height:34px}#cliext .xs.xsi b{margin:0;white-space:nowrap}
+#cliext .xg{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-top:10px!important}#cliext .xs.xsi{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 10px;text-align:center;min-width:0}#cliext .xsic{width:30px;height:30px;flex:none;display:grid;place-items:center}#cliext .xsic svg{width:30px;height:30px}#cliext .xs.xsi b{margin:0;white-space:nowrap;font-size:19px;overflow:hidden;text-overflow:ellipsis;max-width:100%}   /* 3 filas x 2 columnas: icono arriba, dato debajo */
 </style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
@@ -3359,6 +3359,88 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
       <div class="xc xhrs"><small class="xl">Próximas horas</small><div class="xhr">${hrs}</div></div>
       <div class="xc xdays"><small class="xl">7 días</small>${days}</div>`; };
   setInterval(() => { if (sec.classList.contains("vext") && tab === "cli") renderExt(); }, 60000);
+})();
+</script>
+<style id="wxanim-v3">
+#cliext .xc.now{position:relative;overflow:hidden;transition:background 1s}
+#cliext .xc.now>*:not(canvas){position:relative;z-index:1}
+#cliext .xc.now canvas.wxa{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#cliext .xc.now .xbig{animation:wxfloat 6s ease-in-out infinite}
+@keyframes wxfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+#cliext .xc.now .xs{background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+#cliext .xc.now.wx-sun{background:linear-gradient(165deg,#ffe9a8 0%,#fff6dc 45%,#dff0ff 100%)}
+#cliext .xc.now.wx-partly{background:linear-gradient(165deg,#fff0c4 0%,#eef5fc 55%,#d6e6f5 100%)}
+#cliext .xc.now.wx-cloud{background:linear-gradient(170deg,#dfe6ee 0%,#c9d3df 100%)}
+#cliext .xc.now.wx-fog{background:linear-gradient(170deg,#e9ebef 0%,#d3d7de 100%)}
+#cliext .xc.now.wx-snow{background:linear-gradient(170deg,#e6eef7 0%,#c7d5e6 100%)}
+#cliext .xc.now.wx-rain{background:linear-gradient(170deg,#7d8ea3 0%,#4d5d73 100%)}
+#cliext .xc.now.wx-storm{background:linear-gradient(170deg,#3a4256 0%,#1d2230 100%)}
+#cliext .xc.now.wx-night,#cliext .xc.now.wx-nightp{background:linear-gradient(170deg,#1b2650 0%,#0b1027 100%)}
+#cliext .xc.now.dk{color:#fff}#cliext .xc.now.dk .xmm{color:rgba(255,255,255,.75)}
+#cliext .xc.now.dk .xs{background:rgba(255,255,255,.14);color:#fff}
+</style>
+<script>
+/* Clima › Exterior: fondo animado según el tiempo que hace fuera (sol, nubes, lluvia, tormenta, nieve, niebla, noche) */
+(function(){
+  const kindOf = (c, day) => { c = +c;
+    if (c >= 95) return "storm"; if ((c >= 71 && c <= 77) || c === 85 || c === 86) return "snow";
+    if ((c >= 51 && c <= 67) || (c >= 80 && c <= 82)) return "rain"; if (c === 45 || c === 48) return "fog";
+    if (c === 3) return "cloud"; if (c === 1 || c === 2) return day ? "partly" : "nightp"; return day ? "sun" : "night"; };
+  const DARK = {rain: 1, storm: 1, night: 1, nightp: 1};
+  let K = "", wind = 10, P = [], C = [], flash = 0, nextFlash = 0, bolt = null, W = 0, H = 0, last = 0, t0 = performance.now();
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function seed(){ P = []; C = [];
+    const n = {rain: 130, storm: 190, snow: 90, night: 70, nightp: 60, sun: 18, partly: 12}[K] || 0;
+    for (let i = 0; i < n; i++) P.push({x: rnd(0, W), y: rnd(0, H), v: rnd(.6, 1.4), r: rnd(.6, 1.8), p: rnd(0, 6.3)});
+    const nc = {cloud: 6, partly: 3, rain: 5, storm: 5, fog: 0, nightp: 3, snow: 4}[K] || 0;
+    for (let i = 0; i < nc; i++) C.push({x: rnd(-.2, 1.1) * W, y: rnd(.04, .45) * H, s: rnd(.7, 1.4), v: rnd(.6, 1.2)});
+    if (K === "fog") for (let i = 0; i < 5; i++) C.push({x: rnd(0, W), y: (.15 + i * .18) * H, s: rnd(.8, 1.3), v: rnd(.5, 1)}); }
+  function cloud(g, x, y, s, col){ g.fillStyle = col; g.beginPath();
+    [[0, 0, 46], [44, -18, 56], [96, 0, 44], [50, 14, 50]].forEach(([dx, dy, r]) => { g.moveTo(x + dx * s + r * s, y + dy * s); g.arc(x + dx * s, y + dy * s, r * s, 0, 6.3); }); g.fill(); }
+  function frame(now){
+    requestAnimationFrame(frame);
+    const cv = document.querySelector("#cliext .xc.now canvas.wxa"); if (!cv || !cv.offsetParent) return;
+    if (now - last < 33) return; const dt = Math.min(3, (now - last) / 16.7); last = now;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)){ cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); W = w; H = h; seed(); }
+    if (cv.dataset.k !== K){ cv.dataset.k = K; seed(); }
+    const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+    const t = (now - t0) / 1000, wv = Math.max(.4, wind / 12);
+    if (K === "sun" || K === "partly"){   // sol: rayos que giran despacio y motas de luz
+      const cx = W * .22, cy = H * .22; g.save(); g.translate(cx, cy); g.rotate(t * .05);
+      for (let i = 0; i < 12; i++){ g.rotate(Math.PI / 6); const gr = g.createLinearGradient(0, 0, Math.max(W, H), 0); gr.addColorStop(0, "rgba(255,200,60,.22)"); gr.addColorStop(1, "rgba(255,200,60,0)");
+        g.fillStyle = gr; g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.max(W, H), -40); g.lineTo(Math.max(W, H), 40); g.fill(); }
+      g.restore(); const rg = g.createRadialGradient(cx, cy, 0, cx, cy, 220 + 14 * Math.sin(t)); rg.addColorStop(0, "rgba(255,214,90,.55)"); rg.addColorStop(1, "rgba(255,214,90,0)"); g.fillStyle = rg; g.fillRect(0, 0, W, H);
+      P.forEach(p => { p.y -= .25 * p.v * dt; p.x += .15 * Math.sin(t + p.p); if (p.y < -5){ p.y = H + 5; p.x = rnd(0, W); } g.fillStyle = `rgba(255,190,60,${.25 + .2 * Math.sin(t * 2 + p.p)})`; g.beginPath(); g.arc(p.x, p.y, p.r * 2, 0, 6.3); g.fill(); }); }
+    if (K === "night" || K === "nightp"){   // noche: estrellas que titilan y alguna fugaz
+      P.forEach(p => { g.fillStyle = `rgba(255,255,255,${.35 + .45 * Math.abs(Math.sin(t * p.v + p.p))})`; g.beginPath(); g.arc(p.x, p.y * .75, p.r, 0, 6.3); g.fill(); });
+      const sp = (t % 9) / 1.2; if (sp < 1){ const x = W * (.3 + .6 * sp), y = H * (.08 + .25 * sp); const gr = g.createLinearGradient(x, y, x - 90, y - 38); gr.addColorStop(0, "rgba(255,255,255,.9)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.strokeStyle = gr; g.lineWidth = 2; g.beginPath(); g.moveTo(x, y); g.lineTo(x - 90, y - 38); g.stroke(); } }
+    if (C.length && K !== "fog"){   // nubes que se mueven con el viento
+      const col = DARK[K] ? (K === "storm" ? "rgba(20,24,36,.45)" : K === "nightp" ? "rgba(160,170,200,.22)" : "rgba(40,50,66,.35)") : K === "partly" ? "rgba(255,255,255,.85)" : "rgba(255,255,255,.7)";
+      C.forEach(c => { c.x += .35 * c.v * wv * dt; if (c.x > W + 40) c.x = -200 * c.s; cloud(g, c.x, c.y, c.s, col); }); }
+    if (K === "fog") C.forEach((c, i) => { c.x += .3 * c.v * dt; const x = (c.x % (W + 600)) - 300, gr = g.createLinearGradient(x - 300, 0, x + 300, 0);
+      gr.addColorStop(0, "rgba(255,255,255,0)"); gr.addColorStop(.5, "rgba(255,255,255,.55)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(x - 300, c.y - 30 * c.s, 600, 60 * c.s); });
+    if (K === "rain" || K === "storm"){   // lluvia inclinada según el viento
+      const sl = Math.min(.6, wind / 60); g.strokeStyle = "rgba(220,235,255,.55)"; g.lineWidth = 1.4; g.beginPath();
+      P.forEach(p => { p.y += 9 * p.v * dt; p.x += 9 * p.v * sl * dt; if (p.y > H){ p.y = -20; p.x = rnd(-W * sl, W); } const L = 14 * p.v; g.moveTo(p.x, p.y); g.lineTo(p.x - L * sl, p.y - L); }); g.stroke(); }
+    if (K === "storm"){   // relámpagos
+      if (now > nextFlash){ flash = 1; nextFlash = now + rnd(3500, 9000); let x = rnd(W * .3, W * .9), y = 0; bolt = [[x, y]]; while (y < H * .7){ y += rnd(18, 40); x += rnd(-28, 28); bolt.push([x, y]); } }
+      if (flash > 0){ g.fillStyle = `rgba(255,255,255,${.35 * flash})`; g.fillRect(0, 0, W, H);
+        if (bolt && flash > .5){ g.strokeStyle = `rgba(255,250,210,${flash})`; g.lineWidth = 3; g.beginPath(); bolt.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke(); }
+        flash -= .06 * dt; } }
+    if (K === "snow") P.forEach(p => { p.y += 1.1 * p.v * dt; p.x += Math.sin(t + p.p) * .6 + wv * .3; if (p.y > H){ p.y = -6; p.x = rnd(0, W); } if (p.x > W) p.x = 0;
+      g.fillStyle = "rgba(255,255,255,.9)"; g.beginPath(); g.arc(p.x, p.y, p.r * 2, 0, 6.3); g.fill(); });
+  }
+  requestAnimationFrame(frame);
+  const hook = () => { if (typeof window.renderExt !== "function" || window.renderExt._wx) return;
+    const orig = window.renderExt;
+    window.renderExt = function(){ orig.apply(this, arguments);
+      const box = document.querySelector("#cliext .xc.now"), w = store.get("p2_wx", null); if (!box || !w || !w.current) return;
+      const c = w.current; K = kindOf(c.weather_code, c.is_day); wind = +c.wind_speed_10m || 0;
+      box.className = "xc now wx-" + K + (DARK[K] ? " dk" : "");
+      if (!box.querySelector("canvas.wxa")){ const cv = document.createElement("canvas"); cv.className = "wxa"; cv.setAttribute("aria-hidden", "true"); box.prepend(cv); } };
+    window.renderExt._wx = 1; };
+  hook(); setInterval(hook, 2000);
 })();
 </script>
 </body>
