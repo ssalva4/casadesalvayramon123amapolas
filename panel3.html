@@ -1788,7 +1788,8 @@ function fitScreen(){
   let w = Math.round(vv ? vv.width : window.innerWidth), h = Math.round(vv ? vv.height : window.innerHeight);
   if (document.fullscreenElement || document.webkitFullscreenElement){   // en pantalla completa el iPad a veces da medidas viejas: usar las de la pantalla
     const sw = screen.width, sh = screen.height, land = window.innerWidth > window.innerHeight;
-    w = land ? Math.max(sw, sh) : Math.min(sw, sh); h = land ? Math.min(sw, sh) : Math.max(sw, sh); }
+    const W2 = land ? Math.max(sw, sh) : Math.min(sw, sh), H2 = land ? Math.min(sw, sh) : Math.max(sw, sh);
+    w = Math.min(W2, window.innerWidth || W2); h = Math.min(H2, window.innerHeight || H2); window.scrollTo(0, 0); }   // nunca más grande que lo que se ve: así no se corta arriba ni sobra abajo
   if (w < 900){ app.style.zoom = ""; app.style.width = ""; app.style.height = ""; return; }   // móvil: diseño en columna
   const big = typeof tab !== "undefined" && tab === "hom" && /room-(salon|dormitorio)/.test(document.documentElement.className);   // el Inicio de las estancias, más grande
   const z = Math.min(w / 1000, h / (big ? 750 : 820));
@@ -2600,6 +2601,7 @@ body{background:var(--bgp)!important}
 #amb.redface{background:#000!important;filter:none!important}
 #amb.redface .nf{opacity:var(--nb,.4)}
 html,body{overscroll-behavior:none}
+html.isfs,html.isfs body{overflow:hidden!important;height:100%!important;margin:0!important}html.isfs .app{position:fixed!important;top:0!important;left:0!important}
 html.isfs .main{padding-top:52px!important}
 html.isfs.room-dormitorio .main{padding-top:40px!important}
 html.room-salon:not(.isfs) .main,html.room-dormitorio:not(.isfs) .main{padding-top:calc(18px + env(safe-area-inset-top))!important}
@@ -2843,14 +2845,14 @@ $("cfg").addEventListener("change", ev => { const i = ev.target.closest("[data-r
 </script>
 <script>
 /* Pantalla completa: esconde la hora y la batería del iPad. El navegador solo deja hacerlo tras un toque, así que se activa con el primer toque. */
-const fsOn = () => false;   // la pantalla completa de Safari descoloca el panel en el iPad: desactivada (para verlo a pantalla completa, abrirlo desde el icono de la pantalla de inicio)
+const fsOn = () => store.get("p3_fs4", true) && !(window.navigator.standalone || matchMedia("(display-mode: standalone)").matches);   // un toque en una zona sin botón pone la pantalla completa (se quita en Ajustes · Este iPad)
 const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 function goFs(){ if (!fsOn() || isFs()) return; const el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
   if (f){ try{ const r = f.call(el, {navigationUI: "hide"}); if (r && r.catch) r.catch(() => {}); }catch(e){} } }
 if (!fsOn() && isFs()){ const x = document.exitFullscreen || document.webkitExitFullscreen; if (x) try{ x.call(document); }catch(e){} }
-document.addEventListener("click", goFs, true);
-document.addEventListener("touchend", goFs, true);
-setInterval(() => { if (isFs()){ const x = document.exitFullscreen || document.webkitExitFullscreen; if (x) try{ x.call(document); }catch(e){} } }, 2000);
+const fsTap = e => { if (e.target && e.target.closest && e.target.closest("button,a,input,select,textarea,label,[data-go],[data-scr],[data-lt],[data-vent],[data-bn],[data-rad],[data-ch],[data-cliv],#tvTile,.tl,.sw")) return; goFs(); };
+document.addEventListener("click", fsTap, true);
+document.addEventListener("touchend", fsTap, true);
 const _ambCfgCard2 = ambCfgCard;
 ambCfgCard = function(){ const on = fsOn(), can = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
   return _ambCfgCard2() + `<div class="card"><h3>⛶ Pantalla completa (este aparato)</h3>
@@ -3189,7 +3191,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
   const drawSide = () => { side.innerHTML = ROOMS.map((r, i) => r ? `${i && ROOMS[i - 1] ? '<div class="sep"></div>' : ""}<button class="${r[0] === sel ? "on" : ""}" data-cr="${r[0]}"><span class="q" style="background:${r[2]}">${icon(r[3])}</span>${r[1]}</button>` : '<div class="gap"></div>').join(""); };
   side.addEventListener("click", e => { const b = e.target.closest("[data-cr]"); if (!b) return; sel = b.dataset.cr; store.set("p3_cfg_room", sel); drawSide(); renderCfg(true); $("cfg").scrollTop = 0; });
   const roomOfCard = t => /Deshumidificador · Dormitorio/.test(t) ? "dormitorio" : /Deshumidificador · Ba/.test(t) ? "bano" : /Aire del sal/i.test(t) ? "salon" : /Aire del dormitorio/i.test(t) ? "dormitorio"
-    : /despacho/i.test(t) ? "despacho" : /Modo Noche|Termostato/.test(t) ? "casa" : /Pantalla completa/i.test(t) ? "oculta" : /aparato|reposo|descanso|iPad/i.test(t) ? "ipad" : "casa";
+    : /despacho/i.test(t) ? "despacho" : /Modo Noche|Termostato/.test(t) ? "casa" : /aparato|reposo|descanso|iPad/i.test(t) ? "ipad" : "casa";
   const MODO_T = {"Relax":"Relax", "Warm white":"Blanco cálido", "Cozy":"Acogedor", "Candlelight":"Vela", "Night light":"Luz nocturna", "Wake-up":"Despertar", "Sunset":"Atardecer", "Daylight":"Luz de día", "Focus":"Concentración", "Cool white":"Blanco frío"};
   const despachoCard = () => { const k = Math.round(parseFloat(cv("input_number.despacho_trabajo_tono", 4500))), bb = Math.round(parseFloat(cv("input_number.despacho_trabajo_brillo", 100))), e = hst("light.luz_despacho");
     const bdOn = cv("input_boolean.despacho_buenos_dias", "on") === "on", bdB = Math.round(parseFloat(cv("input_number.despacho_buenos_dias_brillo", 10))), sel = hst("input_select.despacho_buenos_dias_modo");
