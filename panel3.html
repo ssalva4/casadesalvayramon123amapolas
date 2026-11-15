@@ -713,6 +713,12 @@ body.at-home #homebar{display:none}
 #h24 .plot svg path{stroke-width:2.6px}
 </style>
 <style id="gdock-v3">
+/* reloj digital y temperaturas con la misma letra y tamaño; humedad más grande */
+.tl.dclk b{font-size:66px!important;font-weight:500!important}
+.tl.dual .half b{font-family:var(--head);font-size:66px!important;font-weight:500!important;letter-spacing:-.03em!important;line-height:1!important;font-variant-numeric:tabular-nums}
+.tl.dual .half em{font-size:18px!important}
+.tl.dual .half .ti{width:30px!important;height:30px!important;margin:0!important}
+.tl.dual .half{gap:4px!important}
 /* radio: círculos y letras algo más grandes */
 .t-ent .rad .lg{width:56px!important;height:56px!important;font-size:16px!important}
 .t-ent .radios{gap:10px 4px!important}
@@ -1287,6 +1293,9 @@ $("radios").addEventListener("click", async e => {
   try{ await player.play(); }catch(err){ radioErr = r.k; radioOn = null; renderRadios(); }
 });
 player.addEventListener("error", () => { if (radioOn){ radioErr = radioOn; radioOn = null; renderRadios(); } });
+/* si el iPad avisó de un error pero la radio acaba sonando, volver a marcarla como puesta */
+player.addEventListener("playing", () => { if (radioOn) return; const src = player.currentSrc || player.src || ""; const r = RADIOS.find(x => src && (src === x.u || src.indexOf(x.u) === 0 || x.u.indexOf(src) === 0));
+  if (r){ radioOn = r.k; radioErr = null; renderRadios(); } });
 function ytId(s){
   const m = String(s||"").match(/(?:youtu\.be\/|v=|\/live\/|\/shorts\/|\/embed\/)([A-Za-z0-9_-]{11})/) || String(s||"").match(/^([A-Za-z0-9_-]{11})$/);
   return m ? m[1] : null;
@@ -3161,16 +3170,17 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     }
   };
   const ent = document.querySelector(".t-ent .tv"); if (ent) ent.id = "entTv";
-  const sync = () => { const r = RADIOS.find(x => x.k === radioOn) || {};
-    const e = $("entTv"), eon = !!radioOn && !tvOn && !ytOn;   // Entretenimiento: sobre la pantalla de la tele
+  const sounding = () => !!radioOn || (!player.paused && !!(player.currentSrc || player.getAttribute("src")));
+  const sync = () => { const src = player.currentSrc || player.getAttribute("src") || "", r = RADIOS.find(x => x.k === radioOn) || RADIOS.find(x => src && src.indexOf(x.u) === 0) || {};
+    const e = $("entTv"), eon = sounding() && !tvOn && !ytOn;   // Entretenimiento: sobre la pantalla de la tele
     if (e){ e.classList.toggle("radv", eon); if (eon) $("spec2t").innerHTML = `<b>${esc(r.t || "Radio")}</b><small>🔊 Sonando · toca para ver la tele</small>`; }
-    const t = $("tvTile"), on = !!t && !!radioOn && !(typeof salonTv !== "undefined" && salonTv) && roomOf() === "salon";
+    const t = $("tvTile"), on = !!t && sounding() && !(typeof salonTv !== "undefined" && salonTv) && roomOf() === "salon";
     if (t){ t.classList.toggle("radv", on); if (on){ $("tvMiniN").textContent = r.t || "Radio"; $("tvMiniS").textContent = "🔊 Sonando · toca para ver la tele"; } }
     if ((on || eon) && !raf) raf = requestAnimationFrame(draw); };
   const _st = show; show = function(x){ _st(x); setTimeout(sync, 50); };
   const _sm = syncMini; syncMini = function(){ _sm(); sync(); };
   const _rr = renderRadios; renderRadios = function(){ _rr(); sync(); };
-  setInterval(sync, 2000);
+  setInterval(sync, 1000); ["playing", "pause", "emptied"].forEach(ev => player.addEventListener(ev, () => setTimeout(sync, 50)));
 })();
 </script>
 <script>
