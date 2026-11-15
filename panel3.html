@@ -2369,11 +2369,15 @@ async function ambAction(e){
   await homeAction(e); renderAmb(); setTimeout(renderAmb, 1800);
 }
 /* alarma del iPhone (la manda un Atajo a input_text.alarma_iphone: "07:30,08:15|fecha") — solo se muestra, no suena */
+/* alarma del horario de sueño del iPhone: un Atajo la copia en input_datetime.despertador_iphone (fecha y hora de la próxima) */
+function sleepTs(){ const x = hst("input_datetime.despertador_iphone"); if (!x || !x.state || !/\d/.test(x.state)) return [];
+  const t = Date.parse(x.state.replace(" ", "T")); if (isNaN(t) || t < Date.now() || t - Date.now() > 36 * 3600e3) return [];
+  const d = new Date(t); return [d.getHours() * 60 + d.getMinutes()]; }
 function alarmHTML(){
   const x = hst("input_text.alarma_iphone"); if (!x || !x.state) return "";
   const [list, when] = x.state.split("|"); if (when && Date.now() - Date.parse(when) > 2*86400e3) return "";
   const now = new Date(), nowM = now.getHours() * 60 + now.getMinutes();
-  const ts = (list || "").split(",").map(t => t.trim()).filter(Boolean).map(t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; }).filter(v => !isNaN(v));
+  const ts = (list || "").split(",").map(t => t.trim()).filter(Boolean).map(t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; }).filter(v => !isNaN(v)).concat(sleepTs());
   if (!ts.length) return `<div class="nal off">${svg("bell")}Sin alarma</div>`;
   const next = ts.map(v => ({v, d: (v - nowM + 1440) % 1440 || 1440})).sort((a, b) => a.d - b.d)[0].v;
   return `<div class="nal">${svg("bell")}Alarma ${pad(Math.floor(next / 60))}:${pad(next % 60)}${ts.length > 1 ? ` <small>+${ts.length - 1}</small>` : ""}</div>`;
@@ -2912,10 +2916,10 @@ const sleepTxt = () => { if (!sleepAt) return ""; const d = new Date(sleepAt); r
 
 /* --- próxima alarma del iPhone (texto corto) --- */
 function nextAlarm(){
-  const x = hst("input_text.alarma_iphone"); if (!x || !x.state) return null;
-  const [list, when] = x.state.split("|"); if (when && Date.now() - Date.parse(when) > 2*86400e3) return null;
+  const x = hst("input_text.alarma_iphone"), sl = sleepTs(); if ((!x || !x.state) && !sl.length) return null;
+  const [list, when] = x && x.state ? x.state.split("|") : ["", ""]; if (when && Date.now() - Date.parse(when) > 2*86400e3 && !sl.length) return null;
   const now = new Date(), nowM = now.getHours() * 60 + now.getMinutes();
-  const ts = (list || "").split(",").map(t => t.trim()).filter(Boolean).map(t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; }).filter(v => !isNaN(v));
+  const ts = (list || "").split(",").map(t => t.trim()).filter(Boolean).map(t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; }).filter(v => !isNaN(v)).concat(sl);
   if (!ts.length) return "";
   const n = ts.map(v => ({v, d: (v - nowM + 1440) % 1440 || 1440})).sort((a, b) => a.d - b.d)[0].v;
   return pad(Math.floor(n / 60)) + ":" + pad(n % 60);
