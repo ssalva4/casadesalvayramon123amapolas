@@ -3056,6 +3056,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     const nowM = (d => d.getHours() * 60 + d.getMinutes())(new Date()), tm = t => { const [a, b] = String(t).split(":").map(Number); return a * 60 + (b || 0); };
     const f = tm("22:00"), t = tm("07:00"), night = nowM >= f || nowM < t;   // salón: de 22:00 a 7:00
     h.classList.toggle("salonred", h.classList.contains("idlew") && night && typeof roomOf === "function" && roomOf() === "salon" && tab === "hom");
+    h.classList.toggle("salonwx", h.classList.contains("idlew") && !night && typeof roomOf === "function" && roomOf() === "salon" && tab === "hom");   // de día: reposo con la escena del tiempo a pantalla completa
     if (h.classList.contains("idlew") && (++n % 12 === 0)){ const r = () => Math.round((Math.random() * 2 - 1) * 6) + "px"; h.style.setProperty("--ix", r()); h.style.setProperty("--iy", r()); }
   }, 5000);
 })();
@@ -3379,11 +3380,32 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 #cliext .xc.now.wx-night,#cliext .xc.now.wx-nightp{background:linear-gradient(170deg,#1b2650 0%,#0b1027 100%)}
 #cliext .xc.now.dk{color:#fff}#cliext .xc.now.dk .xmm{color:rgba(255,255,255,.75)}
 #cliext .xc.now.dk .xs{background:rgba(255,255,255,.14);color:#fff}
+
+.tl.tv .wxtv .wxic{width:150px;height:150px}
+.tl.tv .wxtv .wxdog{position:absolute;left:4%;right:4%;bottom:76px;height:42%;pointer-events:none}.tl.tv .wxtv .wxdog svg{width:100%;height:100%;overflow:visible}
+.wxdog .tail{transform-box:fill-box;transform-origin:100% 100%;animation:dgtail .5s ease-in-out infinite alternate}
+@keyframes dgtail{from{transform:rotate(-14deg)}to{transform:rotate(16deg)}}
+.wxdog .run{animation:dgbob .36s ease-in-out infinite alternate}@keyframes dgbob{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+.wxdog .lg{transform-box:fill-box;transform-origin:50% 0;animation:dgleg .36s ease-in-out infinite alternate}.wxdog .lg.b{animation-direction:alternate-reverse}
+@keyframes dgleg{from{transform:rotate(-22deg)}to{transform:rotate(22deg)}}
+.wxdog .bx{animation:dgbx 1.44s ease-in-out infinite alternate}@keyframes dgbx{from{transform:translateX(0)}to{transform:translateX(45px)}}
+.wxdog .by{animation:dgby .72s cubic-bezier(.3,0,.7,1) infinite alternate}@keyframes dgby{from{transform:translateY(0)}to{transform:translateY(-55px)}}
+.wxdog .eye{transform-box:fill-box;transform-origin:50% 50%;animation:dgblink 4s infinite}@keyframes dgblink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.wxdog .shiv{animation:dgshiv .12s linear infinite alternate}@keyframes dgshiv{from{transform:translateX(-1px)}to{transform:translateX(1px)}}
+.wxdog .zz{animation:dgzz 3s ease-in infinite;opacity:0}.wxdog .zz.b{animation-delay:1.5s}@keyframes dgzz{0%{opacity:0;transform:translate(0,0)}25%{opacity:1}100%{opacity:0;transform:translate(18px,-46px)}}
+.wxdog .breath{transform-box:fill-box;transform-origin:50% 100%;animation:dgbr 3s ease-in-out infinite}@keyframes dgbr{50%{transform:scaleY(1.06)}}
+.wxdog .tilt{transform-box:fill-box;transform-origin:30% 80%;animation:dgtilt 5s ease-in-out infinite}@keyframes dgtilt{0%,60%,100%{transform:rotate(0)}70%,85%{transform:rotate(-10deg)}}
+.tl.tv .wxtv .wxlogo{display:none!important}.tl.tv.tvs.off:not(.radv) .tvb{position:absolute!important;left:0!important;right:0!important;bottom:18px!important;margin:0!important;text-align:center!important;align-items:center!important;z-index:2}   /* nombre del canal centrado abajo */.tl.tv .wxtv .wxlogo{position:absolute!important;right:22px!important;bottom:22px!important;top:auto!important;left:auto!important;display:block!important;width:64px;height:64px;border-radius:16px;object-fit:cover;background:#fff;box-shadow:0 6px 16px rgba(0,0,0,.18);z-index:2}
+#wxfull{display:none;position:fixed;inset:0;z-index:9000;overflow:hidden}
+html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from{opacity:0}to{opacity:1}}
+#wxfull canvas.wxa{position:absolute;inset:0;width:100%;height:100%}
+#wxfull .wxic{position:absolute;left:50%;top:9%;width:240px;height:240px;margin-left:-120px;animation:wxfloat 6s ease-in-out infinite}#wxfull .wxic svg{width:100%;height:100%}
+#wxfull .wxdog{position:absolute;left:50%;bottom:4%;width:min(900px,92vw);transform:translateX(-50%);height:46%}#wxfull .wxdog svg{width:100%;height:100%;overflow:visible}
 .tl.tv .wxtv{display:none}
 .tl.tv.tvs.off:not(.radv) .wxtv{display:block;position:absolute;inset:0;border-radius:inherit;overflow:hidden;z-index:0}
 .tl.tv.tvs.off:not(.radv) .tvbig{display:none!important}
 .tl.tv .wxtv canvas.wxa{position:absolute;inset:0;width:100%;height:100%}
-.tl.tv .wxtv .wxi{display:none!important;position:absolute;left:0;right:0;top:12%;display:flex;flex-direction:column;align-items:center;text-align:center;color:#1c1c1e}
+.tl.tv .wxtv b,.tl.tv .wxtv em,.tl.tv .wxtv small{display:none!important}.tl.tv .wxtv .wxi{position:absolute;left:0;right:0;top:12%;display:flex;flex-direction:column;align-items:center;text-align:center;color:#1c1c1e}
 .tl.tv .wxtv .wxic{width:130px;height:130px;animation:wxfloat 6s ease-in-out infinite}.tl.tv .wxtv .wxic svg{width:100%;height:100%}
 .tl.tv .wxtv b{font-size:96px;font-weight:300;letter-spacing:-.04em;line-height:1}.tl.tv .wxtv em{font-style:normal;font-size:24px;font-weight:600;margin-top:6px}.tl.tv .wxtv small{font-size:16px;opacity:.65;margin-top:4px}
 .tl.tv .wxtv.dk .wxi{color:#fff}
@@ -3458,12 +3480,53 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
       if (!box.querySelector("canvas.wxa")){ const cv = document.createElement("canvas"); cv.className = "wxa"; cv.setAttribute("aria-hidden", "true"); box.prepend(cv); } };
     window.renderExt._wx = 1; };
   hook(); setInterval(hook, 2000);
+
+  /* escena con un perro según el tiempo: juega a la pelota con sol, se resguarda en la caseta si llueve, duerme de noche */
+  const dogBody = (run) => `<g class="${run ? "run" : ""}">
+      <path class="tail" d="M68 96 q-20 -14 -14 -36" stroke="#c98b4f" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <rect class="lg a" x="76" y="112" width="11" height="28" rx="5.5" fill="#c98b4f"/><rect class="lg b" x="92" y="112" width="11" height="28" rx="5.5" fill="#b97d44"/>
+      <rect class="lg b" x="118" y="112" width="11" height="28" rx="5.5" fill="#c98b4f"/><rect class="lg a" x="133" y="112" width="11" height="28" rx="5.5" fill="#b97d44"/>
+      <ellipse cx="106" cy="104" rx="42" ry="22" fill="#e0a868"/><ellipse cx="100" cy="112" rx="26" ry="9" fill="#f3d3a8"/>
+      <g class="${run ? "" : "tilt"}"><circle cx="150" cy="80" r="23" fill="#e0a868"/><ellipse cx="170" cy="89" rx="14" ry="10" fill="#f6dfc0"/><circle cx="182" cy="85" r="4.5" fill="#3a2a20"/>
+      <path d="M170 96 q5 4 10 0" stroke="#3a2a20" stroke-width="2" fill="none" stroke-linecap="round"/>${run ? '<path d="M173 97 q3 9 8 6 q2-4 -2-7z" fill="#ff7b8a"/>' : ""}
+      <path d="M136 61 q-16 4 -13 30 q11 -4 17 -21z" fill="#a8683a"/><ellipse class="eye" cx="157" cy="74" rx="3.2" ry="3.6" fill="#2b1d14"/>
+      <path d="M131 96 q16 11 32 -1" stroke="#e53935" stroke-width="5.5" fill="none" stroke-linecap="round"/><circle cx="148" cy="103" r="3.5" fill="#ffcc00"/></g></g>`;
+  const ground = c => `<ellipse cx="150" cy="142" rx="150" ry="10" fill="${c}"/>`;
+  const house = (snow, storm) => `<g><rect x="100" y="80" width="100" height="62" rx="4" fill="#c8834f"/><path d="M100 92h100M100 106h100M100 120h100" stroke="#b07040" stroke-width="2"/>
+      <path d="M150 112 m-19 30 v-30 a19 19 0 0 1 38 0 v30z" fill="#3a2416"/>
+      <g class="${storm ? "shiv" : ""}"><path d="M136 108 q-6 10 0 20 q5 -6 4 -18z" fill="#a8683a"/><path d="M164 108 q6 10 0 20 q-5 -6 -4 -18z" fill="#a8683a"/>
+      <circle cx="150" cy="120" r="15" fill="#e0a868"/><ellipse cx="150" cy="128" rx="8" ry="6" fill="#f6dfc0"/><circle cx="150" cy="125" r="2.8" fill="#3a2a20"/>
+      <ellipse class="eye" cx="144" cy="116" rx="2.4" ry="2.8" fill="#2b1d14"/><ellipse class="eye" cx="156" cy="116" rx="2.4" ry="2.8" fill="#2b1d14"/>
+      <ellipse cx="141" cy="141" rx="6" ry="3.5" fill="#e0a868"/><ellipse cx="159" cy="141" rx="6" ry="3.5" fill="#e0a868"/></g>
+      <path d="M90 84 L150 42 L210 84z" fill="#d9473b"/><path d="M90 84 L150 42 L210 84" stroke="#b23328" stroke-width="5" fill="none" stroke-linejoin="round"/>
+      ${snow ? '<path d="M96 80 L150 42 L204 80 q-8 6 -16 0 q-8 6 -16 0 q-8 6 -16 0 q-8 6 -16 0 q-8 6 -16 0 q-8 6 -16 0 q-8 6 -16 0z" fill="#fff"/>' : ""}</g>`;
+  const sleeping = () => `<g class="breath"><path d="M198 128 q22 -4 18 12" stroke="#c98b4f" stroke-width="8" fill="none" stroke-linecap="round"/><ellipse cx="160" cy="126" rx="48" ry="18" fill="#e0a868"/>
+      <circle cx="118" cy="124" r="17" fill="#e0a868"/><ellipse cx="104" cy="131" rx="11" ry="7" fill="#f6dfc0"/><circle cx="95" cy="129" r="3.2" fill="#3a2a20"/>
+      <path d="M120 118 q-4 3 -8 0" stroke="#2b1d14" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M128 110 q10 6 6 24 q-10 -6 -6 -24z" fill="#a8683a"/></g>
+      <text class="zz" x="96" y="98" font-size="20" font-weight="700" fill="#cfd8ff">z</text><text class="zz b" x="104" y="92" font-size="15" font-weight="700" fill="#cfd8ff">z</text>`;
+  const ball = () => `<g transform="translate(180 0)"><g class="bx"><g class="by"><circle cx="0" cy="130" r="11" fill="#ff5a4e"/><path d="M-11 130 q11 -7 22 0" stroke="#fff" stroke-width="3" fill="none"/></g></g></g>`;
+  window.dogScene = k => {
+    const inner = (k === "sun" || k === "partly") ? ground("#8fd16a") + `<g transform="translate(-20 0)">${dogBody(true)}</g>` + ball()
+      : (k === "rain" || k === "storm") ? ground("#3f5a46") + house(false, k === "storm")
+      : k === "snow" ? ground("#ffffff") + house(true, false)
+      : (k === "night" || k === "nightp") ? ground("#23305a") + sleeping()
+      : ground(k === "fog" ? "#c4cbd3" : "#9cc08a") + `<g transform="translate(30 0)">${dogBody(false)}</g>`;
+    return `<svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${inner}</svg>`; };
+  /* salón de día en reposo: la escena del tiempo a pantalla completa (un toque la quita) */
+  const full = document.createElement("div"); full.id = "wxfull"; full.className = "wxtv"; full.setAttribute("aria-hidden", "true");
+  full.innerHTML = '<canvas class="wxa"></canvas><div class="wxic"></div><div class="wxdog"></div>'; document.body.appendChild(full);
+  full.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); });
+  setInterval(() => { if (!document.documentElement.classList.contains("salonwx")) return; const w = store.get("p2_wx", null); if (!w || !w.current) return; upd();
+    const c = w.current; full.className = "wxtv wx-" + K + (DARK[K] ? " dk" : "");
+    const sig = K + "|" + c.weather_code + "|" + c.is_day; if (full.dataset.sig === sig) return; full.dataset.sig = sig;
+    full.querySelector(".wxic").innerHTML = wx(c.weather_code, c.is_day); full.querySelector(".wxdog").innerHTML = dogScene(K); }, 1000);
   /* salón: el recuadro de la tele, cuando no se ve nada, muestra el tiempo de fuera animado */
   setInterval(() => { const t = document.getElementById("tvTile"); if (!t || !t.classList.contains("tvs")) return;
-    let b = t.querySelector(".wxtv"); if (!b){ b = document.createElement("div"); b.className = "wxtv"; b.innerHTML = '<canvas class="wxa" aria-hidden="true"></canvas><div class="wxi"></div>'; t.insertBefore(b, t.querySelector(".tvbig")); }
+    let b = t.querySelector(".wxtv"); if (!b){ b = document.createElement("div"); b.className = "wxtv"; b.innerHTML = '<canvas class="wxa" aria-hidden="true"></canvas><div class="wxi"></div><div class="wxdog"></div>'; t.insertBefore(b, t.querySelector(".tvbig")); }
     const w = store.get("p2_wx", null); if (!w || !w.current) return; upd(); const c = w.current, d = w.daily || {};
     b.className = "wxtv wx-" + K + (DARK[K] ? " dk" : ""); t.classList.toggle("wxdk", !!DARK[K]);
     const sig = [K, c.temperature_2m, c.weather_code, c.relative_humidity_2m].join("|"); if (b.dataset.sig === sig) return; b.dataset.sig = sig;
+    const dg = b.querySelector(".wxdog") || b.appendChild(Object.assign(document.createElement("div"), {className: "wxdog"})); if (dg.dataset.k !== K){ dg.dataset.k = K; dg.innerHTML = dogScene(K); }
     b.querySelector(".wxi").innerHTML = `<span class="wxic">${wx(c.weather_code, c.is_day)}</span><b>${Math.round(c.temperature_2m)}°</b><em>${wxText(c.weather_code)}</em>${d.temperature_2m_max ? `<small>máx ${Math.round(d.temperature_2m_max[0])}° · mín ${Math.round(d.temperature_2m_min[0])}°</small>` : ""}`; }, 1000);
 })();
 </script>
