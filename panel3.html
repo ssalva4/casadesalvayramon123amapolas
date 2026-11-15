@@ -1794,7 +1794,8 @@ function fitScreen(){
     w = Math.min(W2, window.innerWidth || W2); window.scrollTo(0, 0);
     /* iPad: en pantalla completa el alto útil es el de la ventana visible (p. ej. 684) y empieza más abajo que el documento (744): colocar el panel justo ahí */
     const ch = document.documentElement.clientHeight || H2, vh = Math.round(vv ? vv.height : window.innerHeight) || ch;
-    const off = Math.max(0, ch - vh); h = off ? Math.min(H2, vh) : Math.min(H2, ch); document.documentElement.style.setProperty("--fsoff", off + "px"); document.documentElement.classList.toggle("fsoff", !!off); }   // iPad mini: la zona táctil es solo la de vh (684) y empieza --fsoff más abajo; el panel va entero ahí para que todo responda
+    const off = Math.max(0, ch - vh);
+    h = off ? Math.min(H2, vh) : Math.min(H2, ch); document.documentElement.style.setProperty("--fsoff", off + "px"); document.documentElement.classList.toggle("fsoff", !!off); }   // iPad mini: la zona táctil es solo la de vh (684) y empieza --fsoff más abajo; el panel va entero ahí para que todo responda
   else document.documentElement.style.setProperty("--fsoff", "0px");
   if (w < 900){ app.style.zoom = ""; app.style.width = ""; app.style.height = ""; return; }   // móvil: diseño en columna
   const big = typeof tab !== "undefined" && tab === "hom" && /room-(salon|dormitorio)/.test(document.documentElement.className);   // el Inicio de las estancias, más grande
@@ -2852,7 +2853,7 @@ $("cfg").addEventListener("change", ev => { const i = ev.target.closest("[data-r
 </script>
 <script>
 /* Pantalla completa: esconde la hora y la batería del iPad. El navegador solo deja hacerlo tras un toque, así que se activa con el primer toque. */
-const fsOn = () => store.get("p3_fs4", true) && !(window.navigator.standalone || matchMedia("(display-mode: standalone)").matches);   // un toque en una zona sin botón pone la pantalla completa (se quita en Ajustes · Este iPad)
+const fsOn = () => store.get("p3_fs4", true) && !store.get("p3_fsbug", false) && !(window.navigator.standalone || matchMedia("(display-mode: standalone)").matches);   // un toque en una zona sin botón pone la pantalla completa (se quita en Ajustes · Este iPad)
 const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 function goFs(){ if (!fsOn() || isFs()) return; const el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
   if (f){ try{ const r = f.call(el, {navigationUI: "hide"}); if (r && r.catch) r.catch(() => {}); }catch(e){} } }
@@ -2866,7 +2867,7 @@ ambCfgCard = function(){ const on = fsOn(), can = !!(document.documentElement.re
     <div class="cf-r"><span>Esconder la hora y la batería del iPad</span><button class="sw ${on ? "on" : ""}" data-fs="1" role="switch" aria-checked="${on}" aria-label="Pantalla completa"></button></div>
     <div class="cf-note">${can ? "Se activa con el primer toque en la pantalla. Para salir, desliza desde arriba." : "Este navegador no permite la pantalla completa."}</div></div>`; };
 $("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-fs]"); if (!b) return; ev.stopImmediatePropagation();
-  const on = !fsOn(); store.set("p3_fs4", on);
+  const on = !fsOn(); store.set("p3_fs4", on); if (on) store.set("p3_fsbug", false);
   if (!on && isFs()){ const x = document.exitFullscreen || document.webkitExitFullscreen; if (x) try{ x.call(document); }catch(e){} }
   renderCfg(true); }, true);
 </script>
@@ -3605,6 +3606,15 @@ html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from
     const dg = b.querySelector(".wxdog") || b.appendChild(Object.assign(document.createElement("div"), {className: "wxdog"})); if (dg.dataset.k !== K){ dg.dataset.k = K; dg.innerHTML = dogScene(K); }
     b.querySelector(".wxi").innerHTML = `<span class="wxic">${wx(c.weather_code, c.is_day)}</span><b>${Math.round(c.temperature_2m)}°</b><em>${wxText(c.weather_code)}</em>${d.temperature_2m_max ? `<small>máx ${Math.round(d.temperature_2m_max[0])}° · mín ${Math.round(d.temperature_2m_min[0])}°</small>` : ""}`; }, 1000);
 })();
+</script>
+<script>
+/* iPad mini: la pantalla completa de Safari queda descolocada (alto visible 684 de 744) y el dock deja de responder.
+   Si tras entrar en pantalla completa sigue así 2,5 s, se sale y este iPad ya no la vuelve a activar con un toque (se puede reactivar en Ajustes). */
+["fullscreenchange", "webkitfullscreenchange"].forEach(t => document.addEventListener(t, () => {
+  if (!(document.fullscreenElement || document.webkitFullscreenElement)) return;
+  setTimeout(() => { if (!(document.fullscreenElement || document.webkitFullscreenElement)) return;
+    const vv = window.visualViewport, ch = document.documentElement.clientHeight, vh = Math.round(vv ? vv.height : innerHeight);
+    if (ch - vh >= 30){ store.set("p3_fsbug", true); const x = document.exitFullscreen || document.webkitExitFullscreen; if (x) try{ x.call(document); }catch(e){} } }, 2500); }));
 </script>
 </body>
 </html>
