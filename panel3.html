@@ -948,6 +948,15 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 body.at-home #gdock{display:none!important}
 body:not(.at-home) .main{padding-bottom:calc((30px + env(safe-area-inset-bottom)) * var(--dk,1))!important}
 </style>
+<style id="sin-tele">
+/* sin tele en el panel: el salón muestra solo el tiempo con el perro, y Entretenimiento queda con la radio y las noticias */
+.tl.tv.tvs .chb,.tl.tv.tvs .tvb,.tl.tv.tvs #tvMiniLogo,.tl.tv.tvs .tvbig{display:none!important}
+.tl.tv.tvs{cursor:default}
+.t-ent .tv{display:none!important}
+.t-ent.on{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr)!important}
+.t-ent>.card:last-child{grid-column:1!important;grid-row:1!important;align-self:stretch!important;flex-direction:row!important;align-items:center;justify-content:space-around;gap:30px!important;padding:22px 30px!important}
+.t-ent .news{grid-column:1!important;grid-row:2!important}
+</style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
 <div class="app">
@@ -1124,7 +1133,7 @@ function tick(){
   const s = fmtDate.format(d); $("date").textContent = s[0].toUpperCase() + s.slice(1);
 }
 tick(); setInterval(tick, 5000);
-const TT = {ent:["Entretenimiento","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario y próximos días"], hom:["Inicio",""], cos:["Costes","Luz de los aires y deshumidificadores · compartido"], cfg:["Ajustes","Deshumidificadores, aires y modo Noche · se guarda en Home Assistant"]};
+const TT = {ent:["Radio y noticias","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario y próximos días"], hom:["Inicio",""], cos:["Costes","Luz de los aires y deshumidificadores · compartido"], cfg:["Ajustes","Deshumidificadores, aires y modo Noche · se guarda en Home Assistant"]};
 let tab = "hom";   // V3: al abrir, la pantalla de Inicio
 function show(t){
   tab = t;
@@ -2406,6 +2415,7 @@ function closeAmb(){ ambOpen = false; try{ if (store.get("p3_red_force", 0) && t
     if (ambOpen){ renderAmb(); return; }
     const night = typeof inRed === "function" && inRed();   // de noche, al dejar de tocar vuelve al reloj rojo
     if ((!c.on && !night) || document.hidden || tvOn || ytOn || miniSound() || $("sheet") && !$("sheet").hidden) return;
+    if (/^(salon|dormitorio)$/.test(typeof roomOf === "function" ? roomOf() : "")) return;   // salón y dormitorio tienen su propio reposo (escena del tiempo de día, inicio en rojo de noche)
     if (Date.now() - lastAct > c.min * 60000) openAmb();
   }, 5000);
 })();
@@ -2721,6 +2731,7 @@ html.idlew .app{translate:var(--ix,0px) var(--iy,0px);transition:translate 6s ea
 <script>
 /* ===== V3b: Inicio en mosaicos cuadrados ===== */
 const TI = {
+  radio:'<rect x="3" y="8" width="18" height="12" rx="2.5"/><path d="M7 8l9-5"/><circle cx="15.5" cy="14" r="2.6"/><path d="M6.5 12.5h4M6.5 15.5h4"/>',
   window:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M12 3v18M4 12h8"/><path d="M12 4l6 3v13l-6-2" fill="currentColor" fill-opacity=".25"/>',
   bed:'<path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.8"/>',
   euro:'<path d="M17.5 6.5A6.5 6.5 0 1 0 17.5 17.5M4 10.5h9M4 13.5h9"/>',
@@ -2840,7 +2851,7 @@ const inRed = () => { if (!redCfg().on) return false; const hh = new Date().getH
 let wasRed = null;
 function syncRed(){
   const r = inRed(); document.documentElement.classList.toggle("redn", r);
-  if (r && wasRed === false && !tvOn && !ytOn && !miniSound()) openAmb();   // al empezar la franja, a la pantalla en reposo
+  if (r && wasRed === false && !tvOn && !ytOn && !miniSound() && !/^(salon|dormitorio)$/.test(typeof roomOf === "function" ? roomOf() : "")) openAmb();   // al empezar la franja, a la pantalla en reposo
   if (wasRed === true && !r && ambOpen) closeAmb();   // a las 7:00, de vuelta a la pantalla blanca
   else if (wasRed !== null && r !== wasRed) renderAmb();
   wasRed = r;
@@ -2938,7 +2949,8 @@ async function roomAction(b){
     try{ await service("climate", "set_hvac_mode", {entity_id: "climate.aire_salon", hvac_mode: "off"}); setTimeout(refreshHA, 1500); }catch(err){ handleErr(err); } }
   else if (b.dataset.bn){   // Buenas noches del dormitorio: aire del salón apagado, Noche en el dormitorio y reloj rojo (sin radio)
     if (redCfg().on){ const t = new Date(); t.setHours(7, 0, 0, 0); if (t <= new Date()) t.setDate(t.getDate() + 1); store.set("p3_red_force", t.getTime());   // modo descanso hasta las 7:00
-      setTimeout(() => { if (typeof syncRed === "function") syncRed(); if (ambOpen) renderAmb(); else if (inRed()) openAmb(); }, 400); }
+      setTimeout(() => { if (typeof syncRed === "function") syncRed(); }, 400); }
+    window.salonBN = true; if (ambOpen) closeAmb(); if (tab !== "hom") show("hom"); document.documentElement.classList.add("idlew", "salonred");   // como en el salón: la misma pantalla de inicio, en rojo, hasta que se toque
     if (store.get("p3_bn_sc", false)) setTimeout(() => { location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent("Brillo noche"); }, 1200);   // el atajo baja el brillo y vuelve al panel
     try{ store.set("p3_bn_undo", 1);
       await service("scene", "create", {scene_id: "antes_buenas_noches", snapshot_entities: ["climate.aire_salon", "climate.aire_dormitorio"]}).catch(() => {});   // para dejarlo luego como estaba
@@ -2985,13 +2997,13 @@ function renderSalon(box){
       <div class="hg rs"><div class="tl tv tvs" id="tvTile" role="button" tabindex="0" aria-label="Tele: toca para el sonido"><video id="tvMini" muted playsinline autoplay preload="none"></video><img id="tvMiniLogo" alt="">
         <button class="chb l" data-chs="-1" aria-label="Canal anterior">${tsvg("chev_l")}</button><button class="chb r" data-chs="1" aria-label="Canal siguiente">${tsvg("chev_r")}</button>
         <span class="tvbig">TV</span><canvas id="spec" aria-hidden="true"></canvas><span class="tvb"><b id="tvMiniN"></b><small id="tvMiniS"></small></span></div><div id="hgA" style="display:contents"></div></div>
-      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="cos" aria-label="Costes">${tsvg("euro")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
+      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Radio y noticias">${tsvg("radio")}</button><button data-go="cos" aria-label="Costes">${tsvg("euro")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
     $("tvTile").addEventListener("click", ev => { const c = ev.target.closest("[data-chs]"); if (c){ ev.stopPropagation(); roomAction(c); return; }
       const chn = CHANNELS.find(x => x.k === ch) || CHANNELS[0];
       if (!salonTv && (radioOn || (!player.paused && player.getAttribute("src")))){   // con la radio sonando, un toque la para
         if (radioOn) stopAll(); else { player.pause(); player.removeAttribute("src"); player.load(); renderRadios(); } syncMini(); return; }
-      if (salonTv || (chn.u && !$("tvMini").dataset.err)){ salonTv = !salonTv; miniMuted = !salonTv; if (salonTv) syncMini(); else stopMini(); syncMini(); return; }   // un toque: se ve y se oye; otro: se para
-      show("ent"); setTimeout(() => { const pb = $("screen").querySelector("[data-play]"); if (pb && !tvOn && !ytOn) pb.click(); }, 300); });
+      if (salonTv){ salonTv = false; stopMini(); syncMini(); }   // sin tele: el recuadro solo muestra el tiempo; un toque solo para lo que suene
+      });
   }
   const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), v = roomTH(HOME_ROOMS[0].re);
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
@@ -3008,7 +3020,7 @@ function dualTH(w, v){ const c = w && w.current;
 function renderDorm(box){
   if (box.dataset.layout !== "dormitorio"){ box.dataset.layout = "dormitorio"; stopMini();
     box.innerHTML = `<div class="h3t"><h2>Dormitorio</h2><span id="h3date"></span><span id="h3time" style="display:none"></span></div><div class="hg rd"><div class="tl rad2x" id="radTile" data-rad="play" role="button" aria-label="Radio"><div class="radbar"></div></div><div id="hgA" style="display:contents"></div></div>
-      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="cos" aria-label="Costes">${tsvg("euro")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`; }
+      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Radio y noticias">${tsvg("radio")}</button><button data-go="cos" aria-label="Costes">${tsvg("euro")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`; }
   const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), v = roomTH(HOME_ROOMS[1].re);
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()); $("h3date").textContent = fechaLarga(d);
   /* sin píldoras: la temperatura y la humedad ya están en los mosaicos */
@@ -3076,7 +3088,8 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 /* a los 2 minutos sin tocar (de día), ondas muy suaves y el contenido se mueve unos píxeles cada minuto */
 (() => { const w = document.createElement("div"); w.id = "waves"; w.setAttribute("aria-hidden", "true"); document.body.appendChild(w); const dv = document.createElement("div"); dv.id = "dimv"; dv.setAttribute("aria-hidden", "true"); document.body.appendChild(dv); dv.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); });
   let last = Date.now(); const h = document.documentElement;
-  const wake = e => { last = Date.now(); if (e && e.target && e.target.id === "dimv"){ setTimeout(wake, 450); return; } window.salonBN = false; if (h.classList.contains("idlew")){ h.classList.remove("idlew", "salonred", "salonwx"); h.style.removeProperty("--ix"); h.style.removeProperty("--iy"); } };
+  const wake = e => { last = Date.now(); if (e && e.target && e.target.id === "dimv"){ setTimeout(wake, 450); return; } if (window.salonBN && typeof roomOf === "function" && roomOf() === "dormitorio") try{ if (store.get("p3_red_force", 0) && typeof redCfg === "function"){ const c = redCfg(), d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes()); const win = c.from > c.to ? (n >= c.from || n < c.to) : (n >= c.from && n < c.to); if (!win){ store.set("p3_red_force", 0); if (store.get("p3_bn_undo", 0)) bnUndo(); if (typeof syncRed === "function") syncRed(); } } }catch(_){}   // de día, al tocar el rojo se quita todo el modo noche
+    window.salonBN = false; if (h.classList.contains("idlew")){ h.classList.remove("idlew", "salonred", "salonwx"); h.style.removeProperty("--ix"); h.style.removeProperty("--iy"); } };
   ["pointerdown", "keydown", "wheel", "touchstart"].forEach(t => document.addEventListener(t, wake, {passive: true, capture: true}));
   let n = 0;
   setInterval(() => { const idle = Date.now() - last > 2 * 60000 && !ambOpen && !document.hidden && !(typeof miniSound === "function" && miniSound()) && !tvOn && !ytOn;
@@ -3084,9 +3097,9 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     /* salón de noche (22:00–7:00): en reposo, la misma pantalla en negro y rojo */
     const nowM = (d => d.getHours() * 60 + d.getMinutes())(new Date()), tm = t => { const [a, b] = String(t).split(":").map(Number); return a * 60 + (b || 0); };
     const f = tm("22:00"), t = tm("07:00"), night = nowM >= f || nowM < t || !!window.salonBN;   // salón: de 22:00 a 7:00, o tras «Buenas noches»
-    h.classList.toggle("salonred", h.classList.contains("idlew") && night && typeof roomOf === "function" && roomOf() === "salon" && tab === "hom");
     const rmI = typeof roomOf === "function" ? roomOf() : "", redD = typeof inRed === "function" && inRed();
-    h.classList.toggle("salonwx", h.classList.contains("idlew") && tab === "hom" && ((rmI === "salon" && !night) || (rmI === "dormitorio" && !redD)));   // de día: reposo con la escena del tiempo a pantalla completa (salón con el perro, dormitorio con el gato)
+    h.classList.toggle("salonred", h.classList.contains("idlew") && tab === "hom" && ((rmI === "salon" && night) || (rmI === "dormitorio" && (redD || !!window.salonBN))));   // salón 22–7 y dormitorio en su horario rojo: la pantalla de inicio en rojo
+    h.classList.toggle("salonwx", h.classList.contains("idlew") && tab === "hom" && ((rmI === "salon" && !night) || (rmI === "dormitorio" && !redD && !window.salonBN)));   // de día: reposo con la escena del tiempo a pantalla completa (salón con el perro, dormitorio con el gato)
     if (h.classList.contains("idlew") && (++n % 12 === 0)){ const r = () => Math.round((Math.random() * 2 - 1) * 6) + "px"; h.style.setProperty("--ix", r()); h.style.setProperty("--iy", r()); }
   }, 5000);
 })();
@@ -3191,7 +3204,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 <script>
 /* dock fijo: Inicio, Clima, Tele, Agenda y Ajustes; la sección actual en negro */
 (() => { const app = document.querySelector(".app") || document.body, d = document.createElement("nav"); d.id = "gdock"; d.setAttribute("aria-label", "Secciones");
-  const IT = [["hom", "home", "Inicio"], ["cli", "therm", "Clima"], ["ent", "tv", "Tele y radio"], ["cos", "euro", "Costes"], ["cfg", "gear", "Ajustes"]];
+  const IT = [["hom", "home", "Inicio"], ["cli", "therm", "Clima"], ["ent", "radio", "Radio y noticias"], ["cos", "euro", "Costes"], ["cfg", "gear", "Ajustes"]];
   d.innerHTML = IT.map(x => `<button data-gd="${x[0]}" aria-label="${x[2]}">${tsvg(x[1])}</button>`).join(""); (document.querySelector(".main") || app).appendChild(d);
   const mark = () => d.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.gd === tab));
   d.addEventListener("click", e => { const b = e.target.closest("[data-gd]"); if (b) show(b.dataset.gd); });
