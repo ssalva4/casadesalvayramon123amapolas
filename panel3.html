@@ -941,7 +941,12 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 .hg.rs .tl.dclk b{font-size:118px;font-weight:600;letter-spacing:-.03em;line-height:1;white-space:nowrap;overflow:visible;text-overflow:clip;max-width:none}.hg.rs .tl.dclk .mm{color:#8f80dd}   /* salón: como el del dormitorio pero en horizontal */
    /* el dock de las demás pantallas, a la misma altura que el del inicio */   /* iPad mini del dormitorio en pantalla completa: todo más abajo (2 veces el alto de «Dormitorio»), misma escala */
 .hg.rd .tl.alm{gap:0;padding:6px}.hg.rd .tl.alm .ti{width:28px;height:28px;margin-bottom:2px}.hg.rd .tl.alm .tv2{font-size:32px;line-height:1.05}   /* la alarma cabe entera también en el iPad mini */
-.app{position:relative}#gdock{position:absolute!important;bottom:calc(33px + env(safe-area-inset-bottom))!important}body:not(.at-home) .main{padding-bottom:calc(108px + env(safe-area-inset-bottom))!important}   /* el dock va dentro del panel (no fijo a la ventana): en el iPad, fijo + escala lo dejaba flotando más arriba */
+/* un único dock, igual en todas las pantallas (también en el inicio): fuera del panel, fijo abajo y escalado igual que el panel */
+#gdock{position:fixed!important;left:50%!important;top:auto!important;bottom:calc((30px + env(safe-area-inset-bottom)) * var(--zd,1))!important;transform:translateX(-50%) scale(var(--zd,1))!important;transform-origin:50% 100%!important;gap:26px!important;padding:10px 26px!important;background:rgba(255,255,255,.55)!important;border:1px solid rgba(255,255,255,.7)!important;box-shadow:none!important}
+#gdock button{width:52px!important;height:52px!important}#gdock button svg{width:28px!important;height:28px!important}
+body.at-home #gdock{display:flex!important}body.at-home .mdock{visibility:hidden!important}
+body:not(.at-home) .main{padding-bottom:calc((118px + env(safe-area-inset-bottom)) * var(--zd,1) / var(--z,1))!important}
+html.salonred #gdock{filter:invert(1) grayscale(1) brightness(.75)}
 </style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
@@ -1801,7 +1806,8 @@ function fitScreen(){
   if (w < 900){ app.style.zoom = ""; app.style.width = ""; app.style.height = ""; return; }   // móvil: diseño en columna
   const big = typeof tab !== "undefined" && tab === "hom" && /room-(salon|dormitorio)/.test(document.documentElement.className);   // el Inicio de las estancias, más grande
   const z = Math.min(w / 1000, h / (big ? 750 : 820));
-  app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px";
+  app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px"; document.documentElement.style.setProperty("--z", z);
+  document.documentElement.style.setProperty("--zd", /room-(salon|dormitorio)/.test(document.documentElement.className) ? Math.min(w / 1000, h / 750) : z);   // el dock, del mismo tamaño en todas las pantallas
   document.documentElement.style.setProperty("--fsoffz", (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--fsoff")) || 0) / z + "px");
   // alto máximo de la tele para que siempre quepan las noticias debajo (sea cual sea el iPad o la ventana)
   document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 368) + "px");
@@ -3181,7 +3187,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 /* dock fijo: Inicio, Clima, Tele, Agenda y Ajustes; la sección actual en negro */
 (() => { const app = document.querySelector(".app") || document.body, d = document.createElement("nav"); d.id = "gdock"; d.setAttribute("aria-label", "Secciones");
   const IT = [["hom", "home", "Inicio"], ["cli", "therm", "Clima"], ["ent", "tv", "Tele y radio"], ["cos", "euro", "Costes"], ["cfg", "gear", "Ajustes"]];
-  d.innerHTML = IT.map(x => `<button data-gd="${x[0]}" aria-label="${x[2]}">${tsvg(x[1])}</button>`).join(""); app.appendChild(d);
+  d.innerHTML = IT.map(x => `<button data-gd="${x[0]}" aria-label="${x[2]}">${tsvg(x[1])}</button>`).join(""); document.body.appendChild(d);
   const mark = () => d.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.gd === tab));
   d.addEventListener("click", e => { const b = e.target.closest("[data-gd]"); if (b) show(b.dataset.gd); });
   const _s = show; show = function(t){ _s(t); mark(); fitScreen(); document.body.classList.toggle("tab-ent", t === "ent"); }; mark();
