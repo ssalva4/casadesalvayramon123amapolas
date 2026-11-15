@@ -713,6 +713,14 @@ body.at-home #homebar{display:none}
 #h24 .plot svg path{stroke-width:2.6px}
 </style>
 <style id="gdock-v3">
+/* Entretenimiento: canales, tele y radio alineados arriba y abajo (misma altura que la tele) */
+.t-ent .tv{align-items:stretch!important;align-self:start!important}
+.t-ent .tv .chs{align-self:stretch!important;height:var(--tvh,auto);justify-content:space-evenly!important;box-sizing:border-box}
+.t-ent .tv .screen{align-self:flex-start}
+.t-ent>.card:last-child{align-self:start!important;height:var(--tvh,auto);box-sizing:border-box;justify-content:space-evenly;padding:14px 12px!important;gap:10px!important}
+.t-ent>.card:last-child #rnow{gap:4px;padding-bottom:10px}
+.t-ent>.card:last-child #rnow .big{width:84px;height:84px;font-size:26px;border-radius:22px}
+#spec2,#spec2t{top:0!important;transform:none!important}
 body.tab-ent #clock{display:none!important}   /* en Entretenimiento ya está la hora junto al título */
 /* Entretenimiento: espectro sobre la pantalla de la tele mientras suena la radio */
 .t-ent .tv{position:relative}
@@ -3088,9 +3096,9 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1, W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
     if (cv.width !== W || cv.height !== H){ cv.width = W; cv.height = H; }
     const g = cv.getContext("2d"), s = ts / 1000, beat = Math.pow(Math.max(0, Math.sin(s * Math.PI * 2 * 1.9)), 8), rad = RADIOS.find(x => x.k === radioOn) || {};
-    g.fillStyle = "#0b0b10"; g.fillRect(0, 0, W, H);
+    const bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, "#565aa8"); bg.addColorStop(1, "#2e3168"); g.fillStyle = bg; g.fillRect(0, 0, W, H);   // fondo azul-violeta, no tan oscuro
     const bw = W / N, base = H * 0.80, top = H * 0.10;
-    const grd = g.createLinearGradient(0, base, 0, top); grd.addColorStop(0, "#5e5ce6"); grd.addColorStop(.55, "#bf5af2"); grd.addColorStop(1, "#ff9f0a");
+    const grd = g.createLinearGradient(0, base, 0, top); grd.addColorStop(0, "#8e8cff"); grd.addColorStop(.55, "#e08cff"); grd.addColorStop(1, "#ffb340");
     for (let i = 0; i < N; i++){
       const f = i / N, tilt = Math.pow(1 - f, 1.4) * .75 + .18;   // los graves con más energía, como en la música
       const n = (Math.sin(s * (1.3 + f * 5) + ph[i]) + Math.sin(s * (2.7 + f * 9) + ph[i] * 1.7) * .6 + Math.sin(s * 7.1 + i * .9) * .25) / 1.85;
@@ -3115,6 +3123,13 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
   const _rr = renderRadios; renderRadios = function(){ _rr(); sync(); };
   setInterval(sync, 2000);
 })();
+</script>
+<script>
+/* mide la altura real de la tele y la usa para los canales y la radio */
+(() => { const fit = () => { const sc = $("screen"), sec = document.querySelector(".t-ent"); if (!sc || !sec || tab !== "ent") return;
+    const h = sc.getBoundingClientRect().height / (parseFloat(document.querySelector(".app").style.zoom) || 1); if (h > 50) sec.style.setProperty("--tvh", Math.round(h) + "px"); };
+  setInterval(fit, 1500); window.addEventListener("resize", () => setTimeout(fit, 300));
+  const _s = show; show = function(t){ _s(t); setTimeout(fit, 80); setTimeout(fit, 600); }; })();
 </script>
 </body>
 </html>
