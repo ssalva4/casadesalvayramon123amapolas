@@ -862,6 +862,12 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 #cos3 .mc span{font-size:11px;font-weight:600;color:#8e8e93}#cos3 .mc.cur span{color:#1c1c1e;font-weight:800}
 </style>
 <style id="cli2-v3">
+.cv .secado{display:flex;align-items:center;gap:14px;width:100%;margin-top:12px;padding:14px 16px;border-radius:20px;background:#e8f1fd;color:#0a84ff;text-align:left;border:2px solid transparent}
+.cv .secado .i{width:30px;height:30px;flex:none}
+.cv .secado b{display:block;font-size:20px;font-weight:700}
+.cv .secado small{display:block;font-size:12.5px;font-weight:600;opacity:.85}
+.cv .secado.on{background:#0a84ff;color:#fff;box-shadow:0 6px 18px rgba(10,132,255,.35)}
+.cv .secado:active{transform:scale(.98)}
 /* Clima · Exterior */
 .t-cli .wx{display:none!important}
 .t-cli.on{grid-template-rows:auto minmax(0,1fr)!important}
@@ -3114,7 +3120,8 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
       <div class="dial">${arc(isNaN(h) ? 0 : X(h) / 100, "#0a84ff", false)}<div class="ctl"><span class="num">${!isNaN(h) ? Math.round(h) + " %" : "—"}</span></div><small>Humedad</small></div>
       <div class="hbar"><div class="t"><i style="width:${isNaN(h) ? 0 : X(h)}%"></i><u style="left:${X(offAt)}%"></u>${onAt !== offAt ? `<u style="left:${X(onAt)}%"></u>` : ""}</div><p><span>Apaga ${offAt} %</span><span>Enciende ${onAt} %</span></p></div>
       ${foot ? `<div class="foot">${foot}</div>` : ""}
-      ${pill(fu ? "fz" : lk ? "lk" : on ? "on" : "", fu ? "bolt" : lk ? "power" : "drop", sub, forceBtn("bano") + (lkS ? lockBtn(lk, DEHUM_BATH_LOCK, " del baño") : ""))}</div>`;
+      ${hst(FORCE_ID("bano")) ? `<button class="secado ${fu ? "on" : ""}" data-dforce="${fu ? 1 : 0}" data-fid="${FORCE_ID("bano")}" aria-pressed="${fu ? "true" : "false"}">${svg("drop")}<span><b>${fu ? "Secando" : "Secado"}</b><small>${fu ? `Encendido sin mirar la humedad · hasta las ${fu} · toca para parar` : "Enciende el deshumidificador sin mirar la humedad"}</small></span></button>` : ""}
+      ${pill(fu ? "fz" : lk ? "lk" : on ? "on" : "", fu ? "bolt" : lk ? "power" : "drop", sub, (lkS ? lockBtn(lk, DEHUM_BATH_LOCK, " del baño") : ""))}</div>`;
   };
   renderWeather = function(w){
     const c = w.current, d = w.daily, h = w.hourly;
