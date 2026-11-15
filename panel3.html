@@ -713,6 +713,10 @@ body.at-home #homebar{display:none}
 #h24 .plot svg path{stroke-width:2.6px}
 </style>
 <style id="gdock-v3">
+/* Entretenimiento repartido en horizontal: la tele pegada a la izquierda y la radio ocupa el resto hasta el borde */
+.t-ent.on{grid-template-columns:fit-content(calc(100% - 266px)) minmax(250px,1fr)!important}
+.t-ent .tv{justify-self:start!important;width:calc(var(--tvmaxh,400px) * 16 / 9 + 78px)!important;max-width:100%}
+.t-ent>.card:last-child{width:auto!important}
 /* Entretenimiento: canales, tele y radio alineados arriba y abajo (misma altura que la tele) */
 .t-ent .tv{align-items:stretch!important;align-self:start!important}
 .t-ent .tv .chs{align-self:stretch!important;height:var(--tvh,auto);justify-content:space-evenly!important;box-sizing:border-box}
