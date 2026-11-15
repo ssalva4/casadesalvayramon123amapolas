@@ -935,6 +935,7 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 .hg.rs .row4 .tl{min-width:0}.hg.rs .row4 .tl b{font-size:16px}.hg.rs .row4 .tl small{font-size:12px}
 .tl.on.vent{background:#dcefff!important;color:#0a5fb4!important}.tl.on.vent .ti{color:#0a84ff!important}.tl.on.vent small{color:#2f6fae!important}
 @media (max-width:900px){ .hg.rs .row4{grid-column:1/-1;grid-row:auto} }
+.hg.rd .tl.dclk b{font-size:128px;font-weight:600;letter-spacing:-.04em;overflow:visible;text-overflow:clip;white-space:nowrap;max-width:none}   /* dormitorio: reloj digital grande para verlo sin gafas */
 </style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
@@ -2893,11 +2894,12 @@ function luzTile(id, name){ const e = hst(id), st = luzPend[id] ?? (e ? e.state 
   const sub = st === "unavailable" ? "Sin conexión · ¿interruptor?" : on ? `Encendida${pct ? " · " + pct : ""}` : "Apagada";
   return T(on ? "on lt" : "", "bulb", name, sub, `data-lt="${id}" data-on="${on ? 1 : 0}"`); }
 let ventPend = null;
-function ventTile(){ const e = hst("input_boolean.ventanas_abiertas"), on = (ventPend ?? (e && e.state)) === "on";
-  return T(on ? "on vent" : "", "window", "Ventanas", on ? "Abiertas · todo parado" : "Cerradas", `data-vent="${on ? 1 : 0}"`); }
+const ventId = () => roomOf() === "salon" ? "input_boolean.ventanas_salon" : "input_boolean.ventanas_dormitorio";   // cada estancia sus ventanas
+function ventTile(){ const e = hst(ventId()), on = (ventPend ?? (e && e.state)) === "on";
+  return T(on ? "on vent" : "", "window", "Ventanas", on ? (roomOf() === "salon" ? "Abiertas · aire parado" : "Abiertas · todo parado") : "Cerradas", `data-vent="${on ? 1 : 0}"`); }
 async function roomAction(b){
   if (b.dataset.vent !== undefined){ const on = b.dataset.vent === "1"; ventPend = on ? "off" : "on"; renderHome();   // abre: para aires y deshumidificadores · cierra: todo vuelve como estaba (automatización en HA)
-    try{ await service("input_boolean", on ? "turn_off" : "turn_on", {entity_id: "input_boolean.ventanas_abiertas"}); }catch(err){ handleErr(err); }
+    try{ await service("input_boolean", on ? "turn_off" : "turn_on", {entity_id: ventId()}); }catch(err){ handleErr(err); }
     setTimeout(async () => { await refreshHA(); ventPend = null; renderHome(); }, 2500); return; }
   if (b.dataset.lt){ const id = b.dataset.lt, on = b.dataset.on === "1"; luzPend[id] = on ? "off" : "on"; renderHome();
     try{ await service("light", on ? "turn_off" : "turn_on", on ? {entity_id: id} : {entity_id: id, brightness_pct: parseInt(hv("input_number.despacho_trabajo_brillo", 100)), color_temp_kelvin: parseInt(hv("input_number.despacho_trabajo_tono", 4500))}); }catch(err){ handleErr(err); }   // para trabajar (se cambia en Ajustes · Despacho)
@@ -2982,7 +2984,7 @@ function renderDorm(box){
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
   const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
   const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
-  $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${dualTH(w, v)}
+  $("hgA").innerHTML = `<div class="tl clk bigclk dclk"><b>${pad(d.getHours())}:${pad(d.getMinutes())}</b></div>${dualTH(w, v)}
     ${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${luzTile("light.luz_despacho", "Despacho")}
     ${o.nt_dormitorio || ""}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}
     ${radioSmallW()}${alarmTileW()}${ventTile()}`;   // fila 1: aire, deshumidificador y luz · fila 2: noche y escenas · fila 3: radio y alarma
