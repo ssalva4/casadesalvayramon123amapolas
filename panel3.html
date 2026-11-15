@@ -940,6 +940,7 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 #cliext .xg{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-top:10px!important}#cliext .xs.xsi{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 10px;text-align:center;min-width:0}#cliext .xsic{width:30px;height:30px;flex:none;display:grid;place-items:center}#cliext .xsic svg{width:30px;height:30px}#cliext .xs.xsi b{margin:0;white-space:nowrap;font-size:19px;overflow:hidden;text-overflow:ellipsis;max-width:100%}   /* 3 filas x 2 columnas: icono arriba, dato debajo */
 .hg.rs .tl.dclk b{font-size:118px;font-weight:600;letter-spacing:-.03em;line-height:1;white-space:nowrap;overflow:visible;text-overflow:clip;max-width:none}.hg.rs .tl.dclk .mm{color:#8f80dd}   /* salón: como el del dormitorio pero en horizontal */
    /* el dock de las demás pantallas, a la misma altura que el del inicio */   /* iPad mini del dormitorio en pantalla completa: todo más abajo (2 veces el alto de «Dormitorio»), misma escala */
+.hg.rd .tl.alm{gap:0;padding:6px}.hg.rd .tl.alm .ti{width:28px;height:28px;margin-bottom:2px}.hg.rd .tl.alm .tv2{font-size:32px;line-height:1.05}   /* la alarma cabe entera también en el iPad mini */
 </style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
@@ -1790,11 +1791,16 @@ function fitScreen(){
   if (document.fullscreenElement || document.webkitFullscreenElement){   // en pantalla completa el iPad a veces da medidas viejas: usar las de la pantalla
     const sw = screen.width, sh = screen.height, land = window.innerWidth > window.innerHeight;
     const W2 = land ? Math.max(sw, sh) : Math.min(sw, sh), H2 = land ? Math.min(sw, sh) : Math.max(sw, sh);
-    w = Math.min(W2, window.innerWidth || W2); h = Math.min(H2, window.innerHeight || H2); window.scrollTo(0, 0); }   // nunca más grande que lo que se ve: así no se corta arriba ni sobra abajo
+    w = Math.min(W2, window.innerWidth || W2); window.scrollTo(0, 0);
+    /* iPad: en pantalla completa el alto útil es el de la ventana visible (p. ej. 684) y empieza más abajo que el documento (744): colocar el panel justo ahí */
+    const ch = document.documentElement.clientHeight || H2, vh = Math.round(vv ? vv.height : window.innerHeight) || ch;
+    h = Math.min(H2, vh); document.documentElement.style.setProperty("--fsoff", Math.max(0, ch - h) + "px"); }
+  else document.documentElement.style.setProperty("--fsoff", "0px");
   if (w < 900){ app.style.zoom = ""; app.style.width = ""; app.style.height = ""; return; }   // móvil: diseño en columna
   const big = typeof tab !== "undefined" && tab === "hom" && /room-(salon|dormitorio)/.test(document.documentElement.className);   // el Inicio de las estancias, más grande
   const z = Math.min(w / 1000, h / (big ? 750 : 820));
   app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px";
+  document.documentElement.style.setProperty("--fsoffz", (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--fsoff")) || 0) / z + "px");
   // alto máximo de la tele para que siempre quepan las noticias debajo (sea cual sea el iPad o la ventana)
   document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 368) + "px");
 }
@@ -2602,7 +2608,7 @@ body{background:var(--bgp)!important}
 #amb.redface{background:#000!important;filter:none!important}
 #amb.redface .nf{opacity:var(--nb,.4)}
 html,body{overscroll-behavior:none}
-html.isfs,html.isfs body{overflow:hidden!important;height:100%!important;margin:0!important}html.isfs .app{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;height:auto!important;width:auto!important}   /* en pantalla completa el panel ocupa siempre todo el alto, sea cual sea la medida que dé el iPad */
+html.isfs,html.isfs body{overflow:hidden!important;height:100%!important;margin:0!important}html.isfs .app{position:fixed!important;left:0!important;top:0!important;margin-top:var(--fsoffz,0px)!important}   /* en pantalla completa: el panel empieza donde empieza lo visible */
 html.isfs .main{padding-top:52px!important}
 html.isfs.room-dormitorio .main{padding-top:40px!important}
 html.room-salon:not(.isfs) .main,html.room-dormitorio:not(.isfs) .main{padding-top:calc(18px + env(safe-area-inset-top))!important}
@@ -2945,7 +2951,7 @@ const fechaLarga = d => { const t = d.toLocaleDateString("es-ES", {weekday:"long
 function ambTempTile(k){ const r = HOME_ROOMS.find(x => x.k === k), v = roomTH(r.re);
   return `<div class="gt tempg"><b>${r.n}</b><small class="tdate">${fechaLarga(new Date())}</small><span class="tg"><span><small>Temp.</small>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</span><span><small>Humedad</small>${!isNaN(v.h) ? Math.round(v.h) + " %" : "—"}</span></span></div>`; }
 function alarmTileW(){ const a = nextAlarm();
-  return `<div class="tl ${a ? "on" : ""}"><span class="ti">${tsvg("bell")}</span><b>Alarma</b>${a ? `<span class="tv2">${a}</span>` : ""}<small>${a == null ? "sin datos del iPhone" : a ? "iPhone" : "ninguna activada"}</small></div>`; }
+  return `<div class="tl alm ${a ? "on" : ""}"><span class="ti">${tsvg("bell")}</span><b>Alarma</b>${a ? `<span class="tv2">${a}</span>` : ""}<small>${a == null ? "sin datos del iPhone" : a ? "iPhone" : "ninguna activada"}</small></div>`; }
 function ambRadioTile(){ const r = radSel(), on = radioOn === r.k;
   return `<button class="gt ${on ? "on" : ""}" data-rad="play"><span class="gi">${GIC("music")}</span><b>${esc(r.t)}</b><small>${on ? (sleepTxt() || "Sonando · toca para parar") : "Toca para escuchar"}</small></button>`; }
 function ambAlarmTile(){ const a = nextAlarm();
@@ -3538,12 +3544,6 @@ html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from
     const dg = b.querySelector(".wxdog") || b.appendChild(Object.assign(document.createElement("div"), {className: "wxdog"})); if (dg.dataset.k !== K){ dg.dataset.k = K; dg.innerHTML = dogScene(K); }
     b.querySelector(".wxi").innerHTML = `<span class="wxic">${wx(c.weather_code, c.is_day)}</span><b>${Math.round(c.temperature_2m)}°</b><em>${wxText(c.weather_code)}</em>${d.temperature_2m_max ? `<small>máx ${Math.round(d.temperature_2m_max[0])}° · mín ${Math.round(d.temperature_2m_min[0])}°</small>` : ""}`; }, 1000);
 })();
-</script>
-<div id="fsdbg" style="display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:99999;font:700 30px/1.3 -apple-system,sans-serif;color:#fff;background:rgba(0,0,0,.8);padding:16px 22px;border-radius:16px;pointer-events:none;text-align:center;max-width:90vw"></div>
-<script>/* medidas de la pantalla completa (provisional, para ajustar el iPad mini) */
-setInterval(() => { const d = document.getElementById("fsdbg"), on = document.documentElement.classList.contains("isfs"); d.style.display = on ? "block" : "none"; if (!on) return;
-  const a = document.querySelector(".app"), vv = window.visualViewport;
-  d.textContent = `iw ${innerWidth} ih ${innerHeight} ch ${document.documentElement.clientHeight} vv ${vv ? Math.round(vv.height) : "-"} sc ${screen.width}x${screen.height} app ${a.offsetHeight} z ${(+a.style.zoom || 1).toFixed(3)}`; }, 1000);
 </script>
 </body>
 </html>
