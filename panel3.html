@@ -713,6 +713,10 @@ body.at-home #homebar{display:none}
 #h24 .plot svg path{stroke-width:2.6px}
 </style>
 <style id="gdock-v3">
+/* salón: con la radio sonando, el hueco de la tele enseña un espectro de frecuencias */
+#spec{display:none;position:absolute;inset:0;width:100%;height:100%;border-radius:inherit}
+.tl.tv.radv #spec{display:block}.tl.tv.radv .tvbig{display:none!important}.tl.tv.radv .chb{display:none}
+.tl.tv.radv .tvb{z-index:2}
 /* salón en reposo de noche: la misma pantalla, en negro y rojo tenue */
 html.salonred,html.salonred body{background:#000!important}
 html.salonred .app{filter:invert(1) grayscale(1) brightness(.75);transition:filter 1.5s}
@@ -2788,11 +2792,11 @@ function renderSalon(box){
     box.innerHTML = `<div class="h3t"><h2>Salón</h2><span id="h3date"></span><span id="h3time" style="display:none"></span></div>
       <div class="hg rs"><div class="tl tv tvs" id="tvTile" role="button" tabindex="0" aria-label="Tele: toca para el sonido"><video id="tvMini" muted playsinline autoplay preload="none"></video><img id="tvMiniLogo" alt="">
         <button class="chb l" data-chs="-1" aria-label="Canal anterior">${tsvg("chev_l")}</button><button class="chb r" data-chs="1" aria-label="Canal siguiente">${tsvg("chev_r")}</button>
-        <span class="tvbig">TV</span><span class="tvb"><b id="tvMiniN"></b><small id="tvMiniS"></small></span></div><div id="hgA" style="display:contents"></div></div>
+        <span class="tvbig">TV</span><canvas id="spec" aria-hidden="true"></canvas><span class="tvb"><b id="tvMiniN"></b><small id="tvMiniS"></small></span></div><div id="hgA" style="display:contents"></div></div>
       <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="pla" aria-label="Agenda">${tsvg("cal")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
     $("tvTile").addEventListener("click", ev => { const c = ev.target.closest("[data-chs]"); if (c){ ev.stopPropagation(); roomAction(c); return; }
       const chn = CHANNELS.find(x => x.k === ch) || CHANNELS[0];
-      if (salonTv || (chn.u && !$("tvMini").dataset.err)){ salonTv = !salonTv; miniMuted = !salonTv; if (salonTv) syncMini(); else stopMini(); syncMini(); return; }   // un toque: se ve y se oye; otro: se para
+      if (salonTv || (chn.u && !$("tvMini").dataset.err)){ if (!salonTv && radioOn) stopAll(); salonTv = !salonTv; miniMuted = !salonTv; if (salonTv) syncMini(); else stopMini(); syncMini(); return; }   // un toque: se ve y se oye; otro: se para
       show("ent"); setTimeout(() => { const pb = $("screen").querySelector("[data-play]"); if (pb && !tvOn && !ytOn) pb.click(); }, 300); });
   }
   const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), v = roomTH(HOME_ROOMS[0].re);
@@ -3058,6 +3062,41 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     try{ await service("input_number", "set_value", {entity_id: id, value: v}); }catch(err){ handleErr(err); }
     setTimeout(async () => { await refreshHA(); delete cfgPend[id]; renderCfg(true); }, 1500); }, true);
   drawSide();
+})();
+</script>
+<script>
+/* ===== Salón: espectro (transformada de Fourier) en el hueco de la tele mientras suena la radio =====
+   Es una animación que imita un analizador de espectro: no analiza el sonido real, porque pasar la radio
+   por el analizador del navegador deja mudas en el iPad las emisoras HLS (RNE, Radio Galega). */
+(() => {
+  const N = 48; let raf = 0, t0 = 0; const lev = new Float32Array(N), pk = new Float32Array(N), ph = Array.from({length: N}, () => Math.random() * 6.3);
+  const draw = ts => {
+    const t = $("tvTile"), cv = $("spec"); if (!t || !cv || !t.classList.contains("radv")){ raf = 0; return; }
+    const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1, W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
+    if (cv.width !== W || cv.height !== H){ cv.width = W; cv.height = H; }
+    const g = cv.getContext("2d"), s = ts / 1000, beat = Math.pow(Math.max(0, Math.sin(s * Math.PI * 2 * 1.9)), 8), rad = RADIOS.find(x => x.k === radioOn) || {};
+    g.fillStyle = "#0b0b10"; g.fillRect(0, 0, W, H);
+    const bw = W / N, base = H * 0.80, top = H * 0.10;
+    const grd = g.createLinearGradient(0, base, 0, top); grd.addColorStop(0, "#5e5ce6"); grd.addColorStop(.55, "#bf5af2"); grd.addColorStop(1, "#ff9f0a");
+    for (let i = 0; i < N; i++){
+      const f = i / N, tilt = Math.pow(1 - f, 1.4) * .75 + .18;   // los graves con más energía, como en la música
+      const n = (Math.sin(s * (1.3 + f * 5) + ph[i]) + Math.sin(s * (2.7 + f * 9) + ph[i] * 1.7) * .6 + Math.sin(s * 7.1 + i * .9) * .25) / 1.85;
+      const target = Math.max(.04, Math.min(1, tilt * (.55 + .45 * n) + beat * (1 - f) * .35 + (Math.random() - .5) * .08));
+      lev[i] += (target - lev[i]) * (target > lev[i] ? .45 : .12);
+      pk[i] = Math.max(lev[i], pk[i] - .006);
+      const h = (base - top) * lev[i], x = i * bw + bw * .18, w = bw * .64;
+      g.fillStyle = grd; g.beginPath(); g.roundRect ? g.roundRect(x, base - h, w, h, w / 2) : g.rect(x, base - h, w, h); g.fill();
+      g.globalAlpha = .18; g.fillRect(x, base + 4 * dpr, w, h * .25); g.globalAlpha = 1;   // reflejo
+      g.fillStyle = "rgba(255,255,255,.85)"; g.fillRect(x, base - (base - top) * pk[i] - 3 * dpr, w, 2 * dpr);   // picos
+    }
+    raf = requestAnimationFrame(draw);
+  };
+  const sync = () => { const t = $("tvTile"); if (!t) return; const on = !!radioOn && !(typeof salonTv !== "undefined" && salonTv) && roomOf() === "salon";
+    t.classList.toggle("radv", on);
+    if (on){ const r = RADIOS.find(x => x.k === radioOn) || {}; $("tvMiniN").textContent = r.t || "Radio"; $("tvMiniS").textContent = "🔊 Sonando · toca para ver la tele"; if (!raf) raf = requestAnimationFrame(draw); } };
+  const _sm = syncMini; syncMini = function(){ _sm(); sync(); };
+  const _rr = renderRadios; renderRadios = function(){ _rr(); sync(); };
+  setInterval(sync, 2000);
 })();
 </script>
 </body>
