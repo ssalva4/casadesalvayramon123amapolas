@@ -615,12 +615,12 @@ body.at-home #homebar{display:none}
 <style id="ent-v3">
 /* ===== Entretenimiento estilo HomeView (claro): tele protagonista, canales debajo, radio a la derecha, noticias en tarjetas con foto ===== */
 .t-ent.on{grid-template-columns:minmax(0,1fr) 250px!important;grid-template-rows:auto minmax(0,1fr)!important;gap:16px!important}
-.t-ent .tv{grid-column:1!important;grid-row:1!important;display:flex!important;flex-direction:column;gap:12px;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;
-  width:min(100%,calc(var(--tvmaxh,400px) * 16 / 9));justify-self:center;min-height:0}
+.t-ent .tv{grid-column:1!important;grid-row:1!important;display:flex!important;flex-direction:row;align-items:center;gap:12px;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;
+  width:min(100%,calc(var(--tvmaxh,400px) * 16 / 9 + 78px));justify-self:center;min-height:0}
 .t-ent .tv>.lbl{display:none!important}
-.t-ent .tv .screen{width:100%!important;max-width:none!important;border-radius:30px!important;box-shadow:0 18px 40px rgba(0,0,0,.18)!important;order:1}
-.t-ent .tv .chs{order:2;flex-direction:row!important;justify-content:center;align-self:center;gap:14px!important;padding:8px 14px!important;margin:0!important;border-radius:22px;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.06)}
-.t-ent .tv .chs .sep{width:1px!important;height:30px!important;margin:0 4px!important}
+.t-ent .tv .screen{flex:1;min-width:0;width:auto!important;max-width:none!important;border-radius:30px!important;box-shadow:0 18px 40px rgba(0,0,0,.18)!important;order:1}
+.t-ent .tv .chs{order:0;flex:none;width:66px;flex-direction:column!important;justify-content:center;align-self:center;gap:10px!important;padding:10px 8px!important;margin:0!important;border-radius:22px;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+.t-ent .tv .chs .sep{width:30px!important;height:1px!important;margin:2px 0!important}
 .t-ent .tv .chs button.logo{width:50px!important;height:50px!important;border-radius:14px!important;opacity:.45;background:#fff!important;box-shadow:none!important}
 .t-ent .tv .chs button.logo img{object-fit:cover!important}
 .t-ent .tv .chs button.logo.on{opacity:1;box-shadow:0 0 0 2px #fff,0 0 0 4.5px #1c1c1e!important}
@@ -713,6 +713,14 @@ body.at-home #homebar{display:none}
 #h24 .plot svg path{stroke-width:2.6px}
 </style>
 <style id="gdock-v3">
+body.tab-ent #clock{display:none!important}   /* en Entretenimiento ya está la hora junto al título */
+/* Entretenimiento: espectro sobre la pantalla de la tele mientras suena la radio */
+.t-ent .tv{position:relative}
+#spec2,#spec2t{display:none;position:absolute;left:78px;top:50%;transform:translateY(-50%);width:calc(100% - 78px);aspect-ratio:16/9;border-radius:30px;pointer-events:none;z-index:5}
+.t-ent .tv.radv #spec2,.t-ent .tv.radv #spec2t{display:block}
+#spec2t{display:none;color:#fff;font-family:var(--head)}
+#spec2t b{position:absolute;left:26px;bottom:44px;font-size:30px;font-weight:700;letter-spacing:-.02em}
+#spec2t small{position:absolute;left:26px;bottom:22px;font-size:15px;opacity:.8}
 /* salón: con la radio sonando, el hueco de la tele enseña un espectro de frecuencias */
 #spec{display:none;position:absolute;inset:0;width:100%;height:100%;border-radius:inherit}
 .tl.tv.radv #spec{display:block}.tl.tv.radv .tvbig{display:none!important}.tl.tv.radv .chb{display:none}
@@ -830,6 +838,7 @@ body:not(.at-home) .main{padding-bottom:84px!important}
         <div class="lbl">Televisión <button class="pill" id="ytChange" hidden>Clave (opcional)</button></div>
         <div class="chs" id="chs"></div>
         <div class="screen" id="screen"></div>
+        <canvas id="spec2" aria-hidden="true"></canvas><div id="spec2t" aria-hidden="true"></div>
       </div>
       <div class="card news"><div class="lbl">Noticias · El País y Faro de Vigo <span class="pill" id="newsTime"></span></div><div class="nwrap"><div class="ncar" id="news"><div class="msg">Cargando noticias…</div></div><button class="narr l" id="nPrev" aria-label="Noticia anterior">‹</button><button class="narr r" id="nNext" aria-label="Noticia siguiente">›</button></div></div>
       <div class="card">
@@ -1640,7 +1649,7 @@ function fitScreen(){
   const z = Math.min(w / 1000, h / (big ? 750 : 820));
   app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px";
   // alto máximo de la tele para que siempre quepan las noticias debajo (sea cual sea el iPad o la ventana)
-  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 470) + "px");
+  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 368) + "px");
 }
 window.addEventListener("resize", fitScreen); window.addEventListener("orientationchange", () => setTimeout(fitScreen, 300)); fitScreen();
 if (window.visualViewport) window.visualViewport.addEventListener("resize", fitScreen);
@@ -2998,7 +3007,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
   d.innerHTML = IT.map(x => `<button data-gd="${x[0]}" aria-label="${x[2]}">${tsvg(x[1])}</button>`).join(""); app.appendChild(d);
   const mark = () => d.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.gd === tab));
   d.addEventListener("click", e => { const b = e.target.closest("[data-gd]"); if (b) show(b.dataset.gd); });
-  const _s = show; show = function(t){ _s(t); mark(); fitScreen(); }; mark();
+  const _s = show; show = function(t){ _s(t); mark(); fitScreen(); document.body.classList.toggle("tab-ent", t === "ent"); }; mark();
   /* si el iPad cambia de tamaño sin avisar (pantalla completa, barras…), volver a encajar */
   const unscroll = () => { if (window.innerWidth < 900) return; if (window.scrollX || window.scrollY) window.scrollTo(0, 0);   // que nada quede desplazado (se veía cortado arriba y con hueco abajo)
     [document.scrollingElement, document.body, document.querySelector(".app"), tab === "hom" ? document.querySelector(".main") : null].forEach(el => { if (el && el.scrollTop) el.scrollTop = 0; }); };
@@ -3065,13 +3074,17 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 })();
 </script>
 <script>
-/* ===== Salón: espectro (transformada de Fourier) en el hueco de la tele mientras suena la radio =====
+/* ===== Espectro (transformada de Fourier) en la tele del salón y de Entretenimiento mientras suena la radio =====
    Es una animación que imita un analizador de espectro: no analiza el sonido real, porque pasar la radio
    por el analizador del navegador deja mudas en el iPad las emisoras HLS (RNE, Radio Galega). */
 (() => {
   const N = 48; let raf = 0, t0 = 0; const lev = new Float32Array(N), pk = new Float32Array(N), ph = Array.from({length: N}, () => Math.random() * 6.3);
   const draw = ts => {
-    const t = $("tvTile"), cv = $("spec"); if (!t || !cv || !t.classList.contains("radv")){ raf = 0; return; }
+    const cvs = [["tvTile", "spec"], ["entTv", "spec2"]].map(([a, b]) => [document.getElementById(a), $(b)]).filter(([t, c]) => t && c && t.classList.contains("radv") && c.offsetParent);
+    if (!cvs.length){ raf = 0; return; }
+    for (const [, cv] of cvs) paint(cv, ts);
+    raf = requestAnimationFrame(draw); };
+  const paint = (cv, ts) => {
     const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1, W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
     if (cv.width !== W || cv.height !== H){ cv.width = W; cv.height = H; }
     const g = cv.getContext("2d"), s = ts / 1000, beat = Math.pow(Math.max(0, Math.sin(s * Math.PI * 2 * 1.9)), 8), rad = RADIOS.find(x => x.k === radioOn) || {};
@@ -3089,11 +3102,15 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
       g.globalAlpha = .18; g.fillRect(x, base + 4 * dpr, w, h * .25); g.globalAlpha = 1;   // reflejo
       g.fillStyle = "rgba(255,255,255,.85)"; g.fillRect(x, base - (base - top) * pk[i] - 3 * dpr, w, 2 * dpr);   // picos
     }
-    raf = requestAnimationFrame(draw);
   };
-  const sync = () => { const t = $("tvTile"); if (!t) return; const on = !!radioOn && !(typeof salonTv !== "undefined" && salonTv) && roomOf() === "salon";
-    t.classList.toggle("radv", on);
-    if (on){ const r = RADIOS.find(x => x.k === radioOn) || {}; $("tvMiniN").textContent = r.t || "Radio"; $("tvMiniS").textContent = "🔊 Sonando · toca para ver la tele"; if (!raf) raf = requestAnimationFrame(draw); } };
+  const ent = document.querySelector(".t-ent .tv"); if (ent) ent.id = "entTv";
+  const sync = () => { const r = RADIOS.find(x => x.k === radioOn) || {};
+    const e = $("entTv"), eon = !!radioOn && !tvOn && !ytOn;   // Entretenimiento: sobre la pantalla de la tele
+    if (e){ e.classList.toggle("radv", eon); if (eon) $("spec2t").innerHTML = `<b>${esc(r.t || "Radio")}</b><small>🔊 Sonando · toca para ver la tele</small>`; }
+    const t = $("tvTile"), on = !!t && !!radioOn && !(typeof salonTv !== "undefined" && salonTv) && roomOf() === "salon";
+    if (t){ t.classList.toggle("radv", on); if (on){ $("tvMiniN").textContent = r.t || "Radio"; $("tvMiniS").textContent = "🔊 Sonando · toca para ver la tele"; } }
+    if ((on || eon) && !raf) raf = requestAnimationFrame(draw); };
+  const _st = show; show = function(x){ _st(x); setTimeout(sync, 50); };
   const _sm = syncMini; syncMini = function(){ _sm(); sync(); };
   const _rr = renderRadios; renderRadios = function(){ _rr(); sync(); };
   setInterval(sync, 2000);
