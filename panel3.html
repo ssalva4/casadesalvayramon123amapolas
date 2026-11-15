@@ -861,6 +861,37 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 #cos3 .mc.cur .st i{opacity:1}
 #cos3 .mc span{font-size:11px;font-weight:600;color:#8e8e93}#cos3 .mc.cur span{color:#1c1c1e;font-weight:800}
 </style>
+<style id="cli2-v3">
+/* ===== Clima en dos vistas: Ahora | Últimas 24 h ===== */
+#cliseg{grid-column:1/4;grid-row:1;justify-self:center;display:inline-flex;background:#e3e3e8;border-radius:12px;padding:3px;gap:2px}
+#cliseg button{padding:8px 26px;border-radius:9px;font-size:15px;font-weight:600;color:#3a3a3c;background:none}
+#cliseg button.on{background:#fff;color:#1c1c1e;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.t-cli.on{grid-template-rows:auto auto minmax(0,1fr)!important}
+.t-cli .wx{grid-row:2!important}
+#ac0,#ac1,.t-cli .bath{grid-row:3!important}
+.t-cli.v24 .wx,.t-cli.v24 #ac0,.t-cli.v24 #ac1,.t-cli.v24 .bath{display:none!important}
+.t-cli:not(.v24) .h24{display:none!important}
+.t-cli.v24.on{grid-template-rows:auto minmax(0,1fr)!important}
+.t-cli.v24 .h24{grid-row:2!important;height:auto!important;display:flex!important;flex-direction:column;padding:16px 22px!important}
+.t-cli.v24 #h24{flex-direction:column!important;gap:14px!important}
+.t-cli.v24 #h24 .pn{flex:1;min-height:0}
+.t-cli.v24 #h24 .pt{font-size:15px!important}
+.t-cli.v24 #h24 .yl{font-size:12.5px!important}
+/* más aire en las tarjetas */
+.t-cli .hr .hwi{display:block;width:26px;height:26px;margin:2px auto}.t-cli .hr .hwi svg{width:100%!important;height:100%!important}
+.cv .dial{width:236px!important;height:198px!important;margin:4px auto 0!important}
+.cv .dial .ctl{top:56px!important}.cv .dial .ctl span{font-size:58px!important}
+.cv .dial small{top:122px!important;font-size:14.5px!important}
+.cv .dial .pm{width:48px!important;height:48px!important;font-size:26px!important}
+.t-cli:not(.v24) .ac{display:flex!important;flex-direction:column}
+.t-cli:not(.v24) .ac>.cv{flex:1;display:flex;flex-direction:column;justify-content:space-between}
+.cv .mbar button{height:54px!important}.cv .mbar button span{font-size:11.5px!important}.cv .mbar button .i{width:21px!important;height:21px!important}
+.cv .stx{font-size:15px!important}
+.cv .hd b{font-size:21px!important}
+.cv .stx{margin-top:6px!important}
+.cv .mbar{margin-top:12px!important}
+.cv .dh{margin-top:12px!important}
+</style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
 <div class="app">
@@ -3062,7 +3093,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     const i0 = h.time.indexOf(c.time.slice(0, 13) + ":00"); let s2 = "";
     if (i0 >= 0) for (let k = -6; k <= 12; k += 3){ const i = i0 + k; if (i < 0 || i >= h.time.length) continue;
       const hh = parseInt(h.time[i].slice(11, 13), 10), p = h.precipitation_probability[i] ?? 0;
-      s2 += `<div class="hr ${k === 0 ? "cur" : ""}">${k === 0 ? "Ahora" : hh + "h"}${wx(h.weather_code[i], h.is_day[i]).replace('<svg','<svg class="hw"')}<b class="num">${Math.round(h.temperature_2m[i])}°</b><em>${p}%</em></div>`; }
+      s2 += `<div class="hr ${k === 0 ? "cur" : ""}">${k === 0 ? "Ahora" : hh + "h"}<span class="hwi">${wx(h.weather_code[i], h.is_day[i])}</span><b class="num">${Math.round(h.temperature_2m[i])}°</b><em>${p}%</em></div>`; }
     $("hrs").innerHTML = s2;
     if (typeof renderHome === "function") renderHome();
   };
@@ -3235,6 +3266,17 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
   };
   const _rc = renderCost; renderCost = function(){ _rc(); renderCos3(); };
   const _s = show; show = function(t){ _s(t); if (t === "cos") setTimeout(() => { try{ renderCost(); }catch(e){} }, 50); };
+})();
+</script>
+<script>
+/* Clima: selector Ahora | Últimas 24 h */
+(() => { const sec = $("t-cli"), seg = document.createElement("div"); seg.id = "cliseg"; seg.setAttribute("role", "tablist");
+  seg.innerHTML = '<button data-v="now">Ahora</button><button data-v="24">Últimas 24 h</button>'; sec.insertBefore(seg, sec.firstChild);
+  const set = v => { sec.classList.toggle("v24", v === "24"); seg.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+    if (v === "24"){ try{ h24Sig = ""; renderH24(); }catch(e){} } };
+  seg.addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) set(b.dataset.v); });
+  set("now");
+  const _s = show; show = function(t){ _s(t); if (t === "cli") set("now"); };   // al entrar, siempre «Ahora»
 })();
 </script>
 </body>
