@@ -2872,7 +2872,9 @@ function renderSalon(box){
       <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="cos" aria-label="Costes">${tsvg("euro")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
     $("tvTile").addEventListener("click", ev => { const c = ev.target.closest("[data-chs]"); if (c){ ev.stopPropagation(); roomAction(c); return; }
       const chn = CHANNELS.find(x => x.k === ch) || CHANNELS[0];
-      if (salonTv || (chn.u && !$("tvMini").dataset.err)){ if (!salonTv && radioOn) stopAll(); salonTv = !salonTv; miniMuted = !salonTv; if (salonTv) syncMini(); else stopMini(); syncMini(); return; }   // un toque: se ve y se oye; otro: se para
+      if (!salonTv && (radioOn || (!player.paused && player.getAttribute("src")))){   // con la radio sonando, un toque la para
+        if (radioOn) stopAll(); else { player.pause(); player.removeAttribute("src"); player.load(); renderRadios(); } syncMini(); return; }
+      if (salonTv || (chn.u && !$("tvMini").dataset.err)){ salonTv = !salonTv; miniMuted = !salonTv; if (salonTv) syncMini(); else stopMini(); syncMini(); return; }   // un toque: se ve y se oye; otro: se para
       show("ent"); setTimeout(() => { const pb = $("screen").querySelector("[data-play]"); if (pb && !tvOn && !ytOn) pb.click(); }, 300); });
   }
   const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), v = roomTH(HOME_ROOMS[0].re);
@@ -3176,7 +3178,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     const e = $("entTv"), eon = sounding() && !tvOn && !ytOn;   // Entretenimiento: sobre la pantalla de la tele
     if (e){ e.classList.toggle("radv", eon); if (eon) $("spec2t").innerHTML = `<b>${esc(r.t || "Radio")}</b><small>🔊 Sonando · toca para ver la tele</small>`; }
     const t = $("tvTile"), on = !!t && sounding() && !(typeof salonTv !== "undefined" && salonTv) && roomOf() === "salon";
-    if (t){ t.classList.toggle("radv", on); if (on){ $("tvMiniN").textContent = r.t || "Radio"; $("tvMiniS").textContent = "🔊 Sonando · toca para ver la tele"; } }
+    if (t){ t.classList.toggle("radv", on); if (on){ $("tvMiniN").textContent = r.t || "Radio"; $("tvMiniS").textContent = "🔊 Sonando · toca para parar"; } }
     if ((on || eon) && !raf) raf = requestAnimationFrame(draw); };
   const _st = show; show = function(x){ _st(x); setTimeout(sync, 50); };
   const _sm = syncMini; syncMini = function(){ _sm(); sync(); };
