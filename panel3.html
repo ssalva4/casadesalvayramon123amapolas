@@ -941,12 +941,12 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 .hg.rs .tl.dclk b{font-size:118px;font-weight:600;letter-spacing:-.03em;line-height:1;white-space:nowrap;overflow:visible;text-overflow:clip;max-width:none}.hg.rs .tl.dclk .mm{color:#8f80dd}   /* salón: como el del dormitorio pero en horizontal */
    /* el dock de las demás pantallas, a la misma altura que el del inicio */   /* iPad mini del dormitorio en pantalla completa: todo más abajo (2 veces el alto de «Dormitorio»), misma escala */
 .hg.rd .tl.alm{gap:0;padding:6px}.hg.rd .tl.alm .ti{width:28px;height:28px;margin-bottom:2px}.hg.rd .tl.alm .tv2{font-size:32px;line-height:1.05}   /* la alarma cabe entera también en el iPad mini */
-/* un único dock, igual en todas las pantallas (también en el inicio): fuera del panel, fijo abajo y escalado igual que el panel */
-#gdock{position:fixed!important;left:50%!important;top:auto!important;bottom:calc((30px + env(safe-area-inset-bottom)) * var(--zd,1))!important;transform:translateX(-50%) scale(var(--zd,1))!important;transform-origin:50% 100%!important;gap:26px!important;padding:10px 26px!important;background:rgba(255,255,255,.55)!important;border:1px solid rgba(255,255,255,.7)!important;box-shadow:none!important}
-#gdock button{width:52px!important;height:52px!important}#gdock button svg{width:28px!important;height:28px!important}
-body.at-home #gdock{display:flex!important}body.at-home .mdock{visibility:hidden!important}
-body:not(.at-home) .main{padding-bottom:calc((118px + env(safe-area-inset-bottom)) * var(--zd,1) / var(--z,1))!important}
-html.salonred #gdock{filter:invert(1) grayscale(1) brightness(.75)}
+/* dock: dentro del panel, al final de cada pantalla (en el flujo normal, nada flotante), del mismo tamaño y a la misma altura que el del inicio */
+#gdock{position:static!important;transform:none!important;left:auto!important;bottom:auto!important;align-self:center;flex:none;margin-top:auto!important;
+  gap:calc(26px * var(--dk,1))!important;padding:calc(10px * var(--dk,1)) calc(26px * var(--dk,1))!important;border-radius:calc(24px * var(--dk,1))!important;background:rgba(255,255,255,.55)!important;border:1px solid rgba(255,255,255,.7)!important;box-shadow:none!important}
+#gdock button{width:calc(52px * var(--dk,1))!important;height:calc(52px * var(--dk,1))!important;border-radius:calc(14px * var(--dk,1))!important}#gdock button svg{width:calc(28px * var(--dk,1))!important;height:calc(28px * var(--dk,1))!important}
+body.at-home #gdock{display:none!important}
+body:not(.at-home) .main{padding-bottom:calc((30px + env(safe-area-inset-bottom)) * var(--dk,1))!important}
 </style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
@@ -1807,10 +1807,10 @@ function fitScreen(){
   const big = typeof tab !== "undefined" && tab === "hom" && /room-(salon|dormitorio)/.test(document.documentElement.className);   // el Inicio de las estancias, más grande
   const z = Math.min(w / 1000, h / (big ? 750 : 820));
   app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px"; document.documentElement.style.setProperty("--z", z);
-  document.documentElement.style.setProperty("--zd", /room-(salon|dormitorio)/.test(document.documentElement.className) ? Math.min(w / 1000, h / 750) : z);   // el dock, del mismo tamaño en todas las pantallas
+  const zd = /room-(salon|dormitorio)/.test(document.documentElement.className) ? Math.min(w / 1000, h / 750) : z; document.documentElement.style.setProperty("--dk", zd / z);   // el dock, del mismo tamaño en todas las pantallas
   document.documentElement.style.setProperty("--fsoffz", (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--fsoff")) || 0) / z + "px");
   // alto máximo de la tele para que siempre quepan las noticias debajo (sea cual sea el iPad o la ventana)
-  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 368) + "px");
+  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 368 - (/room-(salon|dormitorio)/.test(document.documentElement.className) ? 40 : 0)) + "px");
 }
 window.addEventListener("resize", fitScreen); window.addEventListener("orientationchange", () => setTimeout(fitScreen, 300)); fitScreen();
 if (window.visualViewport) window.visualViewport.addEventListener("resize", fitScreen);
@@ -2860,7 +2860,7 @@ $("cfg").addEventListener("change", ev => { const i = ev.target.closest("[data-r
 </script>
 <script>
 /* Pantalla completa: esconde la hora y la batería del iPad. El navegador solo deja hacerlo tras un toque, así que se activa con el primer toque. */
-const fsOn = () => store.get("p3_fs4", true) && !store.get("p3_fsbug", false) && !(window.navigator.standalone || matchMedia("(display-mode: standalone)").matches);   // un toque en una zona sin botón pone la pantalla completa (se quita en Ajustes · Este iPad)
+const fsOn = () => false && !(window.navigator.standalone || matchMedia("(display-mode: standalone)").matches);   // un toque en una zona sin botón pone la pantalla completa (se quita en Ajustes · Este iPad)
 const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 function goFs(){ if (!fsOn() || isFs()) return; const el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
   if (f){ try{ const r = f.call(el, {navigationUI: "hide"}); if (r && r.catch) r.catch(() => {}); }catch(e){} } }
@@ -2869,7 +2869,8 @@ const fsTap = e => { if (e.target && e.target.closest && e.target.closest("butto
 document.addEventListener("click", fsTap, true);
 document.addEventListener("touchend", fsTap, true);
 const _ambCfgCard2 = ambCfgCard;
-ambCfgCard = function(){ const on = fsOn(), can = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+ambCfgCard = function(){ return _ambCfgCard2(); };   // sin pantalla completa de Safari: para verlo a pantalla completa, abrir desde el icono de la pantalla de inicio
+const _fsCardOld = function(){ const on = fsOn(), can = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
   return _ambCfgCard2() + `<div class="card"><h3>⛶ Pantalla completa (este aparato)</h3>
     <div class="cf-r"><span>Esconder la hora y la batería del iPad</span><button class="sw ${on ? "on" : ""}" data-fs="1" role="switch" aria-checked="${on}" aria-label="Pantalla completa"></button></div>
     <div class="cf-note">${can ? "Se activa con el primer toque en la pantalla. Para salir, desliza desde arriba." : "Este navegador no permite la pantalla completa."}</div></div>`; };
@@ -3187,7 +3188,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 /* dock fijo: Inicio, Clima, Tele, Agenda y Ajustes; la sección actual en negro */
 (() => { const app = document.querySelector(".app") || document.body, d = document.createElement("nav"); d.id = "gdock"; d.setAttribute("aria-label", "Secciones");
   const IT = [["hom", "home", "Inicio"], ["cli", "therm", "Clima"], ["ent", "tv", "Tele y radio"], ["cos", "euro", "Costes"], ["cfg", "gear", "Ajustes"]];
-  d.innerHTML = IT.map(x => `<button data-gd="${x[0]}" aria-label="${x[2]}">${tsvg(x[1])}</button>`).join(""); document.body.appendChild(d);
+  d.innerHTML = IT.map(x => `<button data-gd="${x[0]}" aria-label="${x[2]}">${tsvg(x[1])}</button>`).join(""); (document.querySelector(".main") || app).appendChild(d);
   const mark = () => d.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.gd === tab));
   d.addEventListener("click", e => { const b = e.target.closest("[data-gd]"); if (b) show(b.dataset.gd); });
   const _s = show; show = function(t){ _s(t); mark(); fitScreen(); document.body.classList.toggle("tab-ent", t === "ent"); }; mark();
@@ -3570,15 +3571,15 @@ html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from
   const umbrella = snow => `<g><path d="M100 70 q60 -56 120 0z" fill="#ff6b5b"/><path d="M100 70 q15 -10 30 0 q15 -10 30 0 q15 -10 30 0 q15 -10 30 0" fill="#ff6b5b" stroke="#d94b3e" stroke-width="2"/>
       ${snow ? '<path d="M104 62 q56 -50 112 0 q-10 -8 -20 -2 q-10 -8 -20 -2 q-12 -8 -24 -2 q-10 -8 -22 -2 q-12 -8 -26 6z" fill="#fff"/>' : ""}<path d="M160 70 v70" stroke="#5b4636" stroke-width="4"/></g>`;
   const yarn = () => `<g transform="translate(232 0)"><g class="yx"><g class="yr" style="transform-box:fill-box;transform-origin:50% 50%"><circle cx="0" cy="131" r="13" fill="#ff7ab0"/><path d="M-10 125 q10 6 20 0 M-11 133 q11 6 22 0 M-4 120 q4 10 0 22" stroke="#e04f8e" stroke-width="2" fill="none"/></g></g></g>`;
-  window.catScene = k => {
-    const inner = (k === "sun" || k === "partly") ? ground("#8fd16a") + `<g transform="translate(-40 0)">${catSit()}</g>` + yarn()
+  window.catScene = (k, night) => {   // de noche siempre duerme, llueva o no
+    const inner = night ? ground("#23305a") + catSleep() : (k === "sun" || k === "partly") ? ground("#8fd16a") + `<g transform="translate(-40 0)">${catSit()}</g>` + yarn()
       : (k === "rain" || k === "storm") ? ground("#3f5a46") + umbrella(false) + catSit()
       : k === "snow" ? ground("#ffffff") + umbrella(true) + catSit()
       : (k === "night" || k === "nightp") ? ground("#23305a") + catSleep()
       : ground(k === "fog" ? "#c4cbd3" : "#9cc08a") + catSit();
     return `<svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${inner}</svg>`; };
-  window.dogScene = k => {
-    const inner = (k === "sun" || k === "partly") ? ground("#8fd16a") + `<g transform="translate(-20 0)">${dogBody(true)}</g>` + ball()
+  window.dogScene = (k, night) => {   // de noche siempre duerme, llueva o no
+    const inner = night ? ground("#23305a") + sleeping() : (k === "sun" || k === "partly") ? ground("#8fd16a") + `<g transform="translate(-20 0)">${dogBody(true)}</g>` + ball()
       : (k === "rain" || k === "storm") ? ground("#3f5a46") + house(false, k === "storm")
       : k === "snow" ? ground("#ffffff") + house(true, false)
       : (k === "night" || k === "nightp") ? ground("#23305a") + sleeping()
@@ -3595,7 +3596,7 @@ html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from
     const w = store.get("p2_wx", null); if (!w || !w.current) return; upd();
     const c = w.current; full.className = "wxtv wx-" + K + (DARK[K] ? " dk" : "");
     const sig = K + "|" + c.weather_code + "|" + c.is_day + "|" + isD; if (full.dataset.sig === sig) return; full.dataset.sig = sig;
-    full.querySelector(".wxic").innerHTML = wx(c.weather_code, c.is_day); full.querySelector(".wxdog").innerHTML = isD ? catScene(K) : dogScene(K); }, 1000);
+    full.querySelector(".wxic").innerHTML = wx(c.weather_code, c.is_day); full.querySelector(".wxdog").innerHTML = isD ? catScene(K, !+c.is_day) : dogScene(K, !+c.is_day); }, 1000);
   /* dormitorio: el recuadro grande de la radio con el tiempo de fuera animado y el gato */
   setInterval(() => { const t = document.getElementById("radTile"); if (!t) return;
     let b = t.querySelector(".wxtv"); if (!b){ b = document.createElement("div"); b.className = "wxtv"; b.innerHTML = '<canvas class="wxa" aria-hidden="true"></canvas><div class="wxic"></div><div class="wxdog"></div>'; t.prepend(b); }
@@ -3603,14 +3604,14 @@ html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from
     const w = store.get("p2_wx", null); if (!w || !w.current) return; upd(); const c = w.current;
     b.className = "wxtv wx-" + K + (DARK[K] ? " dk" : ""); t.classList.toggle("wxdk", !!DARK[K]);
     const sig = [K, c.weather_code, c.is_day].join("|"); if (b.dataset.sig === sig) return; b.dataset.sig = sig;
-    b.querySelector(".wxic").innerHTML = wx(c.weather_code, c.is_day); b.querySelector(".wxdog").innerHTML = catScene(K); }, 1000);
+    b.querySelector(".wxic").innerHTML = wx(c.weather_code, c.is_day); b.querySelector(".wxdog").innerHTML = catScene(K, !+c.is_day); }, 1000);
   /* salón: el recuadro de la tele, cuando no se ve nada, muestra el tiempo de fuera animado */
   setInterval(() => { const t = document.getElementById("tvTile"); if (!t || !t.classList.contains("tvs")) return;
     let b = t.querySelector(".wxtv"); if (!b){ b = document.createElement("div"); b.className = "wxtv"; b.innerHTML = '<canvas class="wxa" aria-hidden="true"></canvas><div class="wxi"></div><div class="wxdog"></div>'; t.insertBefore(b, t.querySelector(".tvbig")); }
     const w = store.get("p2_wx", null); if (!w || !w.current) return; upd(); const c = w.current, d = w.daily || {};
     b.className = "wxtv wx-" + K + (DARK[K] ? " dk" : ""); t.classList.toggle("wxdk", !!DARK[K]);
-    const sig = [K, c.temperature_2m, c.weather_code, c.relative_humidity_2m].join("|"); if (b.dataset.sig === sig) return; b.dataset.sig = sig;
-    const dg = b.querySelector(".wxdog") || b.appendChild(Object.assign(document.createElement("div"), {className: "wxdog"})); if (dg.dataset.k !== K){ dg.dataset.k = K; dg.innerHTML = dogScene(K); }
+    const sig = [K, c.temperature_2m, c.weather_code, c.relative_humidity_2m, c.is_day].join("|"); if (b.dataset.sig === sig) return; b.dataset.sig = sig;
+    const dg = b.querySelector(".wxdog") || b.appendChild(Object.assign(document.createElement("div"), {className: "wxdog"})); if (dg.dataset.k !== K + c.is_day){ dg.dataset.k = K + c.is_day; dg.innerHTML = dogScene(K, !+c.is_day); }
     b.querySelector(".wxi").innerHTML = `<span class="wxic">${wx(c.weather_code, c.is_day)}</span><b>${Math.round(c.temperature_2m)}°</b><em>${wxText(c.weather_code)}</em>${d.temperature_2m_max ? `<small>máx ${Math.round(d.temperature_2m_max[0])}° · mín ${Math.round(d.temperature_2m_min[0])}°</small>` : ""}`; }, 1000);
 })();
 </script>
