@@ -930,6 +930,12 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 .cv .mbar{margin-top:12px!important}
 .cv .dh{margin-top:12px!important}
 </style>
+<style id="vent-v3">
+.hg.rs .row4{grid-column:3/6;grid-row:3;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;min-height:0}
+.hg.rs .row4 .tl{min-width:0}.hg.rs .row4 .tl b{font-size:16px}.hg.rs .row4 .tl small{font-size:12px}
+.tl.on.vent{background:#dcefff!important;color:#0a5fb4!important}.tl.on.vent .ti{color:#0a84ff!important}.tl.on.vent small{color:#2f6fae!important}
+@media (max-width:900px){ .hg.rs .row4{grid-column:1/-1;grid-row:auto} }
+</style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
 <div class="app">
@@ -2691,6 +2697,7 @@ html.idlew .app{translate:var(--ix,0px) var(--iy,0px);transition:translate 6s ea
 <script>
 /* ===== V3b: Inicio en mosaicos cuadrados ===== */
 const TI = {
+  window:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M12 3v18M4 12h8"/><path d="M12 4l6 3v13l-6-2" fill="currentColor" fill-opacity=".25"/>',
   bed:'<path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.8"/>',
   euro:'<path d="M17.5 6.5A6.5 6.5 0 1 0 17.5 17.5M4 10.5h9M4 13.5h9"/>',
   bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
@@ -2885,7 +2892,13 @@ function luzTile(id, name){ const e = hst(id), st = luzPend[id] ?? (e ? e.state 
   const pct = on && e && e.attributes.brightness ? Math.max(10, Math.round(e.attributes.brightness / 2.55)) + " %" : "";
   const sub = st === "unavailable" ? "Sin conexión · ¿interruptor?" : on ? `Encendida${pct ? " · " + pct : ""}` : "Apagada";
   return T(on ? "on lt" : "", "bulb", name, sub, `data-lt="${id}" data-on="${on ? 1 : 0}"`); }
+let ventPend = null;
+function ventTile(){ const e = hst("input_boolean.ventanas_abiertas"), on = (ventPend ?? (e && e.state)) === "on";
+  return T(on ? "on vent" : "", "window", "Ventanas", on ? "Abiertas · todo parado" : "Cerradas", `data-vent="${on ? 1 : 0}"`); }
 async function roomAction(b){
+  if (b.dataset.vent !== undefined){ const on = b.dataset.vent === "1"; ventPend = on ? "off" : "on"; renderHome();   // abre: para aires y deshumidificadores · cierra: todo vuelve como estaba (automatización en HA)
+    try{ await service("input_boolean", on ? "turn_off" : "turn_on", {entity_id: "input_boolean.ventanas_abiertas"}); }catch(err){ handleErr(err); }
+    setTimeout(async () => { await refreshHA(); ventPend = null; renderHome(); }, 2500); return; }
   if (b.dataset.lt){ const id = b.dataset.lt, on = b.dataset.on === "1"; luzPend[id] = on ? "off" : "on"; renderHome();
     try{ await service("light", on ? "turn_off" : "turn_on", on ? {entity_id: id} : {entity_id: id, brightness_pct: parseInt(hv("input_number.despacho_trabajo_brillo", 100)), color_temp_kelvin: parseInt(hv("input_number.despacho_trabajo_tono", 4500))}); }catch(err){ handleErr(err); }   // para trabajar (se cambia en Ajustes · Despacho)
     setTimeout(async () => { await refreshHA(); delete luzPend[id]; renderHome(); }, 1500); return; }
@@ -2951,7 +2964,7 @@ function renderSalon(box){
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
   $("h3date").textContent = fechaLarga(d);
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
-  $("hgA").innerHTML = `<div class="tl clk bigclk dclk"><b>${pad(d.getHours())}:${pad(d.getMinutes())}</b></div>${o.ac_salon || ""}${dualTH(w, v)}${o.nt_salon || ""}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Apaga todo", 'data-scr="script.adios"')}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
+  $("hgA").innerHTML = `<div class="tl clk bigclk dclk"><b>${pad(d.getHours())}:${pad(d.getMinutes())}</b></div>${o.ac_salon || ""}${dualTH(w, v)}${o.nt_salon || ""}<div class="row4">${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Apaga todo", 'data-scr="script.adios"')}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}${ventTile()}</div>`;
   syncMini();
 }
 /* recuadro doble: exterior (tiempo) y casa (sensor de la estancia) */
@@ -2972,7 +2985,7 @@ function renderDorm(box){
   $("hgA").innerHTML = `<div class="tl clk bigclk">${analogClock()}</div>${dualTH(w, v)}
     ${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${luzTile("light.luz_despacho", "Despacho")}
     ${o.nt_dormitorio || ""}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}
-    ${radioSmallW()}${alarmTileW()}`;   // fila 1: aire, deshumidificador y luz · fila 2: noche y escenas · fila 3: radio y alarma
+    ${radioSmallW()}${alarmTileW()}${ventTile()}`;   // fila 1: aire, deshumidificador y luz · fila 2: noche y escenas · fila 3: radio y alarma
 }
 let miniMuted = true;
 const _renderHomeCasa = renderHome;
@@ -3002,7 +3015,7 @@ syncMini = function(){ const v = $("tvMini"), t = $("tvTile");
   else $("tvMiniS").textContent = "🔊 En directo · toca para parar"; };
 document.addEventListener("click", ev => { const t = ev.target.closest("#tvTile"); if (t && roomOf() === "casa"){ setTimeout(() => { const v = $("tvMini"); if (v) miniMuted = v.muted; }, 0); } }, true);
 /* clics de radio / buenas noches en el Inicio */
-$("home").addEventListener("click", ev => { const b = ev.target.closest("[data-rad],[data-bn],[data-rtimer],[data-lt]"); if (!b) return; ev.stopImmediatePropagation(); roomAction(b); }, true);
+$("home").addEventListener("click", ev => { const b = ev.target.closest("[data-rad],[data-bn],[data-rtimer],[data-lt],[data-vent]"); if (!b) return; ev.stopImmediatePropagation(); roomAction(b); }, true);
 /* la radio sonando tampoco pasa a reposo si estás en el dormitorio con temporizador: no; sí deja pasar (reloj rojo con radio de fondo) */
 
 /* --- Ajustes: dónde está este aparato --- */
