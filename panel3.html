@@ -941,6 +941,7 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 .hg.rs .tl.dclk b{font-size:118px;font-weight:600;letter-spacing:-.03em;line-height:1;white-space:nowrap;overflow:visible;text-overflow:clip;max-width:none}.hg.rs .tl.dclk .mm{color:#8f80dd}   /* salón: como el del dormitorio pero en horizontal */
    /* el dock de las demás pantallas, a la misma altura que el del inicio */   /* iPad mini del dormitorio en pantalla completa: todo más abajo (2 veces el alto de «Dormitorio»), misma escala */
 .hg.rd .tl.alm{gap:0;padding:6px}.hg.rd .tl.alm .ti{width:28px;height:28px;margin-bottom:2px}.hg.rd .tl.alm .tv2{font-size:32px;line-height:1.05}   /* la alarma cabe entera también en el iPad mini */
+.app{position:relative}#gdock{position:absolute!important;bottom:calc(33px + env(safe-area-inset-bottom))!important}body:not(.at-home) .main{padding-bottom:calc(108px + env(safe-area-inset-bottom))!important}   /* el dock va dentro del panel (no fijo a la ventana): en el iPad, fijo + escala lo dejaba flotando más arriba */
 </style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
@@ -3434,7 +3435,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 .wxdog .yx{animation:catyx 2.4s ease-in-out infinite alternate}@keyframes catyx{from{transform:translateX(0)}to{transform:translateX(40px)}}
 .wxdog .yr{animation:catyr 2.4s ease-in-out infinite alternate}@keyframes catyr{from{transform:rotate(0)}to{transform:rotate(300deg)}}
 #wxfull .wxclk .wxrad{display:flex;align-items:center;gap:12px;margin-top:22px}#wxfull .wxclk .wxrad .rlg{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:19px;flex:none}#wxfull .wxclk .wxrad b{display:block;font-size:28px!important;font-weight:700;letter-spacing:0;line-height:1.2}#wxfull .wxclk .wxrad small{display:block;font-size:18px;opacity:.75}#wxfull .wxclk .wxrad span{display:block;opacity:1;margin-top:0;font-weight:inherit}#wxfull .wxclk .wxrad span.rlg{display:grid;font-size:19px;font-weight:800}
-html.isfs #wxfull{top:var(--fsoff,0px);bottom:calc(-1 * var(--fsoff,0px))}html.isfs #amb{top:var(--fsoff,0px)!important;bottom:calc(-1 * var(--fsoff,0px))!important}html.isfs.fsoff body.at-home .main{padding-bottom:6px!important}html.isfs.fsoff #gdock{bottom:4px!important}html.isfs #dimv{top:var(--fsoff,0px);bottom:calc(-1 * var(--fsoff,0px))}
+html.isfs #wxfull{top:var(--fsoff,0px);bottom:calc(-1 * var(--fsoff,0px))}html.isfs #amb{top:var(--fsoff,0px)!important;bottom:calc(-1 * var(--fsoff,0px))!important}html.isfs.fsoff body.at-home .main{padding-bottom:6px!important}html.isfs #dimv{top:var(--fsoff,0px);bottom:calc(-1 * var(--fsoff,0px))}
 #wxfull{display:none;position:fixed;inset:0;z-index:9000;overflow:hidden}
 html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from{opacity:0}to{opacity:1}}
 #wxfull canvas.wxa{position:absolute;inset:0;width:100%;height:100%}
