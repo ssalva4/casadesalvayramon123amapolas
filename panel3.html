@@ -3127,7 +3127,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 <script>
 /* mide la altura real de la tele y la usa para los canales y la radio */
 (() => { const fit = () => { const sc = $("screen"), sec = document.querySelector(".t-ent"); if (!sc || !sec || tab !== "ent") return;
-    const h = sc.getBoundingClientRect().height / (parseFloat(document.querySelector(".app").style.zoom) || 1); if (h > 50) sec.style.setProperty("--tvh", Math.round(h) + "px"); };
+    const h = sc.offsetHeight; if (h > 50) sec.style.setProperty("--tvh", h + "px"); };   // offsetHeight: igual en Safari y en Chrome (no le afecta el zoom)
   setInterval(fit, 1500); window.addEventListener("resize", () => setTimeout(fit, 300));
   const _s = show; show = function(t){ _s(t); setTimeout(fit, 80); setTimeout(fit, 600); }; })();
 </script>
