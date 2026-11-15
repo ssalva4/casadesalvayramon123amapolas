@@ -1794,7 +1794,7 @@ function fitScreen(){
     w = Math.min(W2, window.innerWidth || W2); window.scrollTo(0, 0);
     /* iPad: en pantalla completa el alto útil es el de la ventana visible (p. ej. 684) y empieza más abajo que el documento (744): colocar el panel justo ahí */
     const ch = document.documentElement.clientHeight || H2, vh = Math.round(vv ? vv.height : window.innerHeight) || ch;
-    h = Math.min(H2, vh); document.documentElement.style.setProperty("--fsoff", Math.max(0, ch - h) + "px"); }
+    h = Math.min(H2, ch); document.documentElement.style.setProperty("--fsoff", Math.max(0, ch - vh) + "px"); }   // lo visible es todo el alto de la pantalla, pero empieza --fsoff más abajo
   else document.documentElement.style.setProperty("--fsoff", "0px");
   if (w < 900){ app.style.zoom = ""; app.style.width = ""; app.style.height = ""; return; }   // móvil: diseño en columna
   const big = typeof tab !== "undefined" && tab === "hom" && /room-(salon|dormitorio)/.test(document.documentElement.className);   // el Inicio de las estancias, más grande
@@ -2616,9 +2616,9 @@ html.room-salon .h3t,html.room-dormitorio .h3t{flex-direction:column;align-items
 html.room-salon .h3t h2,html.room-dormitorio .h3t h2{line-height:1}
 html.room-salon #h3date,html.room-dormitorio #h3date{font-size:38px!important;color:#6e6e73}
 html.room-salon #ccgrab i,html.room-dormitorio #ccgrab i{background:transparent}
-html.isfs.room-dormitorio #amb .face{padding-top:calc(4vh + 120px)}
-html.isfs.room-dormitorio #amb .gg{height:min(calc(86vh - 120px),68vw)}
-html.isfs.room-dormitorio #amb .nf{padding-top:120px;box-sizing:border-box}
+html.isfs.room-dormitorio #amb .face{padding-top:calc(4vh + 60px)}
+html.isfs.room-dormitorio #amb .gg{height:min(calc(86vh - 60px),68vw)}
+html.isfs.room-dormitorio #amb .nf{padding-top:60px;box-sizing:border-box}
 html.isfs.room-dormitorio #amb .gt .gi{width:min(4vh,32px);height:min(4vh,32px);margin-bottom:0}
 html.isfs.room-dormitorio #amb .gt .gv{font-size:min(4.8vh,40px)}
 html.isfs .top .back{margin-left:56px}
@@ -3433,7 +3433,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 .wxdog .yx{animation:catyx 2.4s ease-in-out infinite alternate}@keyframes catyx{from{transform:translateX(0)}to{transform:translateX(40px)}}
 .wxdog .yr{animation:catyr 2.4s ease-in-out infinite alternate}@keyframes catyr{from{transform:rotate(0)}to{transform:rotate(300deg)}}
 #wxfull .wxclk .wxrad{display:flex;align-items:center;gap:12px;margin-top:22px}#wxfull .wxclk .wxrad .rlg{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:19px;flex:none}#wxfull .wxclk .wxrad b{display:block;font-size:28px!important;font-weight:700;letter-spacing:0;line-height:1.2}#wxfull .wxclk .wxrad small{display:block;font-size:18px;opacity:.75}#wxfull .wxclk .wxrad span{display:block;opacity:1;margin-top:0;font-weight:inherit}#wxfull .wxclk .wxrad span.rlg{display:grid;font-size:19px;font-weight:800}
-html.isfs #wxfull{top:var(--fsoff,0px)}
+html.isfs #wxfull{top:var(--fsoff,0px);bottom:calc(-1 * var(--fsoff,0px))}html.isfs #amb{top:var(--fsoff,0px)!important;bottom:calc(-1 * var(--fsoff,0px))!important}html.isfs #gdock{bottom:calc(10px - var(--fsoffz,0px))!important}html.isfs #dimv{top:var(--fsoff,0px);bottom:calc(-1 * var(--fsoff,0px))}
 #wxfull{display:none;position:fixed;inset:0;z-index:9000;overflow:hidden}
 html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from{opacity:0}to{opacity:1}}
 #wxfull canvas.wxa{position:absolute;inset:0;width:100%;height:100%}
