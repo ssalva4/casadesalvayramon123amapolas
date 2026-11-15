@@ -2932,8 +2932,9 @@ async function roomAction(b){
   else if (b.dataset.rad === "prev") radStep(-1);
   else if (b.dataset.rad === "next") radStep(1);
   else if (b.dataset.rtimer){ const m = +b.dataset.rtimer; sleepAt = m ? Date.now() + m * 60000 : 0; if (m && !radioOn) await radPlay(radSel().k); }
-  else if (b.dataset.bn && roomOf() === "salon"){   // Buenas noches del salón: solo lo del salón (aire y tele), sin pantalla roja
+  else if (b.dataset.bn && roomOf() === "salon"){   // Buenas noches del salón: solo lo del salón (aire y tele) y la pantalla se va al rojo hasta que se toque
     if (typeof salonTv !== "undefined" && salonTv){ salonTv = false; stopMini(); syncMini(); }
+    window.salonBN = true; if (typeof show === "function" && tab !== "hom") show("hom"); document.documentElement.classList.add("idlew", "salonred");
     try{ await service("climate", "set_hvac_mode", {entity_id: "climate.aire_salon", hvac_mode: "off"}); setTimeout(refreshHA, 1500); }catch(err){ handleErr(err); } }
   else if (b.dataset.bn){   // Buenas noches del dormitorio: aire del salón apagado, Noche en el dormitorio y reloj rojo (sin radio)
     if (redCfg().on){ const t = new Date(); t.setHours(7, 0, 0, 0); if (t <= new Date()) t.setDate(t.getDate() + 1); store.set("p3_red_force", t.getTime());   // modo descanso hasta las 7:00
@@ -3075,14 +3076,14 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 /* a los 2 minutos sin tocar (de día), ondas muy suaves y el contenido se mueve unos píxeles cada minuto */
 (() => { const w = document.createElement("div"); w.id = "waves"; w.setAttribute("aria-hidden", "true"); document.body.appendChild(w); const dv = document.createElement("div"); dv.id = "dimv"; dv.setAttribute("aria-hidden", "true"); document.body.appendChild(dv); dv.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); });
   let last = Date.now(); const h = document.documentElement;
-  const wake = e => { last = Date.now(); if (e && e.target && e.target.id === "dimv"){ setTimeout(wake, 450); return; } if (h.classList.contains("idlew")){ h.classList.remove("idlew", "salonred", "salonwx"); h.style.removeProperty("--ix"); h.style.removeProperty("--iy"); } };
+  const wake = e => { last = Date.now(); if (e && e.target && e.target.id === "dimv"){ setTimeout(wake, 450); return; } window.salonBN = false; if (h.classList.contains("idlew")){ h.classList.remove("idlew", "salonred", "salonwx"); h.style.removeProperty("--ix"); h.style.removeProperty("--iy"); } };
   ["pointerdown", "keydown", "wheel", "touchstart"].forEach(t => document.addEventListener(t, wake, {passive: true, capture: true}));
   let n = 0;
   setInterval(() => { const idle = Date.now() - last > 2 * 60000 && !ambOpen && !document.hidden && !(typeof miniSound === "function" && miniSound()) && !tvOn && !ytOn;
     if (idle && !h.classList.contains("idlew")) h.classList.add("idlew");
     /* salón de noche (22:00–7:00): en reposo, la misma pantalla en negro y rojo */
     const nowM = (d => d.getHours() * 60 + d.getMinutes())(new Date()), tm = t => { const [a, b] = String(t).split(":").map(Number); return a * 60 + (b || 0); };
-    const f = tm("22:00"), t = tm("07:00"), night = nowM >= f || nowM < t;   // salón: de 22:00 a 7:00
+    const f = tm("22:00"), t = tm("07:00"), night = nowM >= f || nowM < t || !!window.salonBN;   // salón: de 22:00 a 7:00, o tras «Buenas noches»
     h.classList.toggle("salonred", h.classList.contains("idlew") && night && typeof roomOf === "function" && roomOf() === "salon" && tab === "hom");
     const rmI = typeof roomOf === "function" ? roomOf() : "", redD = typeof inRed === "function" && inRed();
     h.classList.toggle("salonwx", h.classList.contains("idlew") && tab === "hom" && ((rmI === "salon" && !night) || (rmI === "dormitorio" && !redD)));   // de día: reposo con la escena del tiempo a pantalla completa (salón con el perro, dormitorio con el gato)
