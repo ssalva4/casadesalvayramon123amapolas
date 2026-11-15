@@ -1792,7 +1792,7 @@ loadNews(); setInterval(loadNews, 15*60*1000);
 /* ---------- Se adapta a cualquier pantalla: el panel se diseña para 1000×820 y se escala para ocupar justo la ventana ---------- */
 document.documentElement.classList.toggle("tactil", matchMedia("(pointer: coarse)").matches);
 function fitScreen(){
-  const vv = window.visualViewport, app = document.querySelector(".app");
+  const vv = window.visualViewport, app = document.querySelector(".app"); let tb = 0;
   let w = Math.round(vv ? vv.width : window.innerWidth), h = Math.round(vv ? vv.height : window.innerHeight);
   if (document.fullscreenElement || document.webkitFullscreenElement){   // en pantalla completa el iPad a veces da medidas viejas: usar las de la pantalla
     const sw = screen.width, sh = screen.height, land = window.innerWidth > window.innerHeight;
@@ -1802,15 +1802,18 @@ function fitScreen(){
     const ch = document.documentElement.clientHeight || H2, vh = Math.round(vv ? vv.height : window.innerHeight) || ch;
     const off = Math.max(0, ch - vh);
     h = off ? Math.min(H2, vh) : Math.min(H2, ch); document.documentElement.style.setProperty("--fsoff", off + "px"); document.documentElement.classList.toggle("fsoff", !!off); }   // iPad mini: la zona táctil es solo la de vh (684) y empieza --fsoff más abajo; el panel va entero ahí para que todo responda
-  else document.documentElement.style.setProperty("--fsoff", "0px");
+  else { document.documentElement.style.setProperty("--fsoff", "0px");
+    /* Safari del iPad mini (iPadOS 26): la barra de Safari flota encima de la página. El documento mide todo el alto (clientHeight)
+       y la zona libre (visualViewport) es más baja: el panel usa todo el alto y deja arriba el hueco de la barra. */
+    const ch = document.documentElement.clientHeight || h; tb = ch > h + 8 && ch - h < 160 ? ch - h : 0; if (tb) h = ch; }
   if (w < 900){ app.style.zoom = ""; app.style.width = ""; app.style.height = ""; return; }   // móvil: diseño en columna
   const big = typeof tab !== "undefined" && tab === "hom" && /room-(salon|dormitorio)/.test(document.documentElement.className);   // el Inicio de las estancias, más grande
-  const z = Math.min(w / 1000, h / (big ? 750 : 820));
-  app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px"; document.documentElement.style.setProperty("--z", z);
-  const zd = /room-(salon|dormitorio)/.test(document.documentElement.className) ? Math.min(w / 1000, h / 750) : z; document.documentElement.style.setProperty("--dk", zd / z);   // el dock, del mismo tamaño en todas las pantallas
+  const z = Math.min(w / 1000, (h - tb) / (big ? 750 : 820));
+  app.style.zoom = z; app.style.width = (w / z) + "px"; app.style.height = (h / z) + "px"; document.documentElement.style.setProperty("--z", z); document.documentElement.style.setProperty("--tbarz", (tb / z) + "px");
+  const zd = /room-(salon|dormitorio)/.test(document.documentElement.className) ? Math.min(w / 1000, (h - tb) / 750) : z; document.documentElement.style.setProperty("--dk", zd / z);   // el dock, del mismo tamaño en todas las pantallas
   document.documentElement.style.setProperty("--fsoffz", (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--fsoff")) || 0) / z + "px");
   // alto máximo de la tele para que siempre quepan las noticias debajo (sea cual sea el iPad o la ventana)
-  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, h / z - 368 - (/room-(salon|dormitorio)/.test(document.documentElement.className) ? 40 : 0)) + "px");
+  document.documentElement.style.setProperty("--tvmaxh", Math.max(220, (h - tb) / z - 368 - (/room-(salon|dormitorio)/.test(document.documentElement.className) ? 40 : 0)) + "px");
 }
 window.addEventListener("resize", fitScreen); window.addEventListener("orientationchange", () => setTimeout(fitScreen, 300)); fitScreen();
 if (window.visualViewport) window.visualViewport.addEventListener("resize", fitScreen);
@@ -2486,7 +2489,7 @@ show("hom");
 html,body{background:var(--bgp)!important}
 body{background:var(--bgp)!important}
 .card,.hw{background:#fff!important;border:0!important;box-shadow:none!important;border-radius:28px!important}
-.main{padding:calc(22px + env(safe-area-inset-top)) 30px calc(30px + env(safe-area-inset-bottom))!important}
+.main{padding:calc(22px + env(safe-area-inset-top) + var(--tbarz,0px)) 30px calc(30px + env(safe-area-inset-bottom))!important}
 /* cabecera de cada pantalla: título grande y negrita, hora a la derecha */
 .top{align-items:center!important}
 .top h1{font-size:44px!important;font-weight:700!important;letter-spacing:-.025em;color:#000}
@@ -2619,7 +2622,7 @@ html,body{overscroll-behavior:none}
 html.isfs,html.isfs body{overflow:hidden!important;height:100%!important;margin:0!important}html.isfs .app{position:fixed!important;left:0!important;top:0!important;margin-top:var(--fsoffz,0px)!important}   /* en pantalla completa: el panel empieza donde empieza lo visible */
 html.isfs .main{padding-top:52px!important}
 html.isfs.room-dormitorio .main{padding-top:40px!important}
-html.room-salon:not(.isfs) .main,html.room-dormitorio:not(.isfs) .main{padding-top:calc(18px + env(safe-area-inset-top))!important}
+html.room-salon:not(.isfs) .main,html.room-dormitorio:not(.isfs) .main{padding-top:calc(18px + env(safe-area-inset-top) + var(--tbarz,0px))!important}
 html.room-salon .h3t,html.room-dormitorio .h3t{flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0}
 html.room-salon .h3t h2,html.room-dormitorio .h3t h2{line-height:1}
 html.room-salon #h3date,html.room-dormitorio #h3date{font-size:38px!important;color:#6e6e73}
