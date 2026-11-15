@@ -3189,10 +3189,10 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     {k:"salon", n:"Salón", c:"#ff9500", ic:"sofa", dev:[{n:"Aire", m: s => /aire|midea|climate/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && /sal[oó]n/i.test(noAcc(s.attributes.friendly_name||"") + s.entity_id) && !/deshumid|luz_/i.test(s.entity_id), c:"#ff9500"}]},
     {k:"dormitorio", n:"Dormitorio", c:"#5856d6", ic:"moon", dev:[
       {n:"Aire", m: s => /aire|midea|climate/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && /dormitorio/i.test(noAcc(s.attributes.friendly_name||"") + s.entity_id) && !/deshumid|luz_/i.test(s.entity_id), c:"#5856d6"},
-      {n:"Deshumidificador", m: s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && !isBath(s), c:"#0a84ff"},
+      {n:"Deshumidificador", m: s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && !isBath(s), c:"#00b8a9"},
       {n:"Luz (despacho)", m: s => /luz_despacho/.test(s.entity_id), c:"#ffcc00"}]},
     {k:"bano", n:"Baño", c:"#0a84ff", ic:"drop", dev:[
-      {n:"Deshumidificador", m: s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && isBath(s), c:"#0a84ff"},
+      {n:"Deshumidificador", m: s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && isBath(s), c:"#00b8a9"},
       {n:"Luz", m: s => /luz_bano/.test(s.entity_id), c:"#ffcc00"}]}];
   const IC = {sofa:'<path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M3 17v-4a2 2 0 0 1 4 0v1h10v-1a2 2 0 0 1 4 0v4H3zM5 17v2M19 17v2"/>'};
   const icon = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[n] || TI[n] || ""}</svg>`;
