@@ -817,6 +817,43 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 #cfg .cf-r a.dl,#cfg .cf-r button.dlb{background:#e9e9eb!important;color:#0a84ff!important}
 #cfg .lockrow span{color:#ff3b30}
 </style>
+<style id="cos-v3">
+/* ===== Costes por estancias (Salón, Dormitorio, Baño) ===== */
+.t-cos.on{display:flex!important;flex-direction:column;gap:14px;min-height:0}
+.t-cos>.card{display:none!important}
+#cos3{display:flex;flex-direction:column;gap:14px;min-height:0;flex:1}
+#cos3 .sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+#cos3 .k{background:#fff;border-radius:22px;padding:14px 18px;box-shadow:0 6px 20px rgba(0,0,0,.05)}
+#cos3 .k small{display:block;font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8e8e93}
+#cos3 .k b{display:block;font-size:34px;font-weight:600;letter-spacing:-.02em;margin-top:4px;font-variant-numeric:tabular-nums}
+#cos3 .k span{font-size:13.5px;color:#6e6e73;font-weight:500}
+#cos3 .rooms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;flex:1;min-height:0}
+#cos3 .rm{background:#fff;border-radius:26px;padding:16px 18px;box-shadow:0 6px 20px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:10px;min-height:0}
+#cos3 .rm .hd{display:flex;align-items:center;gap:10px}
+#cos3 .rm .hd .q{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;flex:none}
+#cos3 .rm .hd .q svg{width:20px;height:20px}
+#cos3 .rm .hd b{font-size:19px;font-weight:700;flex:1}
+#cos3 .rm .tot{font-size:30px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+#cos3 .rm .tot small{font-size:14px;font-weight:500;color:#8e8e93;margin-left:6px}
+#cos3 .dv{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #f0f0f3}
+#cos3 .dv i{width:10px;height:10px;border-radius:50%;flex:none}
+#cos3 .dv .n{flex:1;min-width:0}
+#cos3 .dv .n b{display:block;font-size:14.5px;font-weight:600}
+#cos3 .dv .n small{font-size:12px;color:#8e8e93;font-weight:500}
+#cos3 .dv .e{text-align:right;font-variant-numeric:tabular-nums}
+#cos3 .dv .e b{display:block;font-size:15px;font-weight:600}
+#cos3 .dv .e small{font-size:12px;color:#8e8e93}
+#cos3 .dv .live{font-size:11.5px;font-weight:700;color:#34c759}
+
+#cos3 .ch small{font-size:12px;font-weight:700;color:#8e8e93;letter-spacing:.04em;text-transform:uppercase}
+#cos3 .ch{margin-top:auto;height:170px;flex:none;display:flex;flex-direction:column}
+#cos3 .mbars{flex:1;display:grid;grid-template-columns:repeat(12,1fr);gap:5px;margin-top:8px;min-height:0}
+#cos3 .mc{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:0}
+#cos3 .mc .st{flex:1;width:100%;display:flex;flex-direction:column-reverse;border-radius:5px;background:#f2f2f7;overflow:hidden;min-height:0}
+#cos3 .mc .st i{display:block;width:100%;opacity:.55}
+#cos3 .mc.cur .st i{opacity:1}
+#cos3 .mc span{font-size:11px;font-weight:600;color:#8e8e93}#cos3 .mc.cur span{color:#1c1c1e;font-weight:800}
+</style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
 <div class="app">
@@ -1456,6 +1493,9 @@ function energySensors(){
   power = power.concat(dh.filter(s => s.attributes.device_class === "power" || /^k?W$/.test(unit(s))));
   const dhE = dh.filter(s => /k?Wh/.test(unit(s)) && /hoy|today|_dia|diario/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")));
   energy = energy.concat([dhE.find(s => !isBath(s)), dhE.find(isBath)].filter(Boolean));
+  // luces WiZ (consumo estimado en Home Assistant)
+  ["luz_bano", "luz_despacho"].forEach(k => { const e = states.find(x => x.entity_id === `sensor.${k}_energia`), w = states.find(x => x.entity_id === `sensor.${k}_consumo`);
+    if (e && num(e) != null) energy.push(e); if (w && num(w) != null) power.push(w); });
   return {power, energy};
 }
 async function loadToday(energy){
@@ -2572,6 +2612,7 @@ html.idlew .app{translate:var(--ix,0px) var(--iy,0px);transition:translate 6s ea
 <script>
 /* ===== V3b: Inicio en mosaicos cuadrados ===== */
 const TI = {
+  euro:'<path d="M17.5 6.5A6.5 6.5 0 1 0 17.5 17.5M4 10.5h9M4 13.5h9"/>',
   bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
   home:'<path d="M12 3.2 2.8 11h2.6v9.2h5.4v-6h2.4v6h5.4V11h2.6z" fill="currentColor" stroke="none"/>',
   fan:'<circle cx="12" cy="12" r="1.6"/><path d="M12 10.4c-.3-3 .6-6.4 3.3-6.4 2.4 0 2.6 3.2.3 4.6l-3.6 1.8M13.6 12c3-.3 6.4.6 6.4 3.3 0 2.4-3.2 2.6-4.6.3L13.6 12M12 13.6c.3 3-.6 6.4-3.3 6.4-2.4 0-2.6-3.2-.3-4.6l3.6-1.8M10.4 12c-3 .3-6.4-.6-6.4-3.3 0-2.4 3.2-2.6 4.6-.3l1.8 3.6"/>',
@@ -2818,7 +2859,7 @@ function renderSalon(box){
       <div class="hg rs"><div class="tl tv tvs" id="tvTile" role="button" tabindex="0" aria-label="Tele: toca para el sonido"><video id="tvMini" muted playsinline autoplay preload="none"></video><img id="tvMiniLogo" alt="">
         <button class="chb l" data-chs="-1" aria-label="Canal anterior">${tsvg("chev_l")}</button><button class="chb r" data-chs="1" aria-label="Canal siguiente">${tsvg("chev_r")}</button>
         <span class="tvbig">TV</span><canvas id="spec" aria-hidden="true"></canvas><span class="tvb"><b id="tvMiniN"></b><small id="tvMiniS"></small></span></div><div id="hgA" style="display:contents"></div></div>
-      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="pla" aria-label="Agenda">${tsvg("cal")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
+      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="cos" aria-label="Costes">${tsvg("euro")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
     $("tvTile").addEventListener("click", ev => { const c = ev.target.closest("[data-chs]"); if (c){ ev.stopPropagation(); roomAction(c); return; }
       const chn = CHANNELS.find(x => x.k === ch) || CHANNELS[0];
       if (salonTv || (chn.u && !$("tvMini").dataset.err)){ if (!salonTv && radioOn) stopAll(); salonTv = !salonTv; miniMuted = !salonTv; if (salonTv) syncMini(); else stopMini(); syncMini(); return; }   // un toque: se ve y se oye; otro: se para
@@ -2839,7 +2880,7 @@ function dualTH(w, v){ const c = w && w.current;
 function renderDorm(box){
   if (box.dataset.layout !== "dormitorio"){ box.dataset.layout = "dormitorio"; stopMini();
     box.innerHTML = `<div class="h3t"><h2>Dormitorio</h2><span id="h3date"></span><span id="h3time" style="display:none"></span></div><div class="hg rd"><div id="hgA" style="display:contents"></div></div>
-      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="pla" aria-label="Agenda">${tsvg("cal")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`; }
+      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="cos" aria-label="Costes">${tsvg("euro")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`; }
   const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), v = roomTH(HOME_ROOMS[1].re);
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()); $("h3date").textContent = fechaLarga(d);
   /* sin píldoras: la temperatura y la humedad ya están en los mosaicos */
@@ -3019,7 +3060,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 <script>
 /* dock fijo: Inicio, Clima, Tele, Agenda y Ajustes; la sección actual en negro */
 (() => { const app = document.querySelector(".app") || document.body, d = document.createElement("nav"); d.id = "gdock"; d.setAttribute("aria-label", "Secciones");
-  const IT = [["hom", "home", "Inicio"], ["cli", "therm", "Clima"], ["ent", "tv", "Tele y radio"], ["pla", "cal", "Agenda"], ["cfg", "gear", "Ajustes"]];
+  const IT = [["hom", "home", "Inicio"], ["cli", "therm", "Clima"], ["ent", "tv", "Tele y radio"], ["cos", "euro", "Costes"], ["cfg", "gear", "Ajustes"]];
   d.innerHTML = IT.map(x => `<button data-gd="${x[0]}" aria-label="${x[2]}">${tsvg(x[1])}</button>`).join(""); app.appendChild(d);
   const mark = () => d.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.gd === tab));
   d.addEventListener("click", e => { const b = e.target.closest("[data-gd]"); if (b) show(b.dataset.gd); });
@@ -3138,6 +3179,48 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     const h = sc.offsetHeight; if (h > 50) sec.style.setProperty("--tvh", h + "px"); };   // offsetHeight: igual en Safari y en Chrome (no le afecta el zoom)
   setInterval(fit, 1500); window.addEventListener("resize", () => setTimeout(fit, 300));
   const _s = show; show = function(t){ _s(t); setTimeout(fit, 80); setTimeout(fit, 600); }; })();
+</script>
+<script>
+/* ===== Costes por estancias: Salón, Dormitorio y Baño (usa los mismos datos que antes) ===== */
+(() => {
+  const sec = $("t-cos"), box = document.createElement("div"); box.id = "cos3"; sec.insertBefore(box, sec.firstChild);
+  const MES = ["E","F","M","A","M","J","J","A","S","O","N","D"];
+  const ROOMS = [
+    {k:"salon", n:"Salón", c:"#ff9500", ic:"sofa", dev:[{n:"Aire", m: s => /aire|midea|climate/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && /sal[oó]n/i.test(noAcc(s.attributes.friendly_name||"") + s.entity_id) && !/deshumid|luz_/i.test(s.entity_id), c:"#ff9500"}]},
+    {k:"dormitorio", n:"Dormitorio", c:"#5856d6", ic:"moon", dev:[
+      {n:"Aire", m: s => /aire|midea|climate/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && /dormitorio/i.test(noAcc(s.attributes.friendly_name||"") + s.entity_id) && !/deshumid|luz_/i.test(s.entity_id), c:"#5856d6"},
+      {n:"Deshumidificador", m: s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && !isBath(s), c:"#0a84ff"}]},
+    {k:"bano", n:"Baño", c:"#0a84ff", ic:"drop", dev:[
+      {n:"Deshumidificador", m: s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && isBath(s), c:"#0a84ff"},
+      {n:"Luz", m: s => /luz_bano/.test(s.entity_id), c:"#ffcc00"}]}];
+  const IC = {sofa:'<path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M3 17v-4a2 2 0 0 1 4 0v1h10v-1a2 2 0 0 1 4 0v4H3zM5 17v2M19 17v2"/>'};
+  const icon = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[n] || TI[n] || ""}</svg>`;
+  const kwh = v => (v >= 100 ? Math.round(v) : fmt1(v)) + " kWh";
+  const W = s => num(s) * (unit(s) === "kW" ? 1000 : 1);
+  window.renderCos3 = () => {
+    if (!$("t-cos")) return; const {power, energy} = energySensors(), mo = new Date().getMonth();
+    const devs = ROOMS.map(r => ({...r, dev: r.dev.map(d => { const ids = energy.filter(d.m).map(s => s.entity_id), pw = power.filter(d.m);
+      const months = [...Array(12)].map((_, i) => ids.reduce((a, id) => { const m = (yearLive[id] || [])[i]; return {k: a.k + (m ? m.kwh : 0), e: a.e + (m ? m.eur : 0)}; }, {k:0, e:0}));
+      return {...d, ids, months, w: pw.reduce((a, s) => a + (W(s) || 0), 0), has: ids.length || pw.length}; }).filter(d => d.has)}));
+    const tot = devs.reduce((a, r) => a + r.dev.reduce((b, d) => b + d.months[mo].e, 0), 0), totK = devs.reduce((a, r) => a + r.dev.reduce((b, d) => b + d.months[mo].k, 0), 0);
+    const liveW = devs.reduce((a, r) => a + r.dev.reduce((b, d) => b + d.w, 0), 0), mname = new Date().toLocaleDateString("es-ES", {month: "long"});
+    const today = todayKWh != null ? eur(todayEUR ?? todayKWh * curPrice) : "—";
+    const chart = r => { const n = mo + 1, tots = [...Array(12)].map((_, i) => r.dev.reduce((a, d) => a + d.months[i].e, 0)), max = Math.max(0.01, ...tots.slice(0, n));
+      return `<div class="mbars">${[...Array(12)].map((_, i) => `<div class="mc ${i === mo ? "cur" : ""}" title="${eur(tots[i])}"><div class="st">${i < n ? r.dev.map(d => d.months[i].e > 0 ? `<i style="height:${d.months[i].e / max * 100}%;background:${d.c}"></i>` : "").join("") : ""}</div><span>${MES[i]}</span></div>`).join("")}</div>`; };
+    box.innerHTML = `<div class="sum">
+        <div class="k"><small>Este mes · ${mname}</small><b>${eur(tot)}</b><span>${kwh(totK)}</span></div>
+        <div class="k"><small>Hoy</small><b>${today}</b><span>${todayKWh != null ? kwh(todayKWh) : ""}</span></div>
+        <div class="k"><small>Ahora</small><b>${Math.round(liveW)} W</b><span>${eur(liveW / 1000 * curPrice)} por hora · ${KWH_FINAL.toLocaleString("es-ES", {minimumFractionDigits: 3})} €/kWh</span></div></div>
+      <div class="rooms">${devs.map(r => { const re = r.dev.reduce((a, d) => a + d.months[mo].e, 0), rk = r.dev.reduce((a, d) => a + d.months[mo].k, 0);
+        return `<div class="rm"><div class="hd"><span class="q" style="background:${r.c}">${icon(r.ic)}</span><b>${r.n}</b></div>
+          <div class="tot">${eur(re)}<small>${kwh(rk)} este mes</small></div>
+          ${r.dev.length ? r.dev.map(d => `<div class="dv"><i style="background:${d.c}"></i><span class="n"><b>${d.n}</b><small>${[tot > 0 ? Math.round(d.months[mo].e / tot * 100) + " % del total" : "", d.w > 1 ? `<span class="live">● ${Math.round(d.w)} W ahora</span>` : ""].filter(Boolean).join(" · ")}</small></span>
+            <span class="e"><b>${eur(d.months[mo].e)}</b><small>${kwh(d.months[mo].k)}</small></span></div>`).join("") : '<div class="dv"><span class="n"><small>Sin aparatos con consumo</small></span></div>'}
+          <div class="ch"><small>Por meses</small>${chart(r)}</div></div>`; }).join("")}</div>`;
+  };
+  const _rc = renderCost; renderCost = function(){ _rc(); renderCos3(); };
+  const _s = show; show = function(t){ _s(t); if (t === "cos") setTimeout(() => { try{ renderCost(); }catch(e){} }, 50); };
+})();
 </script>
 </body>
 </html>
