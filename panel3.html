@@ -2210,7 +2210,7 @@ function ambTiles(){   // los mismos mosaicos que el Inicio, en cristal
     const v = roomTH(r.re); o["t_" + r.k] = `<div class="gt temp"><b class="tv">${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><b>${r.n}</b><small>${!isNaN(v.h) ? Math.round(v.h) + " % humedad" : ""}</small></div>`;
   });
   o.morning = G("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"');
-  o.bye = G("", "door", "Adiós", "Escena", 'data-scr="script.adios"');
+  o.bye = G("", "door", "Adiós", "Apaga todo", 'data-scr="script.adios"');
   o.off = G("", "power", "Aires", "Apagar todos", 'data-scr="aires_off"');
   return o;
 }
@@ -2700,7 +2700,7 @@ renderHome = function(){
   const agT = `<button class="tl ag" data-go="pla"><span class="ah">${d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric"})}</span>${homeEv.evs.slice(0, 3).map(e => `<span class="ev"><em>${evWhen(e)}</em>${esc(e.summary || "")}</span>`).join("") || '<span class="ev" style="color:var(--muted)">Sin planes hoy ni mañana</span>'}</button>`;
   const eurT = `<button class="tl eur" data-go="cos"><span class="ti" style="color:#e0a400">${tsvg("eur")}</span><b>${c.mes != null ? eur(c.mes) : "—"}</b><small>luz de ${d.toLocaleDateString("es-ES", {month:"long"})}</small></button>`;
   $("hgA").innerHTML = `<div class="tl clk">${analogClock()}</div>${o.ac_salon || ""}${o.ac_dormitorio || ""}${wxT}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}`;
-  $("hgB").innerHTML = `${casa}${o.nt_salon || ""}${o.nt_dormitorio || ""}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${o.dh_dormitorio || ""}${o.dh_bano || ""}`;
+  $("hgB").innerHTML = `${casa}${o.nt_salon || ""}${o.nt_dormitorio || ""}${T("", "door", "Adiós", "Apaga todo", 'data-scr="script.adios"')}${o.dh_dormitorio || ""}${o.dh_bano || ""}`;
   syncMini();
 };
 /* la tele del Inicio: el último canal que viste, en directo y sin sonido */
@@ -2719,7 +2719,7 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) stopM
 document.addEventListener("error", e => { if (e.target && e.target.id === "tvMini"){ e.target.dataset.err = "1"; syncMini(); setTimeout(() => { delete e.target.dataset.err; }, 60000); } }, true);
 renderCC = function(){ if (!ccOpen) return; const p = $("ccp"); const d = new Date();
   p.innerHTML = `<div class="cch"><b>${pad(d.getHours())}:${pad(d.getMinutes())}</b><span>Centro de control</span></div><div class="tiles">${tilesHTML()}</div>
-    <div class="tiles">${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "power", "Aires", "Apagar todos", 'data-scr="aires_off"')}</div>
+    <div class="tiles">${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Apaga todo", 'data-scr="script.adios"')}${T("", "power", "Aires", "Apagar todos", 'data-scr="aires_off"')}</div>
     <div class="ccx">Deshumidificadores: cada toque pasa de Automático → Forzado → Bloqueado.</div>`; };
 /* hora siempre arriba a la derecha en cada pantalla */
 (() => { const top = document.querySelector(".top"); if (!top) return; const s = document.createElement("span"); s.id = "v3time"; top.appendChild(s);
@@ -2878,7 +2878,7 @@ function renderSalon(box){
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
   $("h3date").textContent = fechaLarga(d);
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
-  $("hgA").innerHTML = `<div class="tl clk bigclk dclk"><b>${pad(d.getHours())}:${pad(d.getMinutes())}</b></div>${o.ac_salon || ""}${dualTH(w, v)}${o.nt_salon || ""}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Escena", 'data-scr="script.adios"')}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
+  $("hgA").innerHTML = `<div class="tl clk bigclk dclk"><b>${pad(d.getHours())}:${pad(d.getMinutes())}</b></div>${o.ac_salon || ""}${dualTH(w, v)}${o.nt_salon || ""}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Apaga todo", 'data-scr="script.adios"')}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}`;
   syncMini();
 }
 /* recuadro doble: exterior (tiempo) y casa (sensor de la estancia) */
