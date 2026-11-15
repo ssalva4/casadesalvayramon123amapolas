@@ -2406,7 +2406,7 @@ $("cfg").addEventListener("click", ev => {
   if (k === "on") store.set("p3_amb_on2", !ambCfg().on);
   if (k === "min") store.set("p2_amb_min", +b.dataset.v);
   if (k === "face") store.set("p2_amb_face", b.dataset.v);
-  if (k === "ver"){ openAmb(); return; }
+  if (k === "ver"){ if (typeof roomOf === "function" && roomOf() === "salon"){ show("hom"); setTimeout(() => document.documentElement.classList.add("idlew", "salonwx"), 300); return; } openAmb(); return; }   // salón: la escena del tiempo con el perro
   renderCfg(true);
 }, true);
 
@@ -3047,7 +3047,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 /* a los 2 minutos sin tocar (de día), ondas muy suaves y el contenido se mueve unos píxeles cada minuto */
 (() => { const w = document.createElement("div"); w.id = "waves"; w.setAttribute("aria-hidden", "true"); document.body.appendChild(w); const dv = document.createElement("div"); dv.id = "dimv"; dv.setAttribute("aria-hidden", "true"); document.body.appendChild(dv); dv.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); });
   let last = Date.now(); const h = document.documentElement;
-  const wake = e => { last = Date.now(); if (e && e.target && e.target.id === "dimv"){ setTimeout(wake, 450); return; } if (h.classList.contains("idlew")){ h.classList.remove("idlew", "salonred"); h.style.removeProperty("--ix"); h.style.removeProperty("--iy"); } };
+  const wake = e => { last = Date.now(); if (e && e.target && e.target.id === "dimv"){ setTimeout(wake, 450); return; } if (h.classList.contains("idlew")){ h.classList.remove("idlew", "salonred", "salonwx"); h.style.removeProperty("--ix"); h.style.removeProperty("--iy"); } };
   ["pointerdown", "keydown", "wheel", "touchstart"].forEach(t => document.addEventListener(t, wake, {passive: true, capture: true}));
   let n = 0;
   setInterval(() => { const idle = Date.now() - last > 2 * 60000 && !ambOpen && !document.hidden && !(typeof miniSound === "function" && miniSound()) && !tvOn && !ytOn;
