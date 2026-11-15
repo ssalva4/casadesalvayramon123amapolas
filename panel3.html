@@ -2415,7 +2415,7 @@ $("cfg").addEventListener("click", ev => {
   if (k === "on") store.set("p3_amb_on2", !ambCfg().on);
   if (k === "min") store.set("p2_amb_min", +b.dataset.v);
   if (k === "face") store.set("p2_amb_face", b.dataset.v);
-  if (k === "ver"){ if (typeof roomOf === "function" && roomOf() === "salon"){ show("hom"); setTimeout(() => document.documentElement.classList.add("idlew", "salonwx"), 300); return; } openAmb(); return; }   // salón: la escena del tiempo con el perro
+  if (k === "ver"){ if (typeof roomOf === "function" && /^(salon|dormitorio)$/.test(roomOf())){ show("hom"); setTimeout(() => document.documentElement.classList.add("idlew", "salonwx"), 300); return; } openAmb(); return; }   // salón: la escena del tiempo con el perro
   renderCfg(true);
 }, true);
 
@@ -2943,6 +2943,12 @@ function radioTileW(){ const r = radSel(), on = radioOn === r.k;
     <div class="rctl"><button data-rad="prev" aria-label="Emisora anterior">${tsvg("chev_l")}</button><button class="pp" data-rad="play" aria-label="${on ? "Parar" : "Escuchar"}">${svg(on ? "stop" : "play")}</button><button data-rad="next" aria-label="Emisora siguiente">${tsvg("chev_r")}</button></div>
     <div class="rtm">${[15, 30, 60].map(m => `<button data-rtimer="${m}" class="${sleepAt && Math.abs(sleepAt - Date.now() - m*60000) < 60000 ? "on" : ""}">${m}'</button>`).join("")}<button data-rtimer="0" aria-label="Quitar temporizador">✕</button></div>
     <small class="rsl">${sleepTxt() || "Temporizador para dormir"}</small></div>`; }
+/* dormitorio: barra de la radio dentro del recuadro grande (emisora y botones) */
+function radBar(){ const t = document.getElementById("radTile"); if (!t) return; const r = radSel(), on = radioOn === r.k;
+  t.classList.toggle("playing", on); t.setAttribute("aria-label", on ? "Parar la radio" : "Escuchar la radio");
+  const html = `<div class="rlg" style="background:${r.bg};color:${r.fg}">${r.lg}</div><div class="rtx"><b>${esc(r.t)}</b><small>${on ? "🔊 " + (sleepTxt() || "Sonando · toca para parar") : "Toca para escuchar"}</small></div>
+    <button data-rad="prev" aria-label="Emisora anterior">${tsvg("chev_l")}</button><button class="pp" data-rad="play" aria-label="${on ? "Parar" : "Escuchar"}">${svg(on ? "stop" : "play")}</button><button data-rad="next" aria-label="Emisora siguiente">${tsvg("chev_r")}</button>`;
+  const bar = t.querySelector(".radbar"); if (bar.dataset.h !== html){ bar.dataset.h = html; bar.innerHTML = html; } }
 function radioSmallW(){ const r = radSel(), on = radioOn === r.k;
   return `<div class="tl rsm ${on ? "on" : ""}"><div class="rtop"><div class="rlg" style="background:${r.bg};color:${r.fg}">${r.lg}</div><div class="rtx"><b>${esc(r.t)}</b>
     <small>${on ? (sleepTxt() || "● Sonando") : "Radio"}</small></div></div>
@@ -2988,7 +2994,7 @@ function dualTH(w, v){ const c = w && w.current;
 /* --- Inicio del dormitorio: descanso y radio --- */
 function renderDorm(box){
   if (box.dataset.layout !== "dormitorio"){ box.dataset.layout = "dormitorio"; stopMini();
-    box.innerHTML = `<div class="h3t"><h2>Dormitorio</h2><span id="h3date"></span><span id="h3time" style="display:none"></span></div><div class="hg rd"><div id="hgA" style="display:contents"></div></div>
+    box.innerHTML = `<div class="h3t"><h2>Dormitorio</h2><span id="h3date"></span><span id="h3time" style="display:none"></span></div><div class="hg rd"><div class="tl rad2x" id="radTile" data-rad="play" role="button" aria-label="Radio"><div class="radbar"></div></div><div id="hgA" style="display:contents"></div></div>
       <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="cos" aria-label="Costes">${tsvg("euro")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`; }
   const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), v = roomTH(HOME_ROOMS[1].re);
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()); $("h3date").textContent = fechaLarga(d);
@@ -2996,10 +3002,10 @@ function renderDorm(box){
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
   const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
   const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
-  $("hgA").innerHTML = `<div class="tl clk bigclk dclk"><b>${pad(d.getHours())}</b><b>${pad(d.getMinutes())}</b></div>${dualTH(w, v)}
-    ${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${luzTile("light.luz_despacho", "Despacho")}
-    ${o.nt_dormitorio || ""}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}
-    ${radioSmallW()}${alarmTileW()}${ventTile()}`;   // fila 1: aire, deshumidificador y luz · fila 2: noche y escenas · fila 3: radio y alarma
+  $("hgA").innerHTML = `<div class="tl clk bigclk dclk hz"><b>${pad(d.getHours())}:<span class="mm">${pad(d.getMinutes())}</span></b></div>${dualTH(w, v)}
+    ${alarmTileW()}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${luzTile("light.luz_despacho", "Despacho")}
+    <div class="row4">${o.nt_dormitorio || ""}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${ventTile()}</div>`;
+  radBar();   // radio grande con el tiempo de fuera y el gato (fila 1: reloj y alarma · fila 2: aire, deshumidificador y luz · fila 3: noche, escenas y ventanas)   // fila 1: aire, deshumidificador y luz · fila 2: noche y escenas · fila 3: radio y alarma
 }
 let miniMuted = true;
 const _renderHomeCasa = renderHome;
@@ -3066,7 +3072,8 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     const nowM = (d => d.getHours() * 60 + d.getMinutes())(new Date()), tm = t => { const [a, b] = String(t).split(":").map(Number); return a * 60 + (b || 0); };
     const f = tm("22:00"), t = tm("07:00"), night = nowM >= f || nowM < t;   // salón: de 22:00 a 7:00
     h.classList.toggle("salonred", h.classList.contains("idlew") && night && typeof roomOf === "function" && roomOf() === "salon" && tab === "hom");
-    h.classList.toggle("salonwx", h.classList.contains("idlew") && !night && typeof roomOf === "function" && roomOf() === "salon" && tab === "hom");   // de día: reposo con la escena del tiempo a pantalla completa
+    const rmI = typeof roomOf === "function" ? roomOf() : "", redD = typeof inRed === "function" && inRed();
+    h.classList.toggle("salonwx", h.classList.contains("idlew") && tab === "hom" && ((rmI === "salon" && !night) || (rmI === "dormitorio" && !redD)));   // de día: reposo con la escena del tiempo a pantalla completa (salón con el perro, dormitorio con el gato)
     if (h.classList.contains("idlew") && (++n % 12 === 0)){ const r = () => Math.round((Math.random() * 2 - 1) * 6) + "px"; h.style.setProperty("--ix", r()); h.style.setProperty("--iy", r()); }
   }, 5000);
 })();
@@ -3406,6 +3413,27 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 .wxdog .breath{transform-box:fill-box;transform-origin:50% 100%;animation:dgbr 3s ease-in-out infinite}@keyframes dgbr{50%{transform:scaleY(1.06)}}
 .wxdog .tilt{transform-box:fill-box;transform-origin:30% 80%;animation:dgtilt 5s ease-in-out infinite}@keyframes dgtilt{0%,60%,100%{transform:rotate(0)}70%,85%{transform:rotate(-10deg)}}
 .tl.tv .wxtv .wxlogo{display:none!important}.tl.tv.tvs.off:not(.radv) .tvb{position:absolute!important;left:0!important;right:0!important;bottom:18px!important;margin:0!important;text-align:center!important;align-items:center!important;z-index:2}   /* nombre del canal centrado abajo */.tl.tv .wxtv .wxlogo{position:absolute!important;right:22px!important;bottom:22px!important;top:auto!important;left:auto!important;display:block!important;width:64px;height:64px;border-radius:16px;object-fit:cover;background:#fff;box-shadow:0 6px 16px rgba(0,0,0,.18);z-index:2}
+
+/* dormitorio: radio grande con el tiempo y el gato */
+.hg.rd .tl.rad2x{grid-column:1/3;grid-row:1/3;padding:0;overflow:hidden;position:relative;cursor:pointer;background:#e9e9ee}
+.hg.rd .tl.clk.bigclk.hz{grid-column:3/5!important;grid-row:1!important;padding:6px!important}
+.hg.rd .tl.dclk.hz b{font-size:118px;font-weight:600;letter-spacing:-.03em;line-height:1;white-space:nowrap;overflow:visible;text-overflow:clip;max-width:none;transform:none}.hg.rd .tl.dclk.hz .mm{color:#8f80dd}.hg.rd .tl.dclk.hz b+b{color:inherit}
+.hg.rd .tl.dual{grid-column:1/3!important;grid-row:3!important}
+.hg.rd .row4{grid-column:3/6;grid-row:3;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;min-height:0}.hg.rd .row4 .tl{min-width:0}.hg.rd .row4 .tl b{font-size:16px}.hg.rd .row4 .tl small{font-size:12px}
+#radTile .wxtv{position:absolute;inset:0;border-radius:inherit;overflow:hidden;z-index:0}
+#radTile .wxtv canvas.wxa{position:absolute;inset:0;width:100%;height:100%}
+#radTile .wxtv .wxic{position:absolute;left:50%;top:5%;width:110px;height:110px;margin-left:-55px;animation:wxfloat 6s ease-in-out infinite}#radTile .wxtv .wxic svg{width:100%;height:100%}
+#radTile .wxtv .wxdog{position:absolute;left:4%;right:4%;bottom:76px;height:46%;pointer-events:none}#radTile .wxtv .wxdog svg{width:100%;height:100%;overflow:visible}
+#radTile .radbar{position:absolute;left:12px;right:12px;bottom:12px;z-index:2;display:flex;align-items:center;justify-content:center;gap:10px;color:#1c1c1e}
+#radTile.wxdk .radbar{color:#fff}
+#radTile .radbar .rlg{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:16px;flex:none}
+#radTile .radbar .rtx{display:flex;flex-direction:column;align-items:flex-start;min-width:0;text-align:left}#radTile .radbar .rtx b{font-size:20px;font-weight:700;color:inherit;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}#radTile .radbar .rtx small{font-size:13px;color:inherit;opacity:.75;white-space:nowrap}
+#radTile .radbar button{width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.75);color:#1c1c1e;display:grid;place-items:center;flex:none;padding:0}#radTile .radbar button svg{width:20px;height:20px}
+#radTile .radbar button.pp{width:54px;height:54px;background:#1c1c1e;color:#fff}#radTile.wxdk .radbar button{background:rgba(255,255,255,.2);color:#fff}#radTile.wxdk .radbar button.pp{background:#fff;color:#1c1c1e}
+.wxdog .yx{animation:catyx 2.4s ease-in-out infinite alternate}@keyframes catyx{from{transform:translateX(0)}to{transform:translateX(40px)}}
+.wxdog .yr{animation:catyr 2.4s ease-in-out infinite alternate}@keyframes catyr{from{transform:rotate(0)}to{transform:rotate(300deg)}}
+#wxfull .wxclk .wxrad{display:flex;align-items:center;gap:12px;margin-top:22px}#wxfull .wxclk .wxrad .rlg{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:19px;flex:none}#wxfull .wxclk .wxrad b{display:block;font-size:28px!important;font-weight:700;letter-spacing:0;line-height:1.2}#wxfull .wxclk .wxrad small{display:block;font-size:18px;opacity:.75}#wxfull .wxclk .wxrad span{display:block;opacity:1;margin-top:0;font-weight:inherit}#wxfull .wxclk .wxrad span.rlg{display:grid;font-size:19px;font-weight:800}
+html.isfs #wxfull{top:var(--fsoff,0px)}
 #wxfull{display:none;position:fixed;inset:0;z-index:9000;overflow:hidden}
 html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from{opacity:0}to{opacity:1}}
 #wxfull canvas.wxa{position:absolute;inset:0;width:100%;height:100%}
@@ -3518,6 +3546,29 @@ html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from
       <path d="M120 118 q-4 3 -8 0" stroke="#2b1d14" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M128 110 q10 6 6 24 q-10 -6 -6 -24z" fill="#a8683a"/></g>
       <text class="zz" x="96" y="98" font-size="20" font-weight="700" fill="#cfd8ff">z</text><text class="zz b" x="104" y="92" font-size="15" font-weight="700" fill="#cfd8ff">z</text>`;
   const ball = () => `<g transform="translate(180 0)"><g class="bx"><g class="by"><circle cx="0" cy="130" r="11" fill="#ff5a4e"/><path d="M-11 130 q11 -7 22 0" stroke="#fff" stroke-width="3" fill="none"/></g></g></g>`;
+  /* gato del dormitorio: juega con un ovillo con sol, se resguarda bajo un paraguas si llueve, duerme de noche */
+  const catSit = () => `<g><path class="tail" d="M188 128 q34 -4 30 -40 q-2 -16 -12 -10" stroke="#9aa3ad" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <ellipse cx="160" cy="112" rx="34" ry="30" fill="#b7c0ca"/><ellipse cx="160" cy="122" rx="18" ry="16" fill="#eef1f4"/>
+      <ellipse cx="146" cy="140" rx="10" ry="6" fill="#b7c0ca"/><ellipse cx="172" cy="140" rx="10" ry="6" fill="#b7c0ca"/>
+      <circle cx="160" cy="70" r="26" fill="#b7c0ca"/><path d="M138 58 L136 30 L156 48z" fill="#b7c0ca"/><path d="M182 58 L184 30 L164 48z" fill="#b7c0ca"/>
+      <path d="M141 52 L140 38 L151 48z" fill="#f4b6c2"/><path d="M179 52 L180 38 L169 48z" fill="#f4b6c2"/>
+      <ellipse class="eye" cx="150" cy="70" rx="3.6" ry="5" fill="#2b2f36"/><ellipse class="eye" cx="170" cy="70" rx="3.6" ry="5" fill="#2b2f36"/>
+      <path d="M157 79 h6 l-3 3z" fill="#e88a9b"/><path d="M160 82 q-4 5 -8 2 M160 82 q4 5 8 2" stroke="#2b2f36" stroke-width="1.6" fill="none"/>
+      <path d="M146 80 h-16 M146 84 l-15 4 M174 80 h16 M174 84 l15 4" stroke="#6b7480" stroke-width="1.3"/><path d="M140 62 l6 -2 M180 62 l-6 -2" stroke="#9aa3ad" stroke-width="2"/></g>`;
+  const catSleep = () => `<ellipse cx="160" cy="130" rx="72" ry="13" fill="#7a5aa8"/><g class="breath"><path d="M206 124 q26 -2 14 -22" stroke="#9aa3ad" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <ellipse cx="164" cy="112" rx="46" ry="22" fill="#b7c0ca"/><circle cx="124" cy="110" r="20" fill="#b7c0ca"/><path d="M110 100 L104 82 L120 94z" fill="#b7c0ca"/><path d="M132 94 L140 80 L140 98z" fill="#b7c0ca"/>
+      <path d="M114 110 q4 3 8 0 M126 110 q4 3 8 0" stroke="#2b2f36" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M122 117 h4 l-2 2z" fill="#e88a9b"/></g>
+      <text class="zz" x="96" y="80" font-size="20" font-weight="700" fill="#cfd8ff">z</text><text class="zz b" x="104" y="74" font-size="15" font-weight="700" fill="#cfd8ff">z</text>`;
+  const umbrella = snow => `<g><path d="M100 70 q60 -56 120 0z" fill="#ff6b5b"/><path d="M100 70 q15 -10 30 0 q15 -10 30 0 q15 -10 30 0 q15 -10 30 0" fill="#ff6b5b" stroke="#d94b3e" stroke-width="2"/>
+      ${snow ? '<path d="M104 62 q56 -50 112 0 q-10 -8 -20 -2 q-10 -8 -20 -2 q-12 -8 -24 -2 q-10 -8 -22 -2 q-12 -8 -26 6z" fill="#fff"/>' : ""}<path d="M160 70 v70" stroke="#5b4636" stroke-width="4"/></g>`;
+  const yarn = () => `<g transform="translate(232 0)"><g class="yx"><g class="yr" style="transform-box:fill-box;transform-origin:50% 50%"><circle cx="0" cy="131" r="13" fill="#ff7ab0"/><path d="M-10 125 q10 6 20 0 M-11 133 q11 6 22 0 M-4 120 q4 10 0 22" stroke="#e04f8e" stroke-width="2" fill="none"/></g></g></g>`;
+  window.catScene = k => {
+    const inner = (k === "sun" || k === "partly") ? ground("#8fd16a") + `<g transform="translate(-40 0)">${catSit()}</g>` + yarn()
+      : (k === "rain" || k === "storm") ? ground("#3f5a46") + umbrella(false) + catSit()
+      : k === "snow" ? ground("#ffffff") + umbrella(true) + catSit()
+      : (k === "night" || k === "nightp") ? ground("#23305a") + catSleep()
+      : ground(k === "fog" ? "#c4cbd3" : "#9cc08a") + catSit();
+    return `<svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${inner}</svg>`; };
   window.dogScene = k => {
     const inner = (k === "sun" || k === "partly") ? ground("#8fd16a") + `<g transform="translate(-20 0)">${dogBody(true)}</g>` + ball()
       : (k === "rain" || k === "storm") ? ground("#3f5a46") + house(false, k === "storm")
@@ -3527,14 +3578,24 @@ html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from
     return `<svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${inner}</svg>`; };
   /* salón de día en reposo: la escena del tiempo a pantalla completa (un toque la quita) */
   const full = document.createElement("div"); full.id = "wxfull"; full.className = "wxtv"; full.setAttribute("aria-hidden", "true");
-  full.innerHTML = '<canvas class="wxa"></canvas><div class="wxclk"><b></b><span></span></div><div class="wxic"></div><div class="wxdog"></div>'; document.body.appendChild(full);
+  full.innerHTML = '<canvas class="wxa"></canvas><div class="wxclk"><b></b><span></span><div class="wxrad"></div></div><div class="wxic"></div><div class="wxdog"></div>'; document.body.appendChild(full);
   full.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); });
   setInterval(() => { if (!document.documentElement.classList.contains("salonwx")) return;
     const dd = new Date(), ck = full.querySelector(".wxclk"); ck.querySelector("b").innerHTML = `${pad(dd.getHours())}:<i>${pad(dd.getMinutes())}</i>`; ck.querySelector("span").textContent = fechaLarga(dd);   // hora y fecha
+    const isD = typeof roomOf === "function" && roomOf() === "dormitorio", rs = isD && typeof radSel === "function" ? radSel() : null, ron = rs && radioOn === rs.k;   // dormitorio: la emisora si suena
+    full.querySelector(".wxrad").innerHTML = ron ? `<span class="rlg" style="background:${rs.bg};color:${rs.fg}">${rs.lg}</span><span><b>${esc(rs.t)}</b><small>🔊 ${sleepTxt() || "Sonando"}</small></span>` : "";
     const w = store.get("p2_wx", null); if (!w || !w.current) return; upd();
     const c = w.current; full.className = "wxtv wx-" + K + (DARK[K] ? " dk" : "");
-    const sig = K + "|" + c.weather_code + "|" + c.is_day; if (full.dataset.sig === sig) return; full.dataset.sig = sig;
-    full.querySelector(".wxic").innerHTML = wx(c.weather_code, c.is_day); full.querySelector(".wxdog").innerHTML = dogScene(K); }, 1000);
+    const sig = K + "|" + c.weather_code + "|" + c.is_day + "|" + isD; if (full.dataset.sig === sig) return; full.dataset.sig = sig;
+    full.querySelector(".wxic").innerHTML = wx(c.weather_code, c.is_day); full.querySelector(".wxdog").innerHTML = isD ? catScene(K) : dogScene(K); }, 1000);
+  /* dormitorio: el recuadro grande de la radio con el tiempo de fuera animado y el gato */
+  setInterval(() => { const t = document.getElementById("radTile"); if (!t) return;
+    let b = t.querySelector(".wxtv"); if (!b){ b = document.createElement("div"); b.className = "wxtv"; b.innerHTML = '<canvas class="wxa" aria-hidden="true"></canvas><div class="wxic"></div><div class="wxdog"></div>'; t.prepend(b); }
+    if (typeof radBar === "function") radBar();
+    const w = store.get("p2_wx", null); if (!w || !w.current) return; upd(); const c = w.current;
+    b.className = "wxtv wx-" + K + (DARK[K] ? " dk" : ""); t.classList.toggle("wxdk", !!DARK[K]);
+    const sig = [K, c.weather_code, c.is_day].join("|"); if (b.dataset.sig === sig) return; b.dataset.sig = sig;
+    b.querySelector(".wxic").innerHTML = wx(c.weather_code, c.is_day); b.querySelector(".wxdog").innerHTML = catScene(K); }, 1000);
   /* salón: el recuadro de la tele, cuando no se ve nada, muestra el tiempo de fuera animado */
   setInterval(() => { const t = document.getElementById("tvTile"); if (!t || !t.classList.contains("tvs")) return;
     let b = t.querySelector(".wxtv"); if (!b){ b = document.createElement("div"); b.className = "wxtv"; b.innerHTML = '<canvas class="wxa" aria-hidden="true"></canvas><div class="wxi"></div><div class="wxdog"></div>'; t.insertBefore(b, t.querySelector(".tvbig")); }
