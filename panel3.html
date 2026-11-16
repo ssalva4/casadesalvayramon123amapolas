@@ -952,6 +952,7 @@ body:not(.at-home) .main{padding-bottom:calc((30px + env(safe-area-inset-bottom)
 /* el recuadro grande del salón sin tele: solo el tiempo con el perro (la tele sigue en Entretenimiento) */
 .tl.tv.tvs .chb,.tl.tv.tvs .tvb,.tl.tv.tvs #tvMiniLogo,.tl.tv.tvs .tvbig{display:none!important}
 .tl.tv.tvs{cursor:default}
+.tl.hole{visibility:hidden}
 </style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
@@ -3033,8 +3034,8 @@ function renderDorm(box){
   const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
   const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
   $("hgA").innerHTML = `<div class="tl clk bigclk dclk hz"><b>${pad(d.getHours())}:<span class="mm">${pad(d.getMinutes())}</span></b></div>${dualTH(w, v)}
-    ${tvTileD()}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${luzTile("light.luz_despacho", "Despacho")}
-    <div class="row4">${o.nt_dormitorio || ""}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${ventTile()}</div>`;
+    ${ventTile()}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${luzTile("light.luz_despacho", "Despacho")}
+    <div class="row4">${o.nt_dormitorio || ""}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}<div class="tl hole" aria-hidden="true"></div></div>`;
   radBar();   // radio grande con el tiempo de fuera y el gato (fila 1: reloj y alarma · fila 2: aire, deshumidificador y luz · fila 3: noche, escenas y ventanas)   // fila 1: aire, deshumidificador y luz · fila 2: noche y escenas · fila 3: radio y alarma
 }
 let miniMuted = true;
@@ -3646,6 +3647,26 @@ html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from
   setTimeout(() => { if (!(document.fullscreenElement || document.webkitFullscreenElement)) return;
     const vv = window.visualViewport, ch = document.documentElement.clientHeight, vh = Math.round(vv ? vv.height : innerHeight);
     if (ch - vh >= 30){ store.set("p3_fsbug", true); const x = document.exitFullscreen || document.webkitExitFullscreen; if (x) try{ x.call(document); }catch(e){} } }, 2500); }));
+</script>
+<script>
+/* iPad mini (dormitorio): textos más grandes en Clima, Costes, Tele y Ajustes, sin tocar el tamaño de cajas ni botones.
+   Solo agranda las letras pequeñas (menos de 22 px); los números grandes se quedan igual. */
+(function(){
+  const K = 1.25, SECS = ["t-cli", "t-cos", "t-ent", "t-cfg"];
+  const on = () => document.documentElement.classList.contains("room-dormitorio");
+  function bump(root){
+    if (!on()) return;
+    root.querySelectorAll("*").forEach(el => {
+      if (el.dataset.fz || el.closest("svg,canvas,video,#gdock")) return;
+      if (![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return;
+      const fs = parseFloat(getComputedStyle(el).fontSize); if (!fs || fs >= 22) return;
+      el.dataset.fz = fs; el.style.setProperty("font-size", (fs * K).toFixed(1) + "px", "important");
+    });
+  }
+  let t = null; const run = () => { clearTimeout(t); t = setTimeout(() => SECS.forEach(id => { const e = document.getElementById(id); if (e) bump(e); }), 60); };
+  SECS.forEach(id => { const e = document.getElementById(id); if (e) new MutationObserver(run).observe(e, {childList: true, subtree: true}); });
+  run(); setInterval(run, 3000);
+})();
 </script>
 </body>
 </html>
