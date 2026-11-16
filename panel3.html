@@ -3254,9 +3254,8 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
       <div class="${bdOn ? "" : "dim"}">
       ${sel ? cSeg("Modo de luz", cv("input_select.despacho_buenos_dias_modo"), (sel.attributes.options || []).map(o => [o, MODO_T[o] || o]), v => `data-sel="input_select.despacho_buenos_dias_modo" data-v="${v}"`) : ""}
       ${seg("Brillo", bdB, pcts, "input_number.despacho_buenos_dias_brillo")}</div>
-      <h4>Apagado automático</h4>
       ${seg("Se apaga sola al cabo de", Math.round(parseFloat(cv("input_number.despacho_minutos_encendida", 60))), [[15, "15 min"], [30, "30 min"], [45, "45 min"], [60, "1 h"], [90, "1 h 30"], [120, "2 h"]], "input_number.despacho_minutos_encendida")}
-      <div class="cf-note">Cada vez que se enciende la luz del despacho (desde el panel, Buenos días o a mano) empieza la cuenta atrás, que se ve en el botón Despacho.</div>
+      <div class="cf-note">Solo con Buenos días: la luz tenue se apaga sola al acabar la cuenta atrás, que se ve en el botón Despacho. Encendida con el botón Despacho no se apaga hasta que la vuelvas a tocar.</div>
       <div class="cf-note">Se guarda en Home Assistant, vale para todos los iPads. Estas bombillas no bajan del 10 %. El interruptor de la pared tiene que estar siempre encendido.</div></div>`; };
   const group = (card) => {   // filas sueltas → grupos blancos, cada «h4» abre uno nuevo
     const out = document.createDocumentFragment(); let g = null, dim = false;
