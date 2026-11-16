@@ -2340,7 +2340,7 @@ function ambHTML(){
     ? `<div class="gg">${thermoTile("salon")}${clock}${wxT}${o.nt_salon || ""}${o.ac_salon || ""}${o.morning}${o.bye}${ambTvTile()}</div>`
     : `<div class="gg">${thermoTile("salon")}${clock}${wxT}${o.nt_salon || ""}${o.ac_salon || ""}${o.morning}${o.bye}${o.dh_bano || ""}${o.off}</div>`;
   const dorm = RM === "dormitorio"
-    ? `<div class="gg"><div class="gt clock bigclk">${glassClock()}</div>${ambTempTile("dormitorio")}${ambAlarmTile()}${o.nt_dormitorio || ""}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${ambRadioTile()}${G("", "moon", "Buenas noches", "Escena", 'data-bn="1"')}${wxT}</div>`
+    ? `<div class="gg"><div class="gt clock bigclk">${glassClock()}</div>${ambTempTile("dormitorio")}${o.nt_dormitorio || ""}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${ambRadioTile()}${G("", "moon", "Buenas noches", "Escena", 'data-bn="1"')}${wxT}</div>`
     : `<div class="gg">${thermoTile("dormitorio")}${clock}${o.t_bano}${o.nt_dormitorio || ""}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${o.dh_bano || ""}${o.t_salon}${o.off}</div>`;
   const tiempo = w && w.current ? `<div class="gg one"><div class="gt wide"><span class="gi huge">${wx(w.current.weather_code, w.current.is_day)}</span>
       <b class="tv xl">${Math.round(w.current.temperature_2m)}°</b><b>${wxText(w.current.weather_code)} en ${PLACE}</b>
@@ -2383,7 +2383,7 @@ function renderAmb(){ const a = $("amb"); if (!a || !ambOpen) return; ambChrome(
   const red = typeof inRed === "function" && inRed(); a.classList.toggle("redface", red);
   if (red){ a.style.setProperty("--nb", store.get("p3_red_lvl", .4)); const d = new Date(), ds = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"});
     a.classList.remove("night"); a.style.backgroundImage = "none";
-    a.innerHTML = `<div class="nf"><div class="nt">${pad(d.getHours())}:${pad(d.getMinutes())}</div><div class="nd">${ds[0].toUpperCase() + ds.slice(1)}</div>${alarmHTML()}
+    a.innerHTML = `<div class="nf"><div class="nt">${pad(d.getHours())}:${pad(d.getMinutes())}</div><div class="nd">${ds[0].toUpperCase() + ds.slice(1)}</div>
       <div class="nr">${HOME_ROOMS.map(r => { const v = roomTH(r.re); return `<div><small>${r.n}</small><b>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</b><em>${!isNaN(v.h) ? Math.round(v.h) + " %" : ""}</em></div>`; }).join("")}</div></div>`; return; }
   const h = new Date().getHours(); a.classList.toggle("night", h >= 0 && h < 7); a.style.backgroundImage = AMB_BG; a.innerHTML = ambHTML(); }
 function openAmb(){ if (ambOpen) return; ambOpen = true; if (typeof stopMini === "function") stopMini();
@@ -2842,10 +2842,12 @@ renderHome();
 <script>
 /* Modo descanso de 23:00 a 7:00 (se cambia en Ajustes): pantalla en negro y rojo, y pasa sola a la pantalla en reposo */
 /* horario del rojo: de 23:00 a 8:00 de lunes a viernes y de 23:00 a 9:30 sábados y domingos (la hora de fin según el día de esa mañana) */
-const redEnd = d => (d.getDay() === 0 || d.getDay() === 6) ? "09:30" : "08:00";
+/* horario del rojo en Home Assistant (lo comparten los dos iPads; se cambia en Ajustes): desde · hasta entre semana · hasta el fin de semana */
+const redFrom = () => hhmm("input_datetime.rojo_desde") || "23:00";
+const redEnd = d => (d.getDay() === 0 || d.getDay() === 6) ? (hhmm("input_datetime.rojo_hasta_fin_de_semana") || "09:30") : (hhmm("input_datetime.rojo_hasta_laborables") || "08:00");
 /* el perro y el gato duermen en ese mismo horario */
-const sleepNow = () => { const d = new Date(), m = d.getHours() * 60 + d.getMinutes(), [eh, em] = redEnd(d).split(":").map(Number); return m >= 23 * 60 || m < eh * 60 + em; };
-const redCfg = () => ({on: store.get("p3_red_on3", true) && !(typeof roomOf === "function" && roomOf() === "salon"), from: "23:00", to: redEnd(new Date())});
+const sleepNow = () => { const d = new Date(), m = d.getHours() * 60 + d.getMinutes(), [eh, em] = redEnd(d).split(":").map(Number); const [fh, fm] = redFrom().split(":").map(Number); return m >= fh * 60 + fm || m < eh * 60 + em; };
+const redCfg = () => ({on: store.get("p3_red_on3", true) && !(typeof roomOf === "function" && roomOf() === "salon"), from: redFrom(), to: redEnd(new Date())});
 const inRed = () => { if (!redCfg().on) return false; const hh = new Date().getHours(); if (Date.now() < store.get("p3_red_force", 0)) return true;   /* Buenas noches pone el rojo a cualquier hora, hasta las 7:00 */ const c = redCfg(); if (!c.on) return false; const d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes());
   return c.from > c.to ? (n >= c.from || n < c.to) : (n >= c.from && n < c.to); };
 let wasRed = null;
@@ -2859,12 +2861,11 @@ function syncRed(){
 syncRed(); setInterval(syncRed, 20000);
 const _ambCfgCard = ambCfgCard;
 ambCfgCard = function(){ const c = redCfg();
-  return _ambCfgCard() + `<div class="card"><h3>🌙 Modo descanso (este aparato)</h3>
+  return _ambCfgCard() + `<div class="card"><h3>🌙 Modo noche rojo</h3>
     <div class="cf-r"><span>Negro y rojo por la noche</span><button class="sw ${c.on ? "on" : ""}" data-red="on" role="switch" aria-checked="${c.on}" aria-label="Modo descanso"></button></div>
-    <div class="cf-r"><span>Desde las</span><input type="time" data-redt="from" value="${c.from}" ${c.on ? "" : "disabled"}></div>
-    <div class="cf-r"><span>Hasta las</span><input type="time" data-redt="to" value="${c.to}" ${c.on ? "" : "disabled"}></div>
+    ${cTime("input_datetime.rojo_desde", "Desde las")}${cTime("input_datetime.rojo_hasta_laborables", "Hasta las (lunes a viernes)")}${cTime("input_datetime.rojo_hasta_fin_de_semana", "Hasta las (sábado y domingo)")}
     ${cSeg("Brillo del reloj rojo", String(store.get("p3_red_lvl", .4)), [["0.7", "Medio"], ["0.4", "Bajo"], ["0.22", "Muy bajo"], ["0.12", "Mínimo"]], v => `data-redl="${v}" data-v="${v}"`)}
-    <div class="cf-note">En esas horas la pantalla en reposo es un reloj negro y rojo tenue, y al empezar pasa sola a ella. Si la tocas, el panel se ve normal.</div></div>`; };
+    <div class="cf-note">El horario vale para los dos iPads: en esas horas el inicio se ve en negro y rojo cuando no se toca, y el perro y el gato duermen. Si lo tocas, el panel se ve normal.</div></div>`; };
 $("cfg").addEventListener("click", ev => { const l = ev.target.closest("[data-redl]"); if (!l) return; ev.stopImmediatePropagation();
   store.set("p3_red_lvl", parseFloat(l.dataset.redl)); renderCfg(true); renderAmb(); }, true);
 $("cfg").addEventListener("click", ev => { const b = ev.target.closest("[data-red]"); if (!b) return; ev.stopImmediatePropagation();
@@ -2933,6 +2934,7 @@ const ventId = () => roomOf() === "salon" ? "input_boolean.ventanas_salon" : "in
 function ventTile(){ const e = hst(ventId()), on = (ventPend ?? (e && e.state)) === "on";
   return T(on ? "on vent" : "", "window", "Ventanas", on ? (roomOf() === "salon" ? "Abiertas · aire parado" : "Abiertas · todo parado") : "Cerradas", `data-vent="${on ? 1 : 0}"`); }
 async function roomAction(b){
+  if (b.dataset.tvd){ if (radioOn) try{ radStop(); }catch(e){} show("ent"); setTimeout(() => { const pb = $("screen") && $("screen").querySelector("[data-play]"); if (pb && !tvOn && !ytOn) pb.click(); }, 300); return; }   // dormitorio: la tele
   if (b.dataset.vent !== undefined){ const on = b.dataset.vent === "1"; ventPend = on ? "off" : "on"; renderHome();   // abre: para aires y deshumidificadores · cierra: todo vuelve como estaba (automatización en HA)
     try{ await service("input_boolean", on ? "turn_off" : "turn_on", {entity_id: ventId()}); }catch(err){ handleErr(err); }
     setTimeout(async () => { await refreshHA(); ventPend = null; renderHome(); }, 2500); return; }
@@ -2981,6 +2983,9 @@ function radioSmallW(){ const r = radSel(), on = radioOn === r.k;
 const fechaLarga = d => { const t = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"}); return t[0].toUpperCase() + t.slice(1); };
 function ambTempTile(k){ const r = HOME_ROOMS.find(x => x.k === k), v = roomTH(r.re);
   return `<div class="gt tempg"><b>${r.n}</b><small class="tdate">${fechaLarga(new Date())}</small><span class="tg"><span><small>Temp.</small>${!isNaN(v.t) ? fmt1(v.t) + "°" : "—"}</span><span><small>Humedad</small>${!isNaN(v.h) ? Math.round(v.h) + " %" : "—"}</span></span></div>`; }
+/* dormitorio: botón de la tele (la radio es lo principal; un toque pone la tele en Tele y radio) */
+function tvTileD(){ const c = CHANNELS.find(x => x.k === ch) || CHANNELS[0], on = tvOn || ytOn;
+  return `<div class="tl ${on ? "on" : ""}" data-tvd="1" role="button" aria-label="Poner la tele"><span class="ti">${tsvg("tv")}</span><b>Tele</b><small>${on ? "Viendo · " + esc(c.n || c.t || "") : "Toca para verla"}</small></div>`; }
 function alarmTileW(){ const a = nextAlarm();
   return `<div class="tl alm ${a ? "on" : ""}"><span class="ti">${tsvg("bell")}</span><b>Alarma</b>${a ? `<span class="tv2">${a}</span>` : ""}<small>${a == null ? "sin datos del iPhone" : a ? "iPhone" : "ninguna activada"}</small></div>`; }
 function ambRadioTile(){ const r = radSel(), on = radioOn === r.k;
@@ -3028,7 +3033,7 @@ function renderDorm(box){
   const R = HOME_ROOMS.map(r => ({r, v: roomTH(r.re)}));
   const casa = `<button class="tl casa" data-go="cli"><span class="rm">${R.map(x => `<div><span>${x.r.n}</span><b>${!isNaN(x.v.t) ? fmt1(x.v.t) + "°" : "—"}</b></div>`).join("")}</span></button>`;
   $("hgA").innerHTML = `<div class="tl clk bigclk dclk hz"><b>${pad(d.getHours())}:<span class="mm">${pad(d.getMinutes())}</span></b></div>${dualTH(w, v)}
-    ${alarmTileW()}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${luzTile("light.luz_despacho", "Despacho")}
+    ${tvTileD()}${o.ac_dormitorio || ""}${o.dh_dormitorio || ""}${luzTile("light.luz_despacho", "Despacho")}
     <div class="row4">${o.nt_dormitorio || ""}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${ventTile()}</div>`;
   radBar();   // radio grande con el tiempo de fuera y el gato (fila 1: reloj y alarma · fila 2: aire, deshumidificador y luz · fila 3: noche, escenas y ventanas)   // fila 1: aire, deshumidificador y luz · fila 2: noche y escenas · fila 3: radio y alarma
 }
@@ -3060,7 +3065,7 @@ syncMini = function(){ const v = $("tvMini"), t = $("tvTile");
   else $("tvMiniS").textContent = "🔊 En directo · toca para parar"; };
 document.addEventListener("click", ev => { const t = ev.target.closest("#tvTile"); if (t && roomOf() === "casa"){ setTimeout(() => { const v = $("tvMini"); if (v) miniMuted = v.muted; }, 0); } }, true);
 /* clics de radio / buenas noches en el Inicio */
-$("home").addEventListener("click", ev => { const b = ev.target.closest("[data-rad],[data-bn],[data-rtimer],[data-lt],[data-vent]"); if (!b) return; ev.stopImmediatePropagation(); roomAction(b); }, true);
+$("home").addEventListener("click", ev => { const b = ev.target.closest("[data-rad],[data-bn],[data-rtimer],[data-lt],[data-vent],[data-tvd]"); if (!b) return; ev.stopImmediatePropagation(); roomAction(b); }, true);
 /* la radio sonando tampoco pasa a reposo si estás en el dormitorio con temporizador: no; sí deja pasar (reloj rojo con radio de fondo) */
 
 /* --- Ajustes: dónde está este aparato --- */
@@ -3096,7 +3101,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     if (idle && !h.classList.contains("idlew")) h.classList.add("idlew");
     /* salón de noche (22:00–7:00): en reposo, la misma pantalla en negro y rojo */
     const nowM = (d => d.getHours() * 60 + d.getMinutes())(new Date()), tm = t => { const [a, b] = String(t).split(":").map(Number); return a * 60 + (b || 0); };
-    const f = tm("23:00"), t = tm(redEnd(new Date())), night = nowM >= f || nowM < t || !!window.salonBN;   // salón: de 23:00 a 8:00 (9:30 el fin de semana), o tras «Buenas noches»
+    const f = tm(redFrom()), t = tm(redEnd(new Date())), night = nowM >= f || nowM < t || !!window.salonBN;   // salón: de 23:00 a 8:00 (9:30 el fin de semana), o tras «Buenas noches»
     const rmI = typeof roomOf === "function" ? roomOf() : "", redD = typeof inRed === "function" && inRed();
     h.classList.toggle("salonred", h.classList.contains("idlew") && tab === "hom" && ((rmI === "salon" && night) || (rmI === "dormitorio" && (redD || !!window.salonBN))));   // salón 22–7 y dormitorio en su horario rojo: la pantalla de inicio en rojo
     h.classList.toggle("salonwx", h.classList.contains("idlew") && tab === "hom" && ((rmI === "salon" && !night) || (rmI === "dormitorio" && !redD && !window.salonBN)));   // de día: reposo con la escena del tiempo a pantalla completa (salón con el perro, dormitorio con el gato)
@@ -3236,16 +3241,17 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
   const despachoCard = () => { const k = Math.round(parseFloat(cv("input_number.despacho_trabajo_tono", 4500))), bb = Math.round(parseFloat(cv("input_number.despacho_trabajo_brillo", 100))), e = hst("light.luz_despacho");
     const bdOn = cv("input_boolean.despacho_buenos_dias", "on") === "on", bdB = Math.round(parseFloat(cv("input_number.despacho_buenos_dias_brillo", 10))), sel = hst("input_select.despacho_buenos_dias_modo");
     const seg = (lab, cur, opts, id) => `<div class="cf-r col"><span>${lab}</span><div class="seg">${opts.map(o => `<button class="${o[0] === cur ? "on" : ""}" data-lnum="${id}" data-v="${o[0]}">${o[1]}</button>`).join("")}</div></div>`;
-    const pcts = [[10, "10 %"], [20, "20 %"], [40, "40 %"], [60, "60 %"], [80, "80 %"], [100, "100 %"]];
+    const pcts = [[7, "7 %"], [10, "10 %"], [20, "20 %"], [40, "40 %"], [60, "60 %"], [80, "80 %"], [100, "100 %"]];
     return `<div class="card"><h3>💡 Luz del despacho <span class="pill">${!e || e.state === "unavailable" ? "sin conexión" : e.state === "on" ? "encendida" : "apagada"}</span></h3>
       <h4>Botón Despacho (para trabajar)</h4>
       ${seg("Tono de blanco", k, [[2700, "Cálido"], [3500, "Suave"], [4500, "Neutro"], [5500, "Frío"], [6500, "Luz día"]], "input_number.despacho_trabajo_tono")}
-      ${seg("Brillo", bb, pcts.slice(2), "input_number.despacho_trabajo_brillo")}
+      ${seg("Brillo", bb, pcts.slice(3), "input_number.despacho_trabajo_brillo")}
       <h4>Buenos días</h4>
       ${cTog("input_boolean.despacho_buenos_dias", "Encender la luz del despacho")}
       <div class="${bdOn ? "" : "dim"}">
       ${sel ? cSeg("Modo de luz", cv("input_select.despacho_buenos_dias_modo"), (sel.attributes.options || []).map(o => [o, MODO_T[o] || o]), v => `data-sel="input_select.despacho_buenos_dias_modo" data-v="${v}"`) : ""}
       ${seg("Brillo", bdB, pcts, "input_number.despacho_buenos_dias_brillo")}</div>
+      <div class="cf-note">Con Buenos días se enciende y se apaga sola al cabo de 1 hora.</div>
       <div class="cf-note">Se guarda en Home Assistant, vale para todos los iPads. Estas bombillas no bajan del 10 %. El interruptor de la pared tiene que estar siempre encendido.</div></div>`; };
   const group = (card) => {   // filas sueltas → grupos blancos, cada «h4» abre uno nuevo
     const out = document.createDocumentFragment(); let g = null, dim = false;
