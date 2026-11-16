@@ -949,13 +949,9 @@ body.at-home #gdock{display:none!important}
 body:not(.at-home) .main{padding-bottom:calc((30px + env(safe-area-inset-bottom)) * var(--dk,1))!important}
 </style>
 <style id="sin-tele">
-/* sin tele en el panel: el salón muestra solo el tiempo con el perro, y Entretenimiento queda con la radio y las noticias */
+/* el recuadro grande del salón sin tele: solo el tiempo con el perro (la tele sigue en Entretenimiento) */
 .tl.tv.tvs .chb,.tl.tv.tvs .tvb,.tl.tv.tvs #tvMiniLogo,.tl.tv.tvs .tvbig{display:none!important}
 .tl.tv.tvs{cursor:default}
-.t-ent .tv{display:none!important}
-.t-ent.on{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr)!important}
-.t-ent>.card:last-child{grid-column:1!important;grid-row:1!important;align-self:stretch!important;flex-direction:row!important;align-items:center;justify-content:space-around;gap:30px!important;padding:22px 30px!important}
-.t-ent .news{grid-column:1!important;grid-row:2!important}
 </style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
@@ -1133,7 +1129,7 @@ function tick(){
   const s = fmtDate.format(d); $("date").textContent = s[0].toUpperCase() + s.slice(1);
 }
 tick(); setInterval(tick, 5000);
-const TT = {ent:["Radio y noticias","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario y próximos días"], hom:["Inicio",""], cos:["Costes","Luz de los aires y deshumidificadores · compartido"], cfg:["Ajustes","Deshumidificadores, aires y modo Noche · se guarda en Home Assistant"]};
+const TT = {ent:["Entretenimiento","Todo compartido"], cli:["Clima","Aires, consumo y precio de la luz · compartido"], pla:["Planning","Calendario y próximos días"], hom:["Inicio",""], cos:["Costes","Luz de los aires y deshumidificadores · compartido"], cfg:["Ajustes","Deshumidificadores, aires y modo Noche · se guarda en Home Assistant"]};
 let tab = "hom";   // V3: al abrir, la pantalla de Inicio
 function show(t){
   tab = t;
@@ -2845,7 +2841,11 @@ renderHome();
 </script>
 <script>
 /* Modo descanso de 23:00 a 7:00 (se cambia en Ajustes): pantalla en negro y rojo, y pasa sola a la pantalla en reposo */
-const redCfg = () => ({on: store.get("p3_red_on3", true) && !(typeof roomOf === "function" && roomOf() === "salon"),   /* en el salón no hay pantalla roja */ from: store.get("p3_red_from", "23:00"), to: store.get("p3_red_to", "07:00")});
+/* horario del rojo: de 23:00 a 8:00 de lunes a viernes y de 23:00 a 9:30 sábados y domingos (la hora de fin según el día de esa mañana) */
+const redEnd = d => (d.getDay() === 0 || d.getDay() === 6) ? "09:30" : "08:00";
+/* el perro y el gato duermen en ese mismo horario */
+const sleepNow = () => { const d = new Date(), m = d.getHours() * 60 + d.getMinutes(), [eh, em] = redEnd(d).split(":").map(Number); return m >= 23 * 60 || m < eh * 60 + em; };
+const redCfg = () => ({on: store.get("p3_red_on3", true) && !(typeof roomOf === "function" && roomOf() === "salon"), from: "23:00", to: redEnd(new Date())});
 const inRed = () => { if (!redCfg().on) return false; const hh = new Date().getHours(); if (Date.now() < store.get("p3_red_force", 0)) return true;   /* Buenas noches pone el rojo a cualquier hora, hasta las 7:00 */ const c = redCfg(); if (!c.on) return false; const d = new Date(), n = pad(d.getHours()) + ":" + pad(d.getMinutes());
   return c.from > c.to ? (n >= c.from || n < c.to) : (n >= c.from && n < c.to); };
 let wasRed = null;
@@ -2948,7 +2948,7 @@ async function roomAction(b){
     window.salonBN = true; if (typeof show === "function" && tab !== "hom") show("hom"); document.documentElement.classList.add("idlew", "salonred");
     try{ await service("climate", "set_hvac_mode", {entity_id: "climate.aire_salon", hvac_mode: "off"}); setTimeout(refreshHA, 1500); }catch(err){ handleErr(err); } }
   else if (b.dataset.bn){   // Buenas noches del dormitorio: aire del salón apagado, Noche en el dormitorio y reloj rojo (sin radio)
-    if (redCfg().on){ const t = new Date(); t.setHours(7, 0, 0, 0); if (t <= new Date()) t.setDate(t.getDate() + 1); store.set("p3_red_force", t.getTime());   // modo descanso hasta las 7:00
+    if (redCfg().on){ const t = new Date(); if (t.getHours() >= 12) t.setDate(t.getDate() + 1); const [eh, em] = redEnd(t).split(":").map(Number); t.setHours(eh, em, 0, 0); if (t <= new Date()) { t.setDate(t.getDate() + 1); const [h2, m2] = redEnd(t).split(":").map(Number); t.setHours(h2, m2, 0, 0); } store.set("p3_red_force", t.getTime());   // modo descanso hasta el fin del horario rojo (8:00 o 9:30 el fin de semana)
       setTimeout(() => { if (typeof syncRed === "function") syncRed(); }, 400); }
     window.salonBN = true; if (ambOpen) closeAmb(); if (tab !== "hom") show("hom"); document.documentElement.classList.add("idlew", "salonred");   // como en el salón: la misma pantalla de inicio, en rojo, hasta que se toque
     if (store.get("p3_bn_sc", false)) setTimeout(() => { location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent("Brillo noche"); }, 1200);   // el atajo baja el brillo y vuelve al panel
@@ -2997,7 +2997,7 @@ function renderSalon(box){
       <div class="hg rs"><div class="tl tv tvs" id="tvTile" role="button" tabindex="0" aria-label="Tele: toca para el sonido"><video id="tvMini" muted playsinline autoplay preload="none"></video><img id="tvMiniLogo" alt="">
         <button class="chb l" data-chs="-1" aria-label="Canal anterior">${tsvg("chev_l")}</button><button class="chb r" data-chs="1" aria-label="Canal siguiente">${tsvg("chev_r")}</button>
         <span class="tvbig">TV</span><canvas id="spec" aria-hidden="true"></canvas><span class="tvb"><b id="tvMiniN"></b><small id="tvMiniS"></small></span></div><div id="hgA" style="display:contents"></div></div>
-      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Radio y noticias">${tsvg("radio")}</button><button data-go="cos" aria-label="Costes">${tsvg("euro")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
+      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="cos" aria-label="Costes">${tsvg("euro")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`;
     $("tvTile").addEventListener("click", ev => { const c = ev.target.closest("[data-chs]"); if (c){ ev.stopPropagation(); roomAction(c); return; }
       const chn = CHANNELS.find(x => x.k === ch) || CHANNELS[0];
       if (!salonTv && (radioOn || (!player.paused && player.getAttribute("src")))){   // con la radio sonando, un toque la para
@@ -3020,7 +3020,7 @@ function dualTH(w, v){ const c = w && w.current;
 function renderDorm(box){
   if (box.dataset.layout !== "dormitorio"){ box.dataset.layout = "dormitorio"; stopMini();
     box.innerHTML = `<div class="h3t"><h2>Dormitorio</h2><span id="h3date"></span><span id="h3time" style="display:none"></span></div><div class="hg rd"><div class="tl rad2x" id="radTile" data-rad="play" role="button" aria-label="Radio"><div class="radbar"></div></div><div id="hgA" style="display:contents"></div></div>
-      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Radio y noticias">${tsvg("radio")}</button><button data-go="cos" aria-label="Costes">${tsvg("euro")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`; }
+      <div class="mdock"><button class="on" aria-label="Inicio">${tsvg("home")}</button><button data-go="cli" aria-label="Clima">${tsvg("therm")}</button><button data-go="ent" aria-label="Tele y radio">${tsvg("tv")}</button><button data-go="cos" aria-label="Costes">${tsvg("euro")}</button><button data-go="cfg" aria-label="Ajustes">${tsvg("gear")}</button></div>`; }
   const d = new Date(), w = store.get("p2_wx", null), o = homeTiles(), v = roomTH(HOME_ROOMS[1].re);
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()); $("h3date").textContent = fechaLarga(d);
   /* sin píldoras: la temperatura y la humedad ya están en los mosaicos */
@@ -3096,7 +3096,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
     if (idle && !h.classList.contains("idlew")) h.classList.add("idlew");
     /* salón de noche (22:00–7:00): en reposo, la misma pantalla en negro y rojo */
     const nowM = (d => d.getHours() * 60 + d.getMinutes())(new Date()), tm = t => { const [a, b] = String(t).split(":").map(Number); return a * 60 + (b || 0); };
-    const f = tm("22:00"), t = tm("07:00"), night = nowM >= f || nowM < t || !!window.salonBN;   // salón: de 22:00 a 7:00, o tras «Buenas noches»
+    const f = tm("23:00"), t = tm(redEnd(new Date())), night = nowM >= f || nowM < t || !!window.salonBN;   // salón: de 23:00 a 8:00 (9:30 el fin de semana), o tras «Buenas noches»
     const rmI = typeof roomOf === "function" ? roomOf() : "", redD = typeof inRed === "function" && inRed();
     h.classList.toggle("salonred", h.classList.contains("idlew") && tab === "hom" && ((rmI === "salon" && night) || (rmI === "dormitorio" && (redD || !!window.salonBN))));   // salón 22–7 y dormitorio en su horario rojo: la pantalla de inicio en rojo
     h.classList.toggle("salonwx", h.classList.contains("idlew") && tab === "hom" && ((rmI === "salon" && !night) || (rmI === "dormitorio" && !redD && !window.salonBN)));   // de día: reposo con la escena del tiempo a pantalla completa (salón con el perro, dormitorio con el gato)
@@ -3204,7 +3204,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
 <script>
 /* dock fijo: Inicio, Clima, Tele, Agenda y Ajustes; la sección actual en negro */
 (() => { const app = document.querySelector(".app") || document.body, d = document.createElement("nav"); d.id = "gdock"; d.setAttribute("aria-label", "Secciones");
-  const IT = [["hom", "home", "Inicio"], ["cli", "therm", "Clima"], ["ent", "radio", "Radio y noticias"], ["cos", "euro", "Costes"], ["cfg", "gear", "Ajustes"]];
+  const IT = [["hom", "home", "Inicio"], ["cli", "therm", "Clima"], ["ent", "tv", "Tele y radio"], ["cos", "euro", "Costes"], ["cfg", "gear", "Ajustes"]];
   d.innerHTML = IT.map(x => `<button data-gd="${x[0]}" aria-label="${x[2]}">${tsvg(x[1])}</button>`).join(""); (document.querySelector(".main") || app).appendChild(d);
   const mark = () => d.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.gd === tab));
   d.addEventListener("click", e => { const b = e.target.closest("[data-gd]"); if (b) show(b.dataset.gd); });
@@ -3592,14 +3592,14 @@ html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from
     const inner = night ? ground("#23305a") + catSleep() : (k === "sun" || k === "partly") ? ground("#8fd16a") + `<g transform="translate(-40 0)">${catSit()}</g>` + yarn()
       : (k === "rain" || k === "storm") ? ground("#3f5a46") + umbrella(false) + catSit()
       : k === "snow" ? ground("#ffffff") + umbrella(true) + catSit()
-      : (k === "night" || k === "nightp") ? ground("#23305a") + catSleep()
+      : (k === "night" || k === "nightp") ? ground("#23305a") + catSit()   /* de noche pero fuera del horario de dormir: despierto */
       : ground(k === "fog" ? "#c4cbd3" : "#9cc08a") + catSit();
     return `<svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${inner}</svg>`; };
   window.dogScene = (k, night) => {   // de noche siempre duerme, llueva o no
     const inner = night ? ground("#23305a") + sleeping() : (k === "sun" || k === "partly") ? ground("#8fd16a") + `<g transform="translate(-20 0)">${dogBody(true)}</g>` + ball()
       : (k === "rain" || k === "storm") ? ground("#3f5a46") + house(false, k === "storm")
       : k === "snow" ? ground("#ffffff") + house(true, false)
-      : (k === "night" || k === "nightp") ? ground("#23305a") + sleeping()
+      : (k === "night" || k === "nightp") ? ground("#23305a") + `<g transform="translate(30 0)">${dogBody(false)}</g>`   /* de noche pero fuera del horario de dormir: despierto */
       : ground(k === "fog" ? "#c4cbd3" : "#9cc08a") + `<g transform="translate(30 0)">${dogBody(false)}</g>`;
     return `<svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${inner}</svg>`; };
   /* salón de día en reposo: la escena del tiempo a pantalla completa (un toque la quita) */
@@ -3612,23 +3612,23 @@ html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from
     full.querySelector(".wxrad").innerHTML = ron ? `<span class="rlg" style="background:${rs.bg};color:${rs.fg}">${rs.lg}</span><span><b>${esc(rs.t)}</b><small>🔊 ${sleepTxt() || "Sonando"}</small></span>` : "";
     const w = store.get("p2_wx", null); if (!w || !w.current) return; upd();
     const c = w.current; full.className = "wxtv wx-" + K + (DARK[K] ? " dk" : "");
-    const sig = K + "|" + c.weather_code + "|" + c.is_day + "|" + isD; if (full.dataset.sig === sig) return; full.dataset.sig = sig;
-    full.querySelector(".wxic").innerHTML = wx(c.weather_code, c.is_day); full.querySelector(".wxdog").innerHTML = isD ? catScene(K, !+c.is_day) : dogScene(K, !+c.is_day); }, 1000);
+    const sig = K + "|" + c.weather_code + "|" + sleepNow() + "|" + isD; if (full.dataset.sig === sig) return; full.dataset.sig = sig;
+    full.querySelector(".wxic").innerHTML = wx(c.weather_code, c.is_day); full.querySelector(".wxdog").innerHTML = isD ? catScene(K, sleepNow()) : dogScene(K, sleepNow()); }, 1000);
   /* dormitorio: el recuadro grande de la radio con el tiempo de fuera animado y el gato */
   setInterval(() => { const t = document.getElementById("radTile"); if (!t) return;
     let b = t.querySelector(".wxtv"); if (!b){ b = document.createElement("div"); b.className = "wxtv"; b.innerHTML = '<canvas class="wxa" aria-hidden="true"></canvas><div class="wxic"></div><div class="wxdog"></div>'; t.prepend(b); }
     if (typeof radBar === "function") radBar();
     const w = store.get("p2_wx", null); if (!w || !w.current) return; upd(); const c = w.current;
     b.className = "wxtv wx-" + K + (DARK[K] ? " dk" : ""); t.classList.toggle("wxdk", !!DARK[K]);
-    const sig = [K, c.weather_code, c.is_day].join("|"); if (b.dataset.sig === sig) return; b.dataset.sig = sig;
-    b.querySelector(".wxic").innerHTML = wx(c.weather_code, c.is_day); b.querySelector(".wxdog").innerHTML = catScene(K, !+c.is_day); }, 1000);
+    const sig = [K, c.weather_code, sleepNow()].join("|"); if (b.dataset.sig === sig) return; b.dataset.sig = sig;
+    b.querySelector(".wxic").innerHTML = wx(c.weather_code, c.is_day); b.querySelector(".wxdog").innerHTML = catScene(K, sleepNow()); }, 1000);
   /* salón: el recuadro de la tele, cuando no se ve nada, muestra el tiempo de fuera animado */
   setInterval(() => { const t = document.getElementById("tvTile"); if (!t || !t.classList.contains("tvs")) return;
     let b = t.querySelector(".wxtv"); if (!b){ b = document.createElement("div"); b.className = "wxtv"; b.innerHTML = '<canvas class="wxa" aria-hidden="true"></canvas><div class="wxi"></div><div class="wxdog"></div>'; t.insertBefore(b, t.querySelector(".tvbig")); }
     const w = store.get("p2_wx", null); if (!w || !w.current) return; upd(); const c = w.current, d = w.daily || {};
     b.className = "wxtv wx-" + K + (DARK[K] ? " dk" : ""); t.classList.toggle("wxdk", !!DARK[K]);
-    const sig = [K, c.temperature_2m, c.weather_code, c.relative_humidity_2m, c.is_day].join("|"); if (b.dataset.sig === sig) return; b.dataset.sig = sig;
-    const dg = b.querySelector(".wxdog") || b.appendChild(Object.assign(document.createElement("div"), {className: "wxdog"})); if (dg.dataset.k !== K + c.is_day){ dg.dataset.k = K + c.is_day; dg.innerHTML = dogScene(K, !+c.is_day); }
+    const sig = [K, c.temperature_2m, c.weather_code, c.relative_humidity_2m, sleepNow()].join("|"); if (b.dataset.sig === sig) return; b.dataset.sig = sig;
+    const dg = b.querySelector(".wxdog") || b.appendChild(Object.assign(document.createElement("div"), {className: "wxdog"})); if (dg.dataset.k !== K + sleepNow()){ dg.dataset.k = K + sleepNow(); dg.innerHTML = dogScene(K, sleepNow()); }
     b.querySelector(".wxi").innerHTML = `<span class="wxic">${wx(c.weather_code, c.is_day)}</span><b>${Math.round(c.temperature_2m)}°</b><em>${wxText(c.weather_code)}</em>${d.temperature_2m_max ? `<small>máx ${Math.round(d.temperature_2m_max[0])}° · mín ${Math.round(d.temperature_2m_min[0])}°</small>` : ""}`; }, 1000);
 })();
 </script>
