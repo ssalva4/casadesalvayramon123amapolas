@@ -2928,7 +2928,9 @@ function nextAlarm(){
 const luzPend = {};
 function luzTile(id, name){ const e = hst(id), st = luzPend[id] ?? (e ? e.state : "unavailable"), on = st === "on";
   const pct = on && e && e.attributes.brightness ? Math.max(10, Math.round(e.attributes.brightness / 2.55)) + " %" : "";
-  const sub = st === "unavailable" ? "Sin conexión · ¿interruptor?" : on ? `Encendida${pct ? " · " + pct : ""}` : "Apagada";
+  const tm = id === "light.luz_despacho" ? hst("timer.despacho_apagado") : null, left = on && tm && tm.state === "active" && tm.attributes.finishes_at ? Math.max(0, Date.parse(tm.attributes.finishes_at) - Date.now()) : 0;
+  const cd = left ? `Se apaga en ${Math.floor(left / 60000)}:${pad(Math.floor(left / 1000) % 60)}` : "";   // cuenta atrás hasta apagarse sola
+  const sub = st === "unavailable" ? "Sin conexión · ¿interruptor?" : on ? (cd || `Encendida${pct ? " · " + pct : ""}`) : "Apagada";
   return T(on ? "on lt" : "", "bulb", name, sub, `data-lt="${id}" data-on="${on ? 1 : 0}"`); }
 let ventPend = null;
 const ventId = () => roomOf() === "salon" ? "input_boolean.ventanas_salon" : "input_boolean.ventanas_dormitorio";   // cada estancia sus ventanas
@@ -3252,7 +3254,9 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
       <div class="${bdOn ? "" : "dim"}">
       ${sel ? cSeg("Modo de luz", cv("input_select.despacho_buenos_dias_modo"), (sel.attributes.options || []).map(o => [o, MODO_T[o] || o]), v => `data-sel="input_select.despacho_buenos_dias_modo" data-v="${v}"`) : ""}
       ${seg("Brillo", bdB, pcts, "input_number.despacho_buenos_dias_brillo")}</div>
-      <div class="cf-note">Con Buenos días se enciende y se apaga sola al cabo de 1 hora.</div>
+      <h4>Apagado automático</h4>
+      ${seg("Se apaga sola al cabo de", Math.round(parseFloat(cv("input_number.despacho_minutos_encendida", 60))), [[15, "15 min"], [30, "30 min"], [45, "45 min"], [60, "1 h"], [90, "1 h 30"], [120, "2 h"]], "input_number.despacho_minutos_encendida")}
+      <div class="cf-note">Cada vez que se enciende la luz del despacho (desde el panel, Buenos días o a mano) empieza la cuenta atrás, que se ve en el botón Despacho.</div>
       <div class="cf-note">Se guarda en Home Assistant, vale para todos los iPads. Estas bombillas no bajan del 10 %. El interruptor de la pared tiene que estar siempre encendido.</div></div>`; };
   const group = (card) => {   // filas sueltas → grupos blancos, cada «h4» abre uno nuevo
     const out = document.createDocumentFragment(); let g = null, dim = false;
@@ -3667,6 +3671,11 @@ html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from
   SECS.forEach(id => { const e = document.getElementById(id); if (e) new MutationObserver(run).observe(e, {childList: true, subtree: true}); });
   run(); setInterval(run, 3000);
 })();
+</script>
+<script>
+/* cuenta atrás del despacho: refresca el texto del botón cada segundo */
+setInterval(() => { const b = document.querySelector('#home [data-lt="light.luz_despacho"]'); if (!b || b.dataset.on !== "1") return; const tm = hst("timer.despacho_apagado"); if (!tm || tm.state !== "active" || !tm.attributes.finishes_at) return;
+  const left = Math.max(0, Date.parse(tm.attributes.finishes_at) - Date.now()), sm = b.querySelector("small"); if (sm) sm.textContent = `Se apaga en ${Math.floor(left / 60000)}:${String(Math.floor(left / 1000) % 60).padStart(2, "0")}`; }, 1000);
 </script>
 </body>
 </html>
