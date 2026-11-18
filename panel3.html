@@ -953,6 +953,7 @@ body:not(.at-home) .main{padding-bottom:calc((30px + env(safe-area-inset-bottom)
 .tl.tv.tvs .chb,.tl.tv.tvs .tvb,.tl.tv.tvs #tvMiniLogo,.tl.tv.tvs .tvbig{display:none!important}
 .tl.tv.tvs{cursor:default}
 .tl.hole{visibility:hidden}
+#fishss{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;z-index:5;pointer-events:none;background:#073a55}   /* los toques los recoge el reposo y despiertan el panel */
 </style>
 </head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rojo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.33 0.5 0.17 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
@@ -3675,6 +3676,20 @@ html.salonwx #wxfull{display:block;animation:wxin 1.2s ease}@keyframes wxin{from
 /* cuenta atrás del despacho: refresca el texto del botón cada segundo */
 setInterval(() => { const b = document.querySelector('#home [data-lt="light.luz_despacho"]'); if (!b || b.dataset.on !== "1") return; const tm = hst("timer.despacho_apagado"); if (!tm || tm.state !== "active" || !tm.attributes.finishes_at) return;
   const left = Math.max(0, Date.parse(tm.attributes.finishes_at) - Date.now()), sm = b.querySelector("small"); if (sm) sm.textContent = `Se apaga en ${Math.floor(left / 60000)}:${String(Math.floor(left / 1000) % 60).padStart(2, "0")}`; }, 1000);
+</script>
+<script>
+/* salón de día en reposo: se alterna la escena del perro (60 s) con el salvapantallas del pez (una vuelta, 61 s) */
+(function(){
+  const full = document.getElementById("wxfull"); if (!full) return;
+  const fr = document.createElement("iframe"); fr.id = "fishss"; fr.setAttribute("aria-hidden", "true"); fr.setAttribute("allow", "autoplay"); full.appendChild(fr);
+  let since = 0, showing = false;
+  setInterval(() => { const h = document.documentElement, on = h.classList.contains("salonwx") && typeof roomOf === "function" && roomOf() === "salon";
+    if (!on){ since = 0; if (showing){ showing = false; fr.removeAttribute("src"); fr.style.display = "none"; } return; }
+    if (!since) since = Date.now();
+    const fish = Math.floor((Date.now() - since) / 1000) % 121 >= 60;   // 0–60 s perro · 60–121 s pez
+    if (fish && !showing){ showing = true; fr.src = "/local/salvapantallas_pez.html?panel=1&v=" + Date.now(); fr.style.display = "block"; }
+    else if (!fish && showing){ showing = false; fr.removeAttribute("src"); fr.style.display = "none"; } }, 500);
+})();
 </script>
 </body>
 </html>

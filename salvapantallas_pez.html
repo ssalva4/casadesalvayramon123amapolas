@@ -1,0 +1,179 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>El tesoro del pez</title>
+<style>html,body{margin:0;height:100%;background:#06324a;overflow:hidden}canvas{display:block;width:100vw;height:100vh}
+#cap{display:none!important;position:fixed;left:0;right:0;bottom:22px;text-align:center;font:600 20px -apple-system,"SF Pro Display",Inter,sans-serif;color:rgba(255,255,255,.85);text-shadow:0 2px 8px rgba(0,0,0,.4);pointer-events:none;transition:opacity .6s}</style></head>
+<body><canvas id="c"></canvas><div id="cap"></div><button id="snd" style="position:fixed;top:16px;right:16px;font:600 16px -apple-system,Inter,sans-serif;padding:10px 16px;border:0;border-radius:999px;background:rgba(255,255,255,.85);color:#073a55">🔊 Toca para el sonido</button>
+<script>
+/* Salvapantallas: un pez entre las algas encuentra un tesoro, llama a sus amigos, todos lo adoran… es un huevo de ornitorrinco que tiembla, explota y el mar se vuelve rojo; luego vuelve el azul, nacen peces nuevos y uno se va a buscar otro tesoro (y vuelve a empezar). Bucle de ~48 s. */
+const cv = document.getElementById("c"), g = cv.getContext("2d"), cap = document.getElementById("cap");
+let W, H, S; function fit(){ const d = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * d; cv.height = H * d; g.setTransform(d, 0, 0, d, 0, 0); S = Math.min(W / 1133, H / 744); } addEventListener("resize", fit); fit();
+const L = 61, rnd = (a, b) => a + Math.random() * (b - a), ease = t => t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t), lerp = (a, b, t) => a + (b - a) * t;
+const seg = (t, a, b) => ease((t - a) / (b - a));
+// fondo fijo
+const weeds = Array.from({length: 26}, (_, i) => ({x: i / 25 + rnd(-.02, .02), h: rnd(.18, .42), w: rnd(10, 18), c: ["#1f7a4d", "#2e9a5c", "#17694a", "#3aa86a"][i % 4], p: rnd(0, 6), front: i % 3 === 0}));
+const bubbles = Array.from({length: 40}, () => ({x: rnd(0, 1), y: rnd(0, 1), r: rnd(1.5, 4), v: rnd(.02, .06)}));
+const rocks = [[.12, 7], [.3, 5], [.78, 8], [.92, 6]];
+const TX = .56, TY = .86;   // dónde está el tesoro
+const friends = [{c: "#4fc3f7", s: .9, a: 0}, {c: "#ffd54f", s: .8, a: 1.3}, {c: "#f06292", s: .85, a: 2.6}, {c: "#9ccc65", s: .75, a: 3.9}];
+function fish(x, y, sz, col, dir, t, tilt = 0, happy = 0, dead = false){ g.save(); g.translate(x, y); g.rotate(tilt); g.scale(dir * sz * S, sz * S);
+  const w = Math.sin(t * 9) * .35, dk = shade(col, -.28), lt = shade(col, .35);
+  g.lineJoin = "round"; g.strokeStyle = dk; g.lineWidth = 1.6;
+  // cola con radios
+  g.fillStyle = col; g.beginPath(); g.moveTo(-24, 0); g.quadraticCurveTo(-40, -8, -50, -20 + w * 10); g.quadraticCurveTo(-44, 0, -50, 20 + w * 10); g.quadraticCurveTo(-40, 8, -24, 0); g.fill(); g.stroke();
+  g.strokeStyle = dk; g.lineWidth = .9; for (let k = -2; k <= 2; k++){ g.beginPath(); g.moveTo(-28, k * 1.5); g.lineTo(-46, k * 7 + w * 8); g.stroke(); }
+  // aleta dorsal y anal
+  g.fillStyle = shade(col, -.1); g.lineWidth = 1.4; g.beginPath(); g.moveTo(-12, -17); g.quadraticCurveTo(0, -34 + w * 3, 14, -16); g.closePath(); g.fill(); g.stroke();
+  g.beginPath(); g.moveTo(-8, 16); g.quadraticCurveTo(0, 27, 8, 16); g.closePath(); g.fill(); g.stroke();
+  // cuerpo con degradado
+  const gr = g.createLinearGradient(0, -20, 0, 20); gr.addColorStop(0, dk); gr.addColorStop(.35, col); gr.addColorStop(1, lt);
+  g.fillStyle = gr; g.strokeStyle = dk; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, 0, 30, 19, 0, 0, 6.3); g.fill(); g.stroke();
+  // escamas
+  g.save(); g.beginPath(); g.ellipse(0, 0, 29, 18, 0, 0, 6.3); g.clip(); g.strokeStyle = "rgba(0,0,0,.12)"; g.lineWidth = .8;
+  for (let r = -2; r <= 2; r++) for (let c = -3; c <= 1; c++){ g.beginPath(); g.arc(c * 7 + (r % 2 ? 3.5 : 0), r * 6, 4, -1.2, 1.2); g.stroke(); }
+  // rayas blancas con borde
+  g.fillStyle = "rgba(255,255,255,.92)"; g.strokeStyle = "rgba(0,0,0,.35)"; g.lineWidth = 1; [[-3, 5, 19], [-17, 4, 15]].forEach(([cx, rx, ry]) => { g.beginPath(); g.ellipse(cx, 0, rx, ry, 0, 0, 6.3); g.fill(); g.stroke(); });
+  g.restore();
+  // agalla y aleta pectoral
+  g.strokeStyle = dk; g.lineWidth = 1.3; g.beginPath(); g.arc(6, 0, 12, -1, 1); g.stroke();
+  g.fillStyle = shade(col, .15); g.beginPath(); g.save(); g.translate(2, 6); g.rotate(.5 + w * .6); g.ellipse(-6, 0, 9, 4.5, 0, 0, 6.3); g.restore(); g.fill(); g.stroke();
+  // ojo
+  g.fillStyle = "#fff"; g.strokeStyle = dk; g.lineWidth = 1.2; g.beginPath(); g.arc(16, -5, 6.5, 0, 6.3); g.fill(); g.stroke();
+  if (dead){ g.strokeStyle = "#1b1b1b"; g.lineWidth = 2.2; g.lineCap = "round"; g.beginPath(); g.moveTo(12.5, -8.5); g.lineTo(19.5, -1.5); g.moveTo(19.5, -8.5); g.lineTo(12.5, -1.5); g.stroke(); }
+  else { g.fillStyle = "#1b1b1b"; g.beginPath(); g.arc(17.5, -5, 3.6, 0, 6.3); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(18.6, -6.6, 1.3, 0, 6.3); g.fill(); }
+  // boca y mejilla
+  g.strokeStyle = "#1b1b1b"; g.lineWidth = 1.8; g.lineCap = "round"; g.beginPath(); if (happy && !dead) g.arc(23, 5, 4.5, .2, 2.4); else { g.moveTo(23, 6); g.lineTo(28, 5); } g.stroke();
+  if (!dead){ g.fillStyle = "rgba(255,120,140,.35)"; g.beginPath(); g.arc(12, 6, 3, 0, 6.3); g.fill(); }
+  g.restore(); }
+function shade(hex, k){ const n = parseInt(hex.slice(1), 16); let r = n >> 16, gg = (n >> 8) & 255, b = n & 255;
+  const f = v => Math.round(k < 0 ? v * (1 + k) : v + (255 - v) * k); return `rgb(${f(r)},${f(gg)},${f(b)})`; }
+function egg(x, y, sc, glow, rev, T){ g.save(); g.translate(x, y); g.scale(sc * S, sc * S);
+  if (glow > 0){ const rg = g.createRadialGradient(0, -30, 4, 0, -30, 160); rg.addColorStop(0, `rgba(255,236,170,${.6 * glow})`); rg.addColorStop(1, "rgba(255,236,170,0)"); g.fillStyle = rg; g.fillRect(-170, -200, 340, 340); }
+  const wob = rev > 0 ? Math.sin(T * (14 + rev * 20)) * .16 * rev : 0; g.rotate(wob);
+  const open = 0;
+  // cría de ornitorrinco asomando
+  if (open > 0){ g.save(); g.translate(0, -34 - open * 26);
+    g.fillStyle = "#8d5a3b"; g.beginPath(); g.ellipse(0, 0, 22, 19, 0, 0, 6.3); g.fill();
+    g.fillStyle = "#3d3f45"; g.beginPath(); g.ellipse(0, 12, 20, 9, 0, 0, 6.3); g.fill();   // pico de pato
+    g.fillStyle = "#2b2c30"; g.beginPath(); g.arc(-5, 11, 1.6, 0, 6.3); g.arc(5, 11, 1.6, 0, 6.3); g.fill();
+    g.fillStyle = "#fff"; g.beginPath(); g.arc(-9, -4, 4.5, 0, 6.3); g.arc(9, -4, 4.5, 0, 6.3); g.fill();
+    g.fillStyle = "#1b1b1b"; g.beginPath(); g.arc(-8.5, -3.5, 2.6, 0, 6.3); g.arc(9.5, -3.5, 2.6, 0, 6.3); g.fill();
+    g.fillStyle = "#f4a3a8"; g.globalAlpha = .6; g.beginPath(); g.arc(-15, 3, 3.5, 0, 6.3); g.arc(15, 3, 3.5, 0, 6.3); g.fill(); g.globalAlpha = 1;
+    g.restore(); }
+  const gr = g.createLinearGradient(-30, -70, 30, 10); gr.addColorStop(0, "#fffdf4"); gr.addColorStop(1, "#e8dcc0");
+  const shell = (top) => { g.beginPath(); if (top){ g.moveTo(-31, -28); g.bezierCurveTo(-31, -66, 31, -66, 31, -28); g.lineTo(22, -22); g.lineTo(12, -30); g.lineTo(2, -21); g.lineTo(-8, -30); g.lineTo(-18, -22); g.closePath(); }
+    else { g.moveTo(-31, -28); g.lineTo(-18, -22); g.lineTo(-8, -30); g.lineTo(2, -21); g.lineTo(12, -30); g.lineTo(22, -22); g.lineTo(31, -28); g.bezierCurveTo(32, 2, 18, 10, 0, 10); g.bezierCurveTo(-18, 10, -32, 2, -31, -28); g.closePath(); } };
+  g.fillStyle = gr; g.strokeStyle = "#cbb98f"; g.lineWidth = 2;
+  shell(false); g.fill(); g.stroke();
+  g.save(); g.translate(open * 34, -open * 46); g.rotate(open * .9); shell(true); g.fill(); g.stroke();
+  g.fillStyle = "rgba(160,140,100,.35)"; [[-12, -44], [10, -50], [-2, -38], [16, -36]].forEach(([a, b]) => { g.beginPath(); g.arc(a, b, 2.2, 0, 6.3); g.fill(); }); g.restore();
+  g.fillStyle = "rgba(160,140,100,.35)"; [[-16, -8], [8, -4], [18, -16]].forEach(([a, b]) => { g.beginPath(); g.arc(a, b, 2.2, 0, 6.3); g.fill(); });
+  if (rev > .2){ g.strokeStyle = "#a89566"; g.lineWidth = 1.8; g.beginPath(); g.moveTo(-31, -28); g.lineTo(-18, -22); g.lineTo(-8, -30); g.lineTo(2, -21); g.lineTo(12, -30); g.lineTo(22, -22); g.lineTo(31, -28); g.stroke(); }
+  g.fillStyle = "rgba(255,255,255,.7)"; g.beginPath(); g.ellipse(-14, -40, 5, 11, -.3, 0, 6.3); g.fill();
+  g.restore(); }
+function sparkle(x, y, r, a){ g.save(); g.translate(x, y); g.globalAlpha = a; g.fillStyle = "#fff6c2"; g.beginPath(); for (let i = 0; i < 8; i++){ const rr = i % 2 ? r * .3 : r, an = i * Math.PI / 4; g.lineTo(Math.cos(an) * rr, Math.sin(an) * rr); } g.fill(); g.restore(); }
+function weed(w, t, front){ const bx = w.x * W, by = H, hh = w.h * H * (front ? 1.15 : 1); g.strokeStyle = w.c; g.lineWidth = w.w * S; g.lineCap = "round"; g.beginPath(); g.moveTo(bx, by);
+  for (let k = 1; k <= 8; k++){ const f = k / 8; g.lineTo(bx + Math.sin(t * 1.1 + w.p + f * 3) * 14 * f * S, by - hh * f); } g.stroke(); }
+let t0 = performance.now(), lastCap = "";
+function say(s){ if (s === lastCap) return; lastCap = s; cap.style.opacity = 0; setTimeout(() => { cap.textContent = s; cap.style.opacity = s ? 1 : 0; }, 300); }
+
+/* ---------- sonido (sintetizado, sin archivos): ambiente de agua, burbujas y efectos de cada momento ---------- */
+let AC = null, master = null, amb = null, lastT = -1, fired = {};
+function audioOn(){ if (AC) { AC.resume(); return; } AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = .7; master.connect(AC.destination);
+  // ambiente submarino: ruido filtrado que respira
+  const n = AC.createBufferSource(), b = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  n.buffer = b; n.loop = true; const lp = AC.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 380; amb = AC.createGain(); amb.gain.value = .16;
+  const lfo = AC.createOscillator(), lg = AC.createGain(); lfo.frequency.value = .12; lg.gain.value = 140; lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
+  n.connect(lp); lp.connect(amb); amb.connect(master); n.start(); }
+function tone(f, dur, {type = "sine", vol = .2, at = 0, to = null, att = .01} = {}){ if (!AC) return; const t = AC.currentTime + at, o = AC.createOscillator(), gn = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
+  gn.gain.setValueAtTime(0, t); gn.gain.linearRampToValueAtTime(vol, t + att); gn.gain.exponentialRampToValueAtTime(.0001, t + dur); o.connect(gn); gn.connect(master); o.start(t); o.stop(t + dur + .05); }
+function noise(dur, {vol = .5, f = 800, at = 0, q = .7, type = "lowpass", to = null} = {}){ if (!AC) return; const t = AC.currentTime + at, src = AC.createBufferSource(), b = AC.createBuffer(1, AC.sampleRate * dur, AC.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; src.buffer = b; const fl = AC.createBiquadFilter(); fl.type = type; fl.frequency.setValueAtTime(f, t); if (to) fl.frequency.exponentialRampToValueAtTime(to, t + dur); fl.Q.value = q;
+  const gn = AC.createGain(); gn.gain.setValueAtTime(vol, t); gn.gain.exponentialRampToValueAtTime(.0001, t + dur); src.connect(fl); fl.connect(gn); gn.connect(master); src.start(t); }
+const bubble = () => tone(rnd(500, 900), .12, {to: rnd(1400, 2200), vol: .06});
+const blub = (f, at = 0, vol = .14) => { tone(f, .22, {at, to: f * 1.9, vol}); tone(f * .5, .25, {at, to: f, vol: vol * .6}); };   // "blub" de burbuja, sin brillo metálico
+const whoosh = (at = 0) => noise(1.6, {at, vol: .35, f: 200, to: 2400, type: "bandpass", q: 1.2});
+const chime = (notes, gap = .12, vol = .12) => notes.forEach((f, i) => { tone(f, 1.2, {at: i * gap, vol}); tone(f * 2, .8, {at: i * gap, vol: vol * .3}); });
+const EVENTS = [
+  [10.8, () => { blub(330); blub(440, .25, .1); }],                                             // algo brilla
+  [12.2, () => { for (let i = 0; i < 6; i++) noise(.08, {at: i * .09, vol: .15, f: 1200, type: "bandpass"}); }],   // escarba
+  [13.2, () => [262, 330, 392, 523].forEach((f, i) => blub(f, i * .14, .16))],                               // ¡un tesoro!
+  [16.2, () => { tone(900, .5, {to: 1600, type: "triangle", vol: .08}); tone(1600, .4, {at: .5, to: 1100, type: "triangle", vol: .08}); }],   // va a avisar
+  [26.5, () => [0, .15, .3, .45].forEach((a, i) => tone(600 + i * 150, .25, {at: a, to: 900 + i * 150, vol: .07, type: "triangle"}))],     // llegan los amigos
+  [30, () => [262, 330, 392, 523].forEach((f, i) => { tone(f, 6.5, {type: "sawtooth", vol: .025, at: i * .3, att: 1.5}); tone(f * 1.005, 6.5, {type: "sawtooth", vol: .02, at: i * .3, att: 1.5}); })],   // coro de adoración
+  [38, () => { tone(55, 4.4, {to: 140, type: "sawtooth", vol: .08, att: 2}); noise(4.4, {vol: .12, f: 120, to: 600}); }],   // tiembla
+  [42.5, () => { noise(2.5, {vol: 1.2, f: 2200, to: 80}); tone(90, 2.2, {to: 28, vol: .6}); tone(45, 3, {to: 20, vol: .5}); }],   // ¡explota!
+  [44, () => { tone(73, 8, {type: "triangle", vol: .06, att: 2}); tone(77.8, 8, {type: "triangle", vol: .05, att: 2}); }],   // mar rojo, triste
+  [52.5, () => { whoosh(); [220, 277, 330, 440, 554].forEach((f, i) => blub(f, .3 + i * .22, .12)); for (let i = 0; i < 8; i++) setTimeout(bubble, 200 + i * 180); }],   // magia: peces nuevos
+  [56, () => tone(500, .6, {to: 1300, type: "triangle", vol: .06})]                    // uno se aleja
+];
+function soundTick(t){ if (!AC) return; if (t < lastT) fired = {}; lastT = t;
+  EVENTS.forEach(([at, fn], i) => { if (t >= at && !fired[i]){ fired[i] = 1; fn(); } });
+  if (Math.random() < .012) bubble();
+  if (amb) amb.gain.value = t > 42.5 && t < 52 ? .07 : .16; }
+function frame(now){ requestAnimationFrame(frame); const T = (now - t0) / 1000, t = T % L; soundTick(t);
+  // agua
+  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#2aa6c9"); bg.addColorStop(.55, "#0d6b8e"); bg.addColorStop(1, "#073a55"); g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  g.save(); g.globalAlpha = .10; g.fillStyle = "#fff"; for (let i = 0; i < 6; i++){ const x = (i / 6 + Math.sin(T * .1 + i) * .03) * W; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 60 * S, 0); g.lineTo(x + 220 * S, H); g.lineTo(x + 120 * S, H); g.fill(); } g.restore();
+  bubbles.forEach(b => { b.y -= b.v / 60; if (b.y < -.02){ b.y = 1.02; b.x = rnd(0, 1); } g.strokeStyle = "rgba(255,255,255,.45)"; g.lineWidth = 1.2; g.beginPath(); g.arc(b.x * W + Math.sin(T * 2 + b.x * 9) * 4, b.y * H, b.r * S, 0, 6.3); g.stroke(); });
+  // arena y rocas
+  g.fillStyle = "#d9c08a"; g.beginPath(); g.moveTo(0, H * .9); for (let x = 0; x <= W; x += 40) g.lineTo(x, H * (.9 + Math.sin(x / 140) * .012)); g.lineTo(W, H); g.lineTo(0, H); g.fill();
+  rocks.forEach(([x, r]) => { g.fillStyle = "#6e7b85"; g.beginPath(); g.ellipse(x * W, H * .9, r * 10 * S, r * 6 * S, 0, Math.PI, 0); g.fill(); });
+  weeds.filter(w => !w.front).forEach(w => weed(w, T, false));
+  // tesoro
+  const tx = TX * W, ty = TY * H, dig = seg(t, 9, 12), shine = Math.max(seg(t, 11, 13) * (t < 22 ? .6 : 1), 0), adore = seg(t, 30, 33);
+  const revM = seg(t, 33, 36), crack = seg(t, 38, 42), BOOM = 42.5, boom = t >= BOOM, bt = t - BOOM;   // se sube al centro · tiembla y se agrieta · explota
+  const tsc = 1.1 * (1 + revM * .7), tyy = lerp(ty + 30 * S, ty - 4 * S, dig) - revM * H * .18, txx = lerp(tx, W / 2, revM);
+  if (t > 8.5 && !boom){ egg(txx, tyy, tsc, shine * (0.6 + .4 * Math.sin(T * 3)) + adore * .5, crack, T); if (dig < .6){ g.fillStyle = "#d9c08a"; g.beginPath(); g.ellipse(tx, ty + 10 * S, 40 * S, 16 * S * (1 - dig), 0, Math.PI, 0); g.fill(); } }
+  if (t > 5 && t < 9 && Math.sin(T * 6) > .6) sparkle(tx + 6 * S, ty - 6 * S, 7 * S, 1);
+  if (dig > 0 && dig < 1) for (let i = 0; i < 6; i++){ g.fillStyle = "rgba(217,192,138,.7)"; g.beginPath(); g.arc(tx + Math.cos(i + T * 4) * 40 * S * dig, ty - Math.abs(Math.sin(i * 2 + T * 5)) * 30 * S, 4 * S, 0, 6.3); g.fill(); }
+  const ecx = txx, ecy = tyy - 30 * S * tsc / .7;
+  // protagonista
+  let hx, hy, dir = 1, tilt = 0, happy = 0;
+  if (t < 6){ const f = t / 6; hx = lerp(-.1, .45, f); hy = .62 + Math.sin(T * 1.5) * .02; }
+  else if (t < 9){ const f = seg(t, 6, 9); hx = lerp(.45, .52, f); hy = lerp(.62, .8, f); tilt = .4 * f; }
+  else if (t < 13){ hx = .52 + Math.sin(T * 8) * .005; hy = .8; tilt = .5; }
+  else if (t < 16){ hx = .52; hy = .78 - Math.abs(Math.sin(T * 5)) * .05; happy = 1; tilt = -.1; }
+  else if (t < 19){ const f = seg(t, 16, 19); hx = lerp(.52, 1.15, f); hy = lerp(.75, .4, f); happy = 1; }
+  else if (t < 22){ hx = -9; hy = 0; }
+  else { const f = seg(t, 22, 27); hx = lerp(1.15, .62, f); hy = lerp(.45, .7, f); dir = -1; happy = 1; }
+  // amigos (llegan con él)
+  const arrive = seg(t, 22, 27), gather = seg(t, 27, 30);
+  const all = [{c: "#ff8a3d", s: 1}].concat(friends);
+  if (t >= 27){ all.forEach((f, i) => { const an0 = (i / all.length) * 6.28, an = an0 + (boom ? BOOM : T) * .5 * (1 - adore) + (boom ? 0 : 0);
+      const r = lerp(.3, .22, gather) * W, cx = W / 2 * revM + tx * (1 - revM), cy = ty - lerp(90, 120, gather) * S - revM * H * .16;
+      let x = cx + Math.cos(an) * r, y = cy + Math.sin(an) * r * .35, d = Math.cos(an) > 0 ? -1 : 1;
+      if (!boom){ y -= Math.abs(Math.sin(T * 2 + i)) * 8 * S * adore; const scared = crack > 0 ? Math.sin(T * 30 + i) * 2 * S * crack : 0;
+        fish(x + scared, y, f.s * 2.1, f.c, d, T + i, adore * .35 * -d * (Math.sin(T * 2.4 + i) * .5 + .5), crack > .3 ? 0 : 1); }
+      else { const k = 1 - Math.exp(-bt * 2.2), dx = x - ecx, dy = y - ecy, n = Math.hypot(dx, dy) || 1;   // la onda los lanza y quedan panza arriba
+        x += dx / n * k * 320 * S; y += dy / n * k * 200 * S - Math.max(0, bt - 1.2) * 18 * S;
+        const fa = 1 - seg(t, BOOM + 4, BOOM + 7); if (fa > 0){ g.save(); g.globalAlpha = fa; fish(x, y, f.s * 2.1, f.c, d, 0, Math.min(1, bt * 1.5) * Math.PI * (i % 2 ? 1 : -1) + Math.sin(T + i) * .1, 0, true); g.restore(); } } }); }
+  else { if (hx > -5) fish(hx * W, hy * H, 2.4, "#ff8a3d", dir, T, tilt, happy);
+    if (t >= 22) friends.forEach((f, i) => fish(lerp(1.25 + i * .07, .66 + i * .05, arrive) * W, (lerp(.35 + i * .06, .62 + (i % 2) * .08, arrive) + Math.sin(T * 2 + i) * .015) * H, f.s * 2.3, f.c, -1, T + i, 0, 1)); }
+  if (t > 13 && t < 16) sparkle(hx * W + 30 * S, hy * H - 40 * S, 10 * S, Math.abs(Math.sin(T * 6)));
+  if (t > 30 && !boom) for (let i = 0; i < 10; i++){ const an = i * .63 + T; sparkle(txx + Math.cos(an) * 120 * S, tyy - 40 * S + Math.sin(an) * 70 * S, 6 * S, Math.abs(Math.sin(T * 3 + i)) * (1 - crack)); }
+  // explosión: destello, onda, trozos de cáscara
+  if (boom){ const f = Math.max(0, 1 - bt / .6); if (f > 0){ g.fillStyle = `rgba(255,250,220,${f})`; g.fillRect(0, 0, W, H); }
+    g.strokeStyle = `rgba(255,255,255,${Math.max(0, .8 - bt * .5)})`; g.lineWidth = 10 * S; g.beginPath(); g.arc(ecx, ecy, bt * 520 * S, 0, 6.3); g.stroke();
+    const sa = 1 - seg(t, BOOM + 3, BOOM + 6); if (sa > 0) for (let i = 0; i < 14; i++){ const an = i * 2.4, v = 260 + (i % 4) * 90; const x = ecx + Math.cos(an) * v * S * (1 - Math.exp(-bt * 2)), y = ecy + Math.sin(an) * v * .7 * S * (1 - Math.exp(-bt * 2)) + bt * bt * 6 * S;
+      g.save(); g.globalAlpha = sa; g.translate(x, y); g.rotate(an + bt * 3); g.fillStyle = "#f3ead2"; g.strokeStyle = "#cbb98f"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(-10 * S, -6 * S); g.lineTo(12 * S, -2 * S); g.lineTo(2 * S, 9 * S); g.closePath(); g.fill(); g.stroke(); g.restore(); } }
+  // renacer: por arte de magia brotan peces nuevos de colores; uno se aleja en busca de otro tesoro
+  const RB = BOOM + 10;
+  if (t >= RB){ const nf = [{c: "#ff8a3d", x: .5, y: .5, s: 1.15}, {c: "#7e57c2", x: .25, y: .35, s: .9}, {c: "#26c6da", x: .72, y: .3, s: .95}, {c: "#ffca28", x: .3, y: .66, s: .85}, {c: "#ef5350", x: .78, y: .62, s: .9}, {c: "#66bb6a", x: .55, y: .22, s: .8}];
+    nf.forEach((f, i) => { const born = seg(t, RB + i * .25, RB + i * .25 + .6); if (born <= 0) return;
+      const bx = f.x * W, by = f.y * H; if (born < 1) for (let k = 0; k < 8; k++){ const an = k * .785 + T * 2; sparkle(bx + Math.cos(an) * 60 * S * born, by + Math.sin(an) * 60 * S * born, 9 * S, 1 - born); }
+      let x = bx + Math.sin(T * .8 + i) * 50 * S, y = by + Math.sin(T * 1.3 + i * 2) * 20 * S, d = Math.cos(T * .8 + i) > 0 ? 1 : -1;
+      if (i === 0){ const go = seg(t, RB + 3, L - .5); x = lerp(x, W * 1.2, go); y = lerp(y, H * .62, go); if (go > 0) d = 1; }
+      g.save(); g.globalAlpha = Math.min(1, born * 1.5); fish(x, y, f.s * 2.3 * (.3 + .7 * born), f.c, d, T + i, 0, 1); g.restore(); }); }
+  weeds.filter(w => w.front).forEach(w => weed(w, T, true));
+  // el mar se vuelve rojo
+  if (boom){ const a = seg(t, BOOM + .3, BOOM + 3.5) * .62 * (1 - seg(t, BOOM + 6, BOOM + 10)); g.save(); g.globalCompositeOperation = "multiply"; g.fillStyle = `rgba(200,20,20,${a})`; g.fillRect(0, 0, W, H); g.restore();
+    g.fillStyle = `rgba(120,0,0,${a * .35})`; g.fillRect(0, 0, W, H); }
+  if (false && crack > .1 && !boom){ g.save(); g.globalAlpha = Math.min(1, crack * 2); g.fillStyle = "#fff"; g.textAlign = "center"; g.font = `800 ${44 * S}px -apple-system,"SF Pro Display",Inter,sans-serif`; g.shadowColor = "rgba(0,0,0,.35)"; g.shadowBlur = 12; g.fillText("…era un huevo de ornitorrinco", W / 2, H * .2); g.restore(); }
+  if (t > L - 1.2){ g.fillStyle = `rgba(7,58,85,${seg(t, L - 1.2, L) * .8})`; g.fillRect(0, 0, W, H); }
+  say(t < 6 ? "Un pez pasea entre las algas…" : t < 13 ? "…algo brilla en la arena" : t < 19 ? "¡Un tesoro! Va corriendo a avisar" : t < 27 ? "Vuelve con todos sus amigos" : t < 38 ? "Y todos adoran el tesoro…" : t < BOOM ? "Pero el huevo empieza a temblar…" : t < BOOM + 10 ? "" : t < BOOM + 13 ? "…y por arte de magia nacen peces nuevos" : "Uno se aleja… en busca de otro tesoro");
+}
+requestAnimationFrame(frame);
+document.getElementById("snd").onclick = e => { audioOn(); e.target.remove(); };   // los iPad solo dejan sonar tras un toque
+if (/[?&]panel=1/.test(location.search)){ document.getElementById("snd").remove(); try{ audioOn(); }catch(e){} }   // dentro del panel: sin botón; suena si el iPad lo permite
+</script></body></html>
