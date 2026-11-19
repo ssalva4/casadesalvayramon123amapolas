@@ -836,7 +836,7 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 #cos3 .k small{display:block;font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8e8e93}
 #cos3 .k b{display:block;font-size:34px;font-weight:600;letter-spacing:-.02em;margin-top:4px;font-variant-numeric:tabular-nums}
 #cos3 .k span{font-size:13.5px;color:#6e6e73;font-weight:500}
-#cos3 .rooms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;flex:1;min-height:0}
+#cos3 .rooms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;flex:1;min-height:0}
 #cos3 .rm{background:#fff;border-radius:26px;padding:16px 18px;box-shadow:0 6px 20px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:10px;min-height:0}
 #cos3 .rm .hd{display:flex;align-items:center;gap:10px}
 #cos3 .rm .hd .q{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;flex:none}
@@ -1598,7 +1598,7 @@ function energySensors(){
   const dhE = dh.filter(s => /k?Wh/.test(unit(s)) && /hoy|today|_dia|diario/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")));
   energy = energy.concat([dhE.find(s => !isBath(s)), dhE.find(isBath)].filter(Boolean));
   // luces WiZ (consumo estimado en Home Assistant)
-  ["luz_bano", "luz_despacho"].forEach(k => { const e = states.find(x => x.entity_id === `sensor.${k}_energia`), w = states.find(x => x.entity_id === `sensor.${k}_consumo`);
+  ["luz_bano", "luz_despacho", "luz_pasillo"].forEach(k => { const e = states.find(x => x.entity_id === `sensor.${k}_energia`), w = states.find(x => x.entity_id === `sensor.${k}_consumo`);
     if (e && num(e) != null) energy.push(e); if (w && num(w) != null) power.push(w); });
   return {power, energy};
 }
@@ -3349,7 +3349,9 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
       {n:"Luz (despacho)", m: s => /luz_despacho/.test(s.entity_id), c:"#ffcc00"}]},
     {k:"bano", n:"Baño", c:"#0a84ff", ic:"drop", dev:[
       {n:"Deshumidificador", m: s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && isBath(s), c:"#00b8a9"},
-      {n:"Luz", m: s => /luz_bano/.test(s.entity_id), c:"#ffcc00"}]}];
+      {n:"Luz", m: s => /luz_bano/.test(s.entity_id), c:"#ffcc00"}]},
+    {k:"pasillo", n:"Pasillo", c:"#ff9f0a", ic:"bulb", dev:[
+      {n:"Luz", m: s => /luz_pasillo/.test(s.entity_id), c:"#ffcc00"}]}];
   const IC = {sofa:'<path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M3 17v-4a2 2 0 0 1 4 0v1h10v-1a2 2 0 0 1 4 0v4H3zM5 17v2M19 17v2"/>'};
   const icon = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[n] || TI[n] || ""}</svg>`;
   const kwh = v => (v >= 100 ? Math.round(v) : fmt1(v)) + " kWh";
