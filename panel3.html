@@ -932,8 +932,8 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 .cv .dh{margin-top:12px!important}
 </style>
 <style id="vent-v3">
-.hg.rs .row4{grid-column:3/6;grid-row:3;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;min-height:0}
-.hg.rs .row4 .tl{min-width:0}.hg.rs .row4 .tl b{font-size:16px}.hg.rs .row4 .tl small{font-size:12px}
+.hg.rs .row4{grid-column:3/6;grid-row:3;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;min-height:0}
+.hg.rs .row4 .tl{min-width:0;padding-left:4px!important;padding-right:4px!important}.hg.rs .row4 .tl b{font-size:15px}.hg.rs .row4 .tl small{font-size:11.5px}
 .tl.on.vent{background:#dcefff!important;color:#0a5fb4!important}.tl.on.vent .ti{color:#0a84ff!important}.tl.on.vent small{color:#2f6fae!important}
 @media (max-width:900px){ .hg.rs .row4{grid-column:1/-1;grid-row:auto} }
 .hg.rd .tl.dclk{padding:0!important;overflow:hidden;flex-direction:column;justify-content:center;align-items:center;gap:0}.hg.rd .tl.dclk b{font-size:150px;font-weight:600;letter-spacing:-.03em;line-height:.86;white-space:nowrap;overflow:visible;text-overflow:clip;max-width:none}.hg.rd .tl.dclk b+b{color:#8f80dd}   /* dormitorio: horas arriba, minutos abajo en lila */
@@ -2729,6 +2729,7 @@ html.idlew .app{translate:var(--ix,0px) var(--iy,0px);transition:translate 6s ea
 <script>
 /* ===== V3b: Inicio en mosaicos cuadrados ===== */
 const TI = {
+  fish:'<path d="M3 12c3-5 9-6 13-3l5-3-1.5 6L21 18l-5-3c-4 3-10 2-13-3z"/><circle cx="7.5" cy="11" r="1" fill="currentColor"/>',
   radio:'<rect x="3" y="8" width="18" height="12" rx="2.5"/><path d="M7 8l9-5"/><circle cx="15.5" cy="14" r="2.6"/><path d="M6.5 12.5h4M6.5 15.5h4"/>',
   window:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M12 3v18M4 12h8"/><path d="M12 4l6 3v13l-6-2" fill="currentColor" fill-opacity=".25"/>',
   bed:'<path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.8"/>',
@@ -2933,11 +2934,17 @@ function luzTile(id, name){ const e = hst(id), st = luzPend[id] ?? (e ? e.state 
   const cd = left ? `Se apaga en ${Math.floor(left / 60000)}:${pad(Math.floor(left / 1000) % 60)}` : "";   // cuenta atrás hasta apagarse sola
   const sub = st === "unavailable" ? "Sin conexión · ¿interruptor?" : on ? (cd || `Encendida${pct ? " · " + pct : ""}`) : "Apagada";
   return T(on ? "on lt" : "", "bulb", name, sub, `data-lt="${id}" data-on="${on ? 1 : 0}"`); }
+let pecesPend = null;
+function pecesTile(){ const e = hst("input_boolean.modo_peces"), on = (pecesPend ?? (e && e.state)) === "on";   // modo peces: la luz del pasillo amanece y anochece sola
+  return T(on ? "on vent" : "", "fish", "Modo peces", on ? "Pasillo 8:00–21:00" : "Apagado", `data-peces="${on ? 1 : 0}"`); }
 let ventPend = null;
 const ventId = () => roomOf() === "salon" ? "input_boolean.ventanas_salon" : "input_boolean.ventanas_dormitorio";   // cada estancia sus ventanas
 function ventTile(){ const e = hst(ventId()), on = (ventPend ?? (e && e.state)) === "on";
   return T(on ? "on vent" : "", "window", "Ventanas", on ? (roomOf() === "salon" ? "Abiertas · aire parado" : "Abiertas · todo parado") : "Cerradas", `data-vent="${on ? 1 : 0}"`); }
 async function roomAction(b){
+  if (b.dataset.peces !== undefined){ const on = b.dataset.peces === "1"; pecesPend = on ? "off" : "on"; renderHome();
+    try{ await service("input_boolean", on ? "turn_off" : "turn_on", {entity_id: "input_boolean.modo_peces"}); }catch(err){ handleErr(err); }
+    setTimeout(async () => { await refreshHA(); pecesPend = null; renderHome(); }, 2500); return; }
   if (b.dataset.tvd){ if (radioOn) try{ radStop(); }catch(e){} show("ent"); setTimeout(() => { const pb = $("screen") && $("screen").querySelector("[data-play]"); if (pb && !tvOn && !ytOn) pb.click(); }, 300); return; }   // dormitorio: la tele
   if (b.dataset.vent !== undefined){ const on = b.dataset.vent === "1"; ventPend = on ? "off" : "on"; renderHome();   // abre: para aires y deshumidificadores · cierra: todo vuelve como estaba (automatización en HA)
     try{ await service("input_boolean", on ? "turn_off" : "turn_on", {entity_id: ventId()}); }catch(err){ handleErr(err); }
@@ -3018,7 +3025,7 @@ function renderSalon(box){
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
   $("h3date").textContent = fechaLarga(d);
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
-  $("hgA").innerHTML = `<div class="tl clk bigclk dclk"><b>${pad(d.getHours())}:<span class="mm">${pad(d.getMinutes())}</span></b></div>${o.ac_salon || ""}${dualTH(w, v)}${o.nt_salon || ""}<div class="row4">${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Apaga todo", 'data-scr="script.adios"')}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}${ventTile()}</div>`;
+  $("hgA").innerHTML = `<div class="tl clk bigclk dclk"><b>${pad(d.getHours())}:<span class="mm">${pad(d.getMinutes())}</span></b></div>${o.ac_salon || ""}${dualTH(w, v)}${o.nt_salon || ""}<div class="row4">${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Apaga todo", 'data-scr="script.adios"')}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}${ventTile()}${pecesTile()}</div>`;
   syncMini();
 }
 /* recuadro doble: exterior (tiempo) y casa (sensor de la estancia) */
@@ -3069,7 +3076,7 @@ syncMini = function(){ const v = $("tvMini"), t = $("tvTile");
   else $("tvMiniS").textContent = "🔊 En directo · toca para parar"; };
 document.addEventListener("click", ev => { const t = ev.target.closest("#tvTile"); if (t && roomOf() === "casa"){ setTimeout(() => { const v = $("tvMini"); if (v) miniMuted = v.muted; }, 0); } }, true);
 /* clics de radio / buenas noches en el Inicio */
-$("home").addEventListener("click", ev => { const b = ev.target.closest("[data-rad],[data-bn],[data-rtimer],[data-lt],[data-vent],[data-tvd]"); if (!b) return; ev.stopImmediatePropagation(); roomAction(b); }, true);
+$("home").addEventListener("click", ev => { const b = ev.target.closest("[data-rad],[data-bn],[data-rtimer],[data-lt],[data-vent],[data-tvd],[data-peces]"); if (!b) return; ev.stopImmediatePropagation(); roomAction(b); }, true);
 /* la radio sonando tampoco pasa a reposo si estás en el dormitorio con temporizador: no; sí deja pasar (reloj rojo con radio de fondo) */
 
 /* --- Ajustes: dónde está este aparato --- */
