@@ -3351,8 +3351,7 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
   const sec = $("t-cos"), box = document.createElement("div"); box.id = "cos3"; sec.insertBefore(box, sec.firstChild);
   const MES = ["E","F","M","A","M","J","J","A","S","O","N","D"];
   const ROOMS = [
-    {k:"salon", n:"Salón", c:"#ff9500", ic:"sofa", dev:[{n:"Aire", m: s => /aire|midea|climate/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && /sal[oó]n/i.test(noAcc(s.attributes.friendly_name||"") + s.entity_id) && !/deshumid|luz_/i.test(s.entity_id), c:"#ff9500"},
-      {n:"Luz acuario", m: s => /luz_acuario/.test(s.entity_id), c:"#30b0c7"}]},
+    {k:"salon", n:"Salón", c:"#ff9500", ic:"sofa", dev:[{n:"Aire", m: s => /aire|midea|climate/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && /sal[oó]n/i.test(noAcc(s.attributes.friendly_name||"") + s.entity_id) && !/deshumid|luz_/i.test(s.entity_id), c:"#ff9500"}]},
     {k:"dormitorio", n:"Dormitorio", c:"#5856d6", ic:"moon", dev:[
       {n:"Aire", m: s => /aire|midea|climate/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && /dormitorio/i.test(noAcc(s.attributes.friendly_name||"") + s.entity_id) && !/deshumid|luz_/i.test(s.entity_id), c:"#5856d6"},
       {n:"Deshumidificador", m: s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && !isBath(s), c:"#00b8a9"},
@@ -3361,7 +3360,8 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
       {n:"Deshumidificador", m: s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && isBath(s), c:"#00b8a9"},
       {n:"Luz", m: s => /luz_bano/.test(s.entity_id), c:"#ffcc00"}]},
     {k:"pasillo", n:"Pasillo", c:"#ff9f0a", ic:"bulb", dev:[
-      {n:"Luz", m: s => /luz_pasillo/.test(s.entity_id), c:"#ffcc00"}]}];
+      {n:"Luz", m: s => /luz_pasillo/.test(s.entity_id), c:"#ffcc00"},
+      {n:"Luz acuario", m: s => /luz_acuario/.test(s.entity_id), c:"#30b0c7"}]}];
   const IC = {sofa:'<path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M3 17v-4a2 2 0 0 1 4 0v1h10v-1a2 2 0 0 1 4 0v4H3zM5 17v2M19 17v2"/>'};
   const icon = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[n] || TI[n] || ""}</svg>`;
   const kwh = v => (v >= 100 ? Math.round(v) : fmt1(v)) + " kWh";
