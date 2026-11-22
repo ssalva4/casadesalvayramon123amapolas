@@ -932,8 +932,8 @@ body:not(.at-home) .main{padding-bottom:84px!important}
 .cv .dh{margin-top:12px!important}
 </style>
 <style id="vent-v3">
-.hg.rs .row4{grid-column:3/6;grid-row:3;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;min-height:0}
-.hg.rs .row4 .tl{min-width:0;padding-left:4px!important;padding-right:4px!important}.hg.rs .row4 .tl b{font-size:15px}.hg.rs .row4 .tl small{font-size:11.5px}
+.hg.rs .row4{grid-column:3/6;grid-row:3;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;min-height:0}
+.hg.rs .row4 .tl{min-width:0}.hg.rs .row4 .tl b{font-size:16px}.hg.rs .row4 .tl small{font-size:12px}
 .tl.on.vent{background:#dcefff!important;color:#0a5fb4!important}.tl.on.vent .ti{color:#0a84ff!important}.tl.on.vent small{color:#2f6fae!important}
 @media (max-width:900px){ .hg.rs .row4{grid-column:1/-1;grid-row:auto} }
 .hg.rd .tl.dclk{padding:0!important;overflow:hidden;flex-direction:column;justify-content:center;align-items:center;gap:0}.hg.rd .tl.dclk b{font-size:150px;font-weight:600;letter-spacing:-.03em;line-height:.86;white-space:nowrap;overflow:visible;text-overflow:clip;max-width:none}.hg.rd .tl.dclk b+b{color:#8f80dd}   /* dormitorio: horas arriba, minutos abajo en lila */
@@ -3028,7 +3028,7 @@ function renderSalon(box){
   $("h3time").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
   $("h3date").textContent = fechaLarga(d);
   const wxT = w && w.current ? `<button class="tl wxt" data-go="cli"><span class="ti">${wx(w.current.weather_code, w.current.is_day)}</span><b>${Math.round(w.current.temperature_2m)}°</b><small>${wxText(w.current.weather_code)}</small></button>` : T("", "sun", "Tiempo", "—", 'data-go="cli"');
-  $("hgA").innerHTML = `<div class="tl clk bigclk dclk"><b>${pad(d.getHours())}:<span class="mm">${pad(d.getMinutes())}</span></b></div>${o.ac_salon || ""}${dualTH(w, v)}${o.nt_salon || ""}<div class="row4">${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Apaga todo", 'data-scr="script.adios"')}${T("", "bed", "Buenas noches", "Noche y descanso", 'data-bn="1"')}${ventTile()}${pecesTile()}</div>`;
+  $("hgA").innerHTML = `<div class="tl clk bigclk dclk"><b>${pad(d.getHours())}:<span class="mm">${pad(d.getMinutes())}</span></b></div>${o.ac_salon || ""}${dualTH(w, v)}${o.nt_salon || ""}<div class="row4">${T("", "sun", "Buenos días", "Escena", 'data-scr="script.buenos_dias"')}${T("", "door", "Adiós", "Apaga todo", 'data-scr="script.adios"')}${ventTile()}${pecesTile()}</div>`;
   syncMini();
 }
 /* recuadro doble: exterior (tiempo) y casa (sensor de la estancia) */
