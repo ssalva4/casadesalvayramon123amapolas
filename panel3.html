@@ -2937,15 +2937,16 @@ function luzTile(id, name){ const e = hst(id), st = luzPend[id] ?? (e ? e.state 
   const sub = st === "unavailable" ? "Sin conexión · ¿interruptor?" : on ? (cd || `Encendida${pct ? " · " + pct : ""}`) : "Apagada";
   return T(on ? "on lt" : "", "bulb", name, sub, `data-lt="${id}" data-on="${on ? 1 : 0}"`); }
 let pecesPend = null;
-function pecesTile(){ const e = hst("input_boolean.modo_peces"), on = (pecesPend ?? (e && e.state)) === "on";   // modo peces: la luz del pasillo amanece y anochece sola
-  return T(on ? "on vent" : "", "fish", "Modo peces", on ? "Pasillo 8:00–21:00" : "Apagado", `data-peces="${on ? 1 : 0}"`); }
+function pecesTile(){ const e = hst("switch.luz_acuario"), on = (pecesPend ?? (e && e.state)) === "on", w = hst("sensor.luz_acuario_potencia");   // Acuario luz: enciende y apaga la luz del acuario a mano (aparte de su horario 8:30–21:00)
+  const sub = e && e.state === "unavailable" ? "Sin conexión" : on ? `Encendida${w && num(w) != null ? " · " + Math.round(num(w)) + " W" : ""}` : "Apagada";
+  return T(on ? "on vent" : "", "fish", "Acuario luz", sub, `data-peces="${on ? 1 : 0}"`); }
 let ventPend = null;
 const ventId = () => roomOf() === "salon" ? "input_boolean.ventanas_salon" : "input_boolean.ventanas_dormitorio";   // cada estancia sus ventanas
 function ventTile(){ const e = hst(ventId()), on = (ventPend ?? (e && e.state)) === "on";
   return T(on ? "on vent" : "", "window", "Ventanas", on ? (roomOf() === "salon" ? "Abiertas · aire parado" : "Abiertas · todo parado") : "Cerradas", `data-vent="${on ? 1 : 0}"`); }
 async function roomAction(b){
   if (b.dataset.peces !== undefined){ const on = b.dataset.peces === "1"; pecesPend = on ? "off" : "on"; renderHome();
-    try{ await service("input_boolean", on ? "turn_off" : "turn_on", {entity_id: "input_boolean.modo_peces"}); }catch(err){ handleErr(err); }
+    try{ await service("switch", on ? "turn_off" : "turn_on", {entity_id: "switch.luz_acuario"}); }catch(err){ handleErr(err); }
     setTimeout(async () => { await refreshHA(); pecesPend = null; renderHome(); }, 2500); return; }
   if (b.dataset.tvd){ if (radioOn) try{ radStop(); }catch(e){} show("ent"); setTimeout(() => { const pb = $("screen") && $("screen").querySelector("[data-play]"); if (pb && !tvOn && !ytOn) pb.click(); }, 300); return; }   // dormitorio: la tele
   if (b.dataset.vent !== undefined){ const on = b.dataset.vent === "1"; ventPend = on ? "off" : "on"; renderHome();   // abre: para aires y deshumidificadores · cierra: todo vuelve como estaba (automatización en HA)
