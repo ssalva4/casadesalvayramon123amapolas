@@ -1600,6 +1600,8 @@ function energySensors(){
   // luces WiZ (consumo estimado en Home Assistant)
   ["luz_bano", "luz_despacho", "luz_pasillo"].forEach(k => { const e = states.find(x => x.entity_id === `sensor.${k}_energia`), w = states.find(x => x.entity_id === `sensor.${k}_consumo`);
     if (e && num(e) != null) energy.push(e); if (w && num(w) != null) power.push(w); });
+  // luz del acuario (enchufe Energeeks con medidor: consumo real)
+  { const e = states.find(x => x.entity_id === "sensor.luz_acuario_energia"), w = states.find(x => x.entity_id === "sensor.luz_acuario_potencia"); if (e && num(e) != null) energy.push(e); if (w && num(w) != null) power.push(w); }
   return {power, energy};
 }
 async function loadToday(energy){
@@ -3349,7 +3351,8 @@ setInterval(() => { const a = document.getElementById("amb"); if (!a || !a.class
   const sec = $("t-cos"), box = document.createElement("div"); box.id = "cos3"; sec.insertBefore(box, sec.firstChild);
   const MES = ["E","F","M","A","M","J","J","A","S","O","N","D"];
   const ROOMS = [
-    {k:"salon", n:"Salón", c:"#ff9500", ic:"sofa", dev:[{n:"Aire", m: s => /aire|midea|climate/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && /sal[oó]n/i.test(noAcc(s.attributes.friendly_name||"") + s.entity_id) && !/deshumid|luz_/i.test(s.entity_id), c:"#ff9500"}]},
+    {k:"salon", n:"Salón", c:"#ff9500", ic:"sofa", dev:[{n:"Aire", m: s => /aire|midea|climate/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && /sal[oó]n/i.test(noAcc(s.attributes.friendly_name||"") + s.entity_id) && !/deshumid|luz_/i.test(s.entity_id), c:"#ff9500"},
+      {n:"Luz acuario", m: s => /luz_acuario/.test(s.entity_id), c:"#30b0c7"}]},
     {k:"dormitorio", n:"Dormitorio", c:"#5856d6", ic:"moon", dev:[
       {n:"Aire", m: s => /aire|midea|climate/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && /dormitorio/i.test(noAcc(s.attributes.friendly_name||"") + s.entity_id) && !/deshumid|luz_/i.test(s.entity_id), c:"#5856d6"},
       {n:"Deshumidificador", m: s => /deshumid/i.test(s.entity_id + " " + (s.attributes.friendly_name||"")) && !isBath(s), c:"#00b8a9"},
