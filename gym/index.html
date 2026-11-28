@@ -44,6 +44,8 @@ main{max-width:720px;margin:auto;padding:16px max(4vw,12px)}
 .when{margin:0 2px 6px;font-size:15px;font-weight:600}
 .pool{background:linear-gradient(160deg,#0e7490,#0b5d78);color:#fff;border-radius:18px;padding:16px;margin:-34px 0 16px;box-shadow:0 6px 20px rgba(10,40,60,.18)}
 .pool+.days{margin-top:0}
+.home h3{font-size:24px}.home .hc{text-align:right;line-height:1}.home .hc small{display:block;font-size:12px;color:var(--mute)}.home .exhead{border-top:1px solid var(--line);padding:8px 0}.home .exhead:first-of-type{margin-top:8px}.home .exhead h3{font-size:18px}.home .exhead b{display:block;font-size:14px;font-weight:500;color:var(--ink)}
+.hbtn.on{background:var(--ok)}
 .pool h3{font-size:26px}
 .ptop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .pcount{font-size:clamp(36px,11vw,48px);white-space:nowrap;line-height:1}
@@ -169,6 +171,12 @@ nav button.on{color:var(--blue)}:root[data-theme=dark] nav button.on{color:#8fb0
     <div class="prow"><label class="pmin"><input id="pMin" type="number" inputmode="numeric" min="1" max="300" placeholder="Min" aria-label="Minutos nadando hoy"><span>min</span></label><button class="btn pbtn" id="pBtn">Hoy he ido a la piscina</button></div>
     <p class="pnote">Mejor crol o espalda. Braza con cuidado: con la cabeza fuera del agua se arquea la zona lumbar.</p>
     <p class="pnote" id="pLast"></p>
+  </div>
+  <div class="card home" id="home">
+    <div class="ptop"><div><h3>En casa</h3><p class="note" style="margin:2px 0 0">Unos 8 min, 4–5 días por semana, también en la fase de piscina. Siempre sin dolor.</p></div><div class="hc"><span class="big" id="hCount" style="font-size:36px">0</span><small>esta semana</small></div></div>
+    <div id="hList"></div>
+    <button class="btn hbtn" id="hBtn">Hecho hoy</button>
+    <p class="note" id="hLast" style="margin-top:6px"></p>
   </div>
   <div class="days" id="days"></div>
   <p class="when" id="when"></p><p class="focus" id="focus"></p>
@@ -374,7 +382,7 @@ function pose(p,cls){const pl=c=>`<polyline points="${c.join(" ")}"/>`;
 function figSVG(id,big){const F=FIG[id];if(!F)return "";const end=F.b||F.a;
  return `<svg viewBox="0 0 200 150" class="exfig" aria-hidden="true">${big?"":""}<g>${F.eq}</g>${big&&F.b?pose(F.a,"ghost"):""}${pose(end,"solid")}${F.mz?`<path d="${F.mz.d}" class="mz"/>`+(big?`<line x1="${F.mz.lx+(F.mz.lx<50?46:0)}" y1="${F.mz.ly-4}" x2="${F.mz.tx}" y2="${F.mz.ty}" class="ld"/><text x="${F.mz.lx}" y="${F.mz.ly}" class="lab">${F.mz.lab}</text>`:""):""}${big?F.m.map(d=>`<path d="${d}" class="arw" marker-end="url(#ah)"/>`).join(""):""}</svg>`}
 const KEY="gym3-v1";
-const blank=()=>({sessions:[],weights:[],next:"1",draft:null,days:[0,2,4],pool:[]});
+const blank=()=>({sessions:[],weights:[],next:"1",draft:null,days:[0,2,4],pool:[],home:[]});
 const POOL_GOAL=20;
 let S=blank(), ref=null, day="1", saveT=0, tInt=0, tLeft=0, tTotal=0;
 const $=id=>document.getElementById(id);
@@ -476,7 +484,17 @@ $("pBtn").addEventListener("click",()=>{const t=today();if(!S.poolMin||typeof S.
   if(!had){const n=S.pool.length,m=S.poolMin[t];toast(n===POOL_GOAL?"¡20 días de piscina! Ya puedes empezar el gym":`Piscina apuntada${m?" ("+m+" min)":""}: ${n}/${POOL_GOAL}`)}});
 $("pMin").addEventListener("input",()=>{const t=today();if(!(S.pool||[]).includes(t))return;if(!S.poolMin||typeof S.poolMin!=="object")S.poolMin={};const m=num($("pMin").value);
   if(m&&m>0)S.poolMin[t]=Math.round(m);else delete S.poolMin[t];save();renderPool()});
-function renderAll(){fixDay();renderPool();renderTrain();renderProg();renderWeek()}
+const HOME=[{id:"deadbug",n:"Dead bug",d:"2 series de 6 por lado, muy lento",m:"2 series de 6 repeticiones por lado · lento, zona lumbar pegada al suelo · descanso 30 s"},
+ {id:"sideplank",n:"Plancha lateral",d:"3 series de 10 s por lado, con las rodillas apoyadas",m:"3 series de 10 segundos por lado · rodillas apoyadas al principio; sube a 20–30 s con las semanas · descanso 30 s"},
+ {id:"birddog",n:"Bird dog (perro de caza)",d:"3 series de 5 por lado, aguanta 8 s",m:"3 series de 5 repeticiones por lado · aguanta 8 s cada una · descanso 30 s"}];
+function renderHome(){if(!Array.isArray(S.home))S.home=[];const t=today(),has=S.home.includes(t),ws=weekStart();
+  $("hList").innerHTML=HOME.map(h=>`<button class="exhead" data-h="${h.id}"><span class="thumb">${figSVG(h.id)}</span><span><h3>${h.n}</h3><b>${h.d}</b><small>Toca para ver cómo se hace</small></span></button>`).join("");
+  $("hCount").textContent=S.home.filter(d=>d>=ws).length;const b=$("hBtn");b.classList.toggle("on",has);b.textContent=has?"Hecho hoy ✓ · quitar":"Hecho hoy";
+  $("hLast").textContent=S.home.length?"Últimos: "+S.home.slice(-5).reverse().map(fmtD).join(" · "):""}
+$("hList").addEventListener("click",ev=>{const b=ev.target.closest("[data-h]");if(!b)return;const h=HOME.find(x=>x.id===b.dataset.h);openInfo(h.id);$("shT").textContent=h.n;$("shMeta").textContent=h.m});
+$("hBtn").addEventListener("click",()=>{const t=today();if(!Array.isArray(S.home))S.home=[];const had=S.home.includes(t);
+  S.home=had?S.home.filter(x=>x!==t):[...S.home,t].sort();save();renderHome();if(!had)toast("Ejercicios de casa apuntados")});
+function renderAll(){fixDay();renderPool();renderHome();renderTrain();renderProg();renderWeek()}
 load();fixDay();day=(S.draft&&S.draft.day)||S.next||"1";renderAll();
 /* ---- Guardado online en Home Assistant (datos del usuario de HA) ---- */
 const HA=location.origin,CID=HA+"/",RED=HA+location.pathname,AK="gym_ha_auth",UK="gym3";
