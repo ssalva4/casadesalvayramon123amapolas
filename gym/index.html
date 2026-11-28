@@ -43,11 +43,15 @@ main{max-width:720px;margin:auto;padding:16px max(4vw,12px)}
 .days button.on .nx{color:#fff}
 .when{margin:0 2px 6px;font-size:15px;font-weight:600}
 .pool{background:linear-gradient(160deg,#0e7490,#0b5d78);color:#fff;border-radius:18px;padding:16px;margin:-34px 0 16px;box-shadow:0 6px 20px rgba(10,40,60,.18)}
-.duo{margin:-34px 0 16px}.duo .pool{margin:0 0 12px}.duo .home{margin:0}
-@media(min-width:700px){.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:stretch}.duo .pool{margin:0}.duo .home{box-shadow:0 6px 20px rgba(10,40,60,.12)}.duo .pool h3{font-size:22px}.duo .pcount{font-size:34px;flex:none}.duo .ptop>div{min-width:0}}
-.duo+.days{margin-top:0}
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:-34px 0 16px}.duo+.days{margin-top:0}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border-radius:18px;padding:14px;border:0;cursor:pointer;font:inherit;min-height:132px;box-shadow:0 6px 20px rgba(10,40,60,.18)}
+.tile .tt{font:700 22px "Barlow Condensed",Inter,sans-serif}.tile .tn{font-size:40px;line-height:1.05}.tile small{font-size:13px;opacity:.9}
+.tp{background:linear-gradient(160deg,#0e7490,#0b5d78);color:#fff}.tp .tb{width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,.25);overflow:hidden;margin:4px 0 2px}.tp .tb i{display:block;height:100%;background:#fff;border-radius:3px}
+.th{background:var(--card);color:var(--ink);border:1px solid var(--line)}.th .ts{color:var(--blue);font-weight:600}:root[data-theme=dark] .th .ts{color:#8fb0ff}
+.tile.ok .ts,.tp.ok small:last-child{font-weight:700}
+.pop{z-index:19}.sheet .box.pool{background:linear-gradient(160deg,#0e7490,#0b5d78);color:#fff;margin:0;border-radius:22px 22px 0 0;box-shadow:none}.sheet .box.pool h2,.sheet .box.home h2{font-size:30px}
 .home h3{font-size:24px}.home .hc{text-align:right;line-height:1}.home .hc small{display:block;font-size:12px;color:var(--mute)}.home .exhead{border-top:1px solid var(--line);padding:8px 0}.home .exhead:first-of-type{margin-top:8px}.home .exhead h3{font-size:18px}.home .exhead b{display:block;font-size:14px;font-weight:500;color:var(--ink)}
-.hbtn.on{background:var(--ok)}
+.hbtn.on{background:var(--ok);color:light-dark(#fff,#04231a)}
 .pool h3{font-size:26px}
 .ptop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .pcount{font-size:clamp(36px,11vw,48px);white-space:nowrap;line-height:1}
@@ -168,19 +172,8 @@ nav button.on{color:var(--blue)}:root[data-theme=dark] nav button.on{color:#8fb0
 <main>
 <section class="view on" id="v-train">
   <div class="duo">
-  <div class="pool" id="pool">
-    <div class="ptop"><div><h3>Piscina antes del gym</h3><p class="pnote" id="pMsg"></p></div><span class="big pcount" id="pCount">0/20</span></div>
-    <div class="pbar"><i id="pBar"></i></div>
-    <div class="prow"><label class="pmin"><input id="pMin" type="number" inputmode="numeric" min="1" max="300" placeholder="Min" aria-label="Minutos nadando hoy"><span>min</span></label><button class="btn pbtn" id="pBtn">Hoy he ido a la piscina</button></div>
-    <p class="pnote">Mejor crol o espalda. Braza con cuidado: con la cabeza fuera del agua se arquea la zona lumbar.</p>
-    <p class="pnote" id="pLast"></p>
-  </div>
-  <div class="card home" id="home">
-    <div class="ptop"><div><h3>En casa</h3><p class="note" style="margin:2px 0 0">Unos 8 min, 4–5 días por semana, también en la fase de piscina. Siempre sin dolor.</p></div><div class="hc"><span class="big" id="hCount" style="font-size:36px">0</span><small>esta semana</small></div></div>
-    <div id="hList"></div>
-    <button class="btn hbtn" id="hBtn">Hecho hoy</button>
-    <p class="note" id="hLast" style="margin-top:6px"></p>
-  </div>
+    <button class="tile tp" id="bPool"><span class="tt">Piscina</span><span class="big tn" id="bpCount">0/20</span><span class="tb"><i id="bpBar"></i></span><small id="bpSub">Toca para apuntar</small></button>
+    <button class="tile th" id="bHome"><span class="tt">En casa</span><span class="big tn" id="bhCount">0</span><small>esta semana</small><small id="bhSub" class="ts">Toca para apuntar</small></button>
   </div>
   <div class="days" id="days"></div>
   <p class="when" id="when"></p><p class="focus" id="focus"></p>
@@ -262,6 +255,19 @@ nav button.on{color:var(--blue)}:root[data-theme=dark] nav button.on{color:#8fb0
     <button data-v="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M8 2v4M16 2v4M8 11h8M8 15h5"/></svg>Plan</button>
   </nav>
 </div>
+<div class="sheet pop" id="popP" role="dialog" aria-modal="true" aria-label="Piscina"><div class="box pool" id="pool"><button class="close" data-x style="float:right;margin-left:10px;background:rgba(255,255,255,.2);color:#fff" aria-label="Cerrar">×</button>
+    <div class="ptop"><div><h2>Piscina</h2><p class="pnote" id="pMsg"></p></div><span class="big pcount" id="pCount">0/20</span></div>
+    <div class="pbar"><i id="pBar"></i></div>
+    <div class="prow"><label class="pmin"><input id="pMin" type="number" inputmode="numeric" min="1" max="300" placeholder="Min" aria-label="Minutos nadando hoy"><span>min</span></label><button class="btn pbtn" id="pBtn">Hoy he ido a la piscina</button></div>
+    <p class="pnote">Mejor crol o espalda. Braza con cuidado: con la cabeza fuera del agua se arquea la zona lumbar.</p>
+    <p class="pnote" id="pLast"></p>
+  </div></div>
+<div class="sheet pop" id="popH" role="dialog" aria-modal="true" aria-label="En casa"><div class="box home" id="home"><button class="close" data-x style="float:right;margin-left:10px" aria-label="Cerrar">×</button>
+    <div class="ptop"><div><h2>En casa</h2><p class="note" style="margin:2px 0 0">Unos 8 min, 4–5 días por semana, también en la fase de piscina. Siempre sin dolor.</p></div><div class="hc"><span class="big" id="hCount" style="font-size:36px">0</span><small>esta semana</small></div></div>
+    <div id="hList"></div>
+    <button class="btn hbtn" id="hBtn">Hecho hoy</button>
+    <p class="note" id="hLast" style="margin-top:6px"></p>
+  </div></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shT"><div class="box">
   <div class="top"><h2 id="shT"></h2><button class="close" id="shX" aria-label="Cerrar">×</button></div>
   <div class="pics"><div class="pic" id="shPic"></div><div class="bodypic"><div id="shBody"></div><small>En rojo, lo que trabaja</small></div></div>
@@ -419,9 +425,9 @@ function openInfo(id){const F=FIG[id],e=Object.values(PLAN).flatMap(p=>p.ex).fin
   $("shT").textContent=e.n;$("shPic").innerHTML=figSVG(id,true);$("shBody").innerHTML=bodySVG(id,true);$("shLeg").style.display=F.b?"flex":"none";
   $("shMu").innerHTML="<b>Trabaja:</b> "+F.mu;$("shMeta").textContent=`${e.s} series de ${e.r[0]}–${e.r[1]} ${e.u==="s"?"segundos":e.u==="m"?"metros":"repeticiones"} · descanso ${e.rest} s`;
   $("shHow").innerHTML=F.how.map(h=>`<li>${h}</li>`).join("");$("shBack").textContent=F.back;$("sheet").classList.add("on");document.body.style.overflow="hidden";$("shX").focus()}
-function closeInfo(){$("sheet").classList.remove("on");document.body.style.overflow=""}
+function closeInfo(){$("sheet").classList.remove("on");if(!document.querySelector(".sheet.on"))document.body.style.overflow=""}
 $("shX").addEventListener("click",closeInfo);$("sheet").addEventListener("click",ev=>{if(ev.target.id==="sheet")closeInfo()});
-document.addEventListener("keydown",ev=>{if(ev.key==="Escape")closeInfo()});
+document.addEventListener("keydown",ev=>{if(ev.key!=="Escape")return;if($("sheet").classList.contains("on"))closeInfo();else document.querySelectorAll(".pop.on").forEach(closePop)});
 $("exs").addEventListener("click",ev=>{const b=ev.target.closest("[data-info]");if(b)openInfo(b.dataset.info)});
 function setRow(el){const d=draft(),id=el.dataset.e,i=+el.dataset.i;d.sets[id]=d.sets[id]||[];d.sets[id][i]=d.sets[id][i]||{};return d.sets[id][i]}
 $("exs").addEventListener("input",ev=>{const inp=ev.target;if(!inp.dataset.f)return;const row=inp.closest(".set");setRow(row)[inp.dataset.f]=num(inp.value);save()});
@@ -480,7 +486,7 @@ function renderPool(){const p=Array.isArray(S.pool)?[...new Set(S.pool)].sort():
   $("pMsg").textContent=done?"Objetivo cumplido: ya puedes empezar con el gym. Puedes seguir apuntando días de piscina.":`Te ${POOL_GOAL-n===1?"falta 1 día":"faltan "+(POOL_GOAL-n)+" días"} para empezar con el gym.`;
   const b=$("pBtn");b.classList.toggle("on",has);b.textContent=has?"Apuntado hoy · quitar":"Hoy he ido a la piscina";
   if(has)$("pMin").value=M[t]??"";
-  $("pLast").textContent=n?"Últimos: "+p.slice(-5).reverse().map(d=>fmtD(d)+(M[d]?` (${M[d]} min)`:"")).join(" · ")+(tot?` · Total: ${tot>=60?Math.floor(tot/60)+" h "+(tot%60)+" min":tot+" min"}`:""):""}
+  $("pLast").textContent=n?"Últimos: "+p.slice(-5).reverse().map(d=>fmtD(d)+(M[d]?` (${M[d]} min)`:"")).join(" · ")+(tot?` · Total: ${tot>=60?Math.floor(tot/60)+" h "+(tot%60)+" min":tot+" min"}`:""):"";renderTiles()}
 $("pBtn").addEventListener("click",()=>{const t=today();if(!S.poolMin||typeof S.poolMin!=="object")S.poolMin={};const had=(S.pool||[]).includes(t);
   if(had){S.pool=S.pool.filter(x=>x!==t);delete S.poolMin[t];$("pMin").value=""}
   else{S.pool=[...(S.pool||[]),t];const m=num($("pMin").value);if(m&&m>0)S.poolMin[t]=Math.round(m)}
@@ -494,10 +500,17 @@ const HOME=[{id:"deadbug",n:"Dead bug",d:"2 series de 6 por lado, muy lento",m:"
 function renderHome(){if(!Array.isArray(S.home))S.home=[];const t=today(),has=S.home.includes(t),ws=weekStart();
   $("hList").innerHTML=HOME.map(h=>`<button class="exhead" data-h="${h.id}"><span class="thumb">${figSVG(h.id)}</span><span><h3>${h.n}</h3><b>${h.d}</b><small>Toca para ver cómo se hace</small></span></button>`).join("");
   $("hCount").textContent=S.home.filter(d=>d>=ws).length;const b=$("hBtn");b.classList.toggle("on",has);b.textContent=has?"Hecho hoy ✓ · quitar":"Hecho hoy";
-  $("hLast").textContent=S.home.length?"Últimos: "+S.home.slice(-5).reverse().map(fmtD).join(" · "):""}
+  $("hLast").textContent=S.home.length?"Últimos: "+S.home.slice(-5).reverse().map(fmtD).join(" · "):"";renderTiles()}
 $("hList").addEventListener("click",ev=>{const b=ev.target.closest("[data-h]");if(!b)return;const h=HOME.find(x=>x.id===b.dataset.h);openInfo(h.id);$("shT").textContent=h.n;$("shMeta").textContent=h.m});
 $("hBtn").addEventListener("click",()=>{const t=today();if(!Array.isArray(S.home))S.home=[];const had=S.home.includes(t);
   S.home=had?S.home.filter(x=>x!==t):[...S.home,t].sort();save();renderHome();if(!had)toast("Ejercicios de casa apuntados")});
+function openPop(id){$(id).classList.add("on");document.body.style.overflow="hidden"}
+function closePop(el){el.classList.remove("on");if(!document.querySelector(".sheet.on"))document.body.style.overflow=""}
+$("bPool").addEventListener("click",()=>openPop("popP"));$("bHome").addEventListener("click",()=>openPop("popH"));
+document.querySelectorAll(".pop").forEach(p=>p.addEventListener("click",ev=>{if(ev.target===p||ev.target.closest("[data-x]"))closePop(p)}));
+function renderTiles(){const p=S.pool||[],n=p.length,t=today(),M=S.poolMin||{};$("bpCount").textContent=`${n}/${POOL_GOAL}`;$("bpBar").style.width=Math.min(100,n/POOL_GOAL*100)+"%";
+  const ph=p.includes(t);$("bpSub").textContent=ph?"Hoy apuntado"+(M[t]?` · ${M[t]} min`:"")+" ✓":"Toca para apuntar";$("bPool").classList.toggle("ok",ph);
+  const h=S.home||[],hh=h.includes(t);$("bhCount").textContent=h.filter(d=>d>=weekStart()).length;$("bhSub").textContent=hh?"Hecho hoy ✓":"Toca para apuntar";$("bHome").classList.toggle("ok",hh)}
 function renderAll(){fixDay();renderPool();renderHome();renderTrain();renderProg();renderWeek()}
 load();fixDay();day=(S.draft&&S.draft.day)||S.next||"1";renderAll();
 /* ---- Guardado online en Home Assistant (datos del usuario de HA) ---- */
