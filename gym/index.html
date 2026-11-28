@@ -43,7 +43,9 @@ main{max-width:720px;margin:auto;padding:16px max(4vw,12px)}
 .days button.on .nx{color:#fff}
 .when{margin:0 2px 6px;font-size:15px;font-weight:600}
 .pool{background:linear-gradient(160deg,#0e7490,#0b5d78);color:#fff;border-radius:18px;padding:16px;margin:-34px 0 16px;box-shadow:0 6px 20px rgba(10,40,60,.18)}
-.pool+.days{margin-top:0}
+.duo{margin:-34px 0 16px}.duo .pool{margin:0 0 12px}.duo .home{margin:0}
+@media(min-width:700px){.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:stretch}.duo .pool{margin:0}.duo .home{box-shadow:0 6px 20px rgba(10,40,60,.12)}.duo .pool h3{font-size:22px}.duo .pcount{font-size:34px;flex:none}.duo .ptop>div{min-width:0}}
+.duo+.days{margin-top:0}
 .home h3{font-size:24px}.home .hc{text-align:right;line-height:1}.home .hc small{display:block;font-size:12px;color:var(--mute)}.home .exhead{border-top:1px solid var(--line);padding:8px 0}.home .exhead:first-of-type{margin-top:8px}.home .exhead h3{font-size:18px}.home .exhead b{display:block;font-size:14px;font-weight:500;color:var(--ink)}
 .hbtn.on{background:var(--ok)}
 .pool h3{font-size:26px}
@@ -165,6 +167,7 @@ nav button.on{color:var(--blue)}:root[data-theme=dark] nav button.on{color:#8fb0
 
 <main>
 <section class="view on" id="v-train">
+  <div class="duo">
   <div class="pool" id="pool">
     <div class="ptop"><div><h3>Piscina antes del gym</h3><p class="pnote" id="pMsg"></p></div><span class="big pcount" id="pCount">0/20</span></div>
     <div class="pbar"><i id="pBar"></i></div>
@@ -177,6 +180,7 @@ nav button.on{color:var(--blue)}:root[data-theme=dark] nav button.on{color:#8fb0
     <div id="hList"></div>
     <button class="btn hbtn" id="hBtn">Hecho hoy</button>
     <p class="note" id="hLast" style="margin-top:6px"></p>
+  </div>
   </div>
   <div class="days" id="days"></div>
   <p class="when" id="when"></p><p class="focus" id="focus"></p>
